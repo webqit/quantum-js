@@ -1,0 +1,5 @@
+.DS_STORE
+.cache
+tests
+node_modules
+*_notes

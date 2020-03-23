@@ -1,0 +1,37 @@
+{
+  "name": "@web-native-js/jsen",
+  "title": "JSEN",
+  "description": "JS.E(N) (JavaScript Expression Notation) Domain-Specific Language (DSL) parser+evaluator.",
+  "keywords": [
+    "DSL-driven development",
+    "Parser Combinator",
+    "DSL Parser",
+    "lexer"
+  ],
+  "homepage": "https://www.web-native.dev",
+  "icon": "https://www.web-native.dev/icon.svg",
+  "author": "Oxford Harrison <oxharriscreative@gmail.com>",
+  "version": "0.0.2",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-native/jsen.git"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node ./tests/index.js",
+    "build": "webpack --config ../webpack.config.js",
+    "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "@web-native-js/commons": "^0.0.1"
+  },
+  "devDependencies": {
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
+  },
+  "bugs": {
+    "url": "https://github.com/web-native/jsen/issues"
+  }
+}
