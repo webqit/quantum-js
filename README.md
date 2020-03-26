@@ -1,13 +1,12 @@
-# JSEN - JavaScript Expression Notation
+# JSEN (JavaScript Expression Notation)
 
-> JSEN is a Dynamic Data Interchange Format based on JavaScript expressions.
+JSEN is a tool for parsing and evaluating JavaScript expressions. It is designed for general-purpose usage and comes suited for these use-cases far more than the `eval()` in many programming languages.
 
 ## Documentation
-[The JSEN Official Guide](https://docs.web-native.dev/jsen/)
+[docs.web-native.dev/jsen/](https://docs.web-native.dev/jsen/)
 
 ## Issues
-To report bugs or request features regarding the JSEN data format
-or this JavaScript library, please submit an issue to this repository.
+To report bugs or request features, please submit an issue to this repository.
 
 ## License
 MIT.
