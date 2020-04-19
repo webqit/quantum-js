@@ -64,21 +64,21 @@ const Func = class extends FuncInterface {
 	 */
 	eval(context = null, trap = {}) {
 		return (...args) => {
-			var localContext = {};
+			var newMainContext = {};
 			_each(Object.keys(this.paramters), (i, name) => {
 				var defaultVal = this.paramters[name];
 				if (args.length - 1 < i && !defaultVal) {
 					throw new Error('The parameter "' + name + '" is required.');
 				}
-				localContext[name] = args.length > i 
+				newMainContext[name] = args.length > i 
 					? args[i] 
 					: (this.paramters[name] 
 						? this.paramters[name].eval(context, trap) 
 						: null);
 			});
 			// But this newer context should come first
-			var multipleContexts = Contexts.create(localContext).concat(Contexts.create(context));
-			return this.statements.eval(multipleContexts, trap);
+			var nestedContext = new Contexts(newMainContext, context);
+			return this.statements.eval(nestedContext, trap);
 		};
 	}
 	

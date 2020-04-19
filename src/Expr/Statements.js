@@ -5,6 +5,7 @@
 import _flatten from '@web-native-js/commons/arr/flatten.js';
 import StatementsInterface from './StatementsInterface.js';
 import ReturnInterface from './ReturnInterface.js';
+import Contexts from '../Contexts.js';
 import Lexer from '../Lexer.js';
 
 /**
@@ -28,6 +29,7 @@ const Statements = class extends StatementsInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, trap = {}) {
+		context = Contexts.create(context);
 		var stmts = [];
 		for (var i = 0; i < this.stmts.length; i ++) {
 			if (this.stmts[i] instanceof ReturnInterface) {

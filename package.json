@@ -3,15 +3,12 @@
   "title": "JSEN",
   "description": "JS.E(N) (JavaScript Expression Notation) Domain-Specific Language (DSL) parser+evaluator.",
   "keywords": [
-    "DSL-driven development",
-    "Parser Combinator",
-    "DSL Parser",
-    "lexer"
+    "Scoped-JS"
   ],
-  "homepage": "https://www.web-native.dev",
-  "icon": "https://www.web-native.dev/icon.svg",
+  "homepage": "https://web-native.dev",
+  "icon": "https://web-native.dev/icon.svg",
   "author": "Oxford Harrison <oxharriscreative@gmail.com>",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "MIT",
   "type": "module",
   "repository": {

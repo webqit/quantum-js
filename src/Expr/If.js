@@ -32,7 +32,7 @@ const If = class extends IfInterface {
 	 */
 	eval(context = null, trap = {}) {
 		return this.assertion.eval(context, trap) 
-			? this.onTrue.eval(context, trap) 
+			? (this.onTrue ? this.onTrue.eval(context, trap) : undefined)
 			: (this.onFalse ? this.onFalse.eval(context, trap) : undefined);
 	}
 	
@@ -42,7 +42,7 @@ const If = class extends IfInterface {
 	toString(context = null) {
         var onTrue = this.params.onTrueIsBlock 
             ? '{' + this.onTrue.toString(context) + '}' 
-            : this.onTrue.toString(context);
+            : (this.onTrue ? this.onTrue.toString(context) : '');
         var onFalse = this.params.onFalseIsBlock 
             ? '{' + this.onFalse.toString(context) + '}' 
             : (this.onFalse ? this.onFalse.toString(context) : '');

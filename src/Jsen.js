@@ -8,6 +8,7 @@ import _isArray from '@web-native-js/commons/js/isArray.js';
 import _instanceof from '@web-native-js/commons/js/instanceof.js';
 import ReferenceInterface from './Expr/ReferenceInterface.js';
 import CallInterface from './Expr/CallInterface.js';
+import FuncInterface from './Expr/FuncInterface.js';
 
 /**
  * ---------------------------
@@ -22,7 +23,7 @@ const Jsen = class {
 	 */
 	static parse(expr, Parsers, params = {}, Static = Jsen) {
 		if (!params.meta) {
-			params.meta = {vars: []};
+			params.meta = {vars: [], _vars: []};
 		}
 		if (expr.length) {
 			var parsers = Object.values(Parsers || Static.grammars);
@@ -36,7 +37,13 @@ const Jsen = class {
 						parsed.meta = {};
 					}
 					// Reap vars into scope expr
-					parsed.meta.vars = params.meta.vars.slice(varsScope);
+					if (_instanceof(parsed, FuncInterface)) {
+						var secondLevelVars = params.meta.vars.splice(varsScope);
+						params.meta._vars = params.meta._vars.concat(secondLevelVars);
+						parsed.meta._vars = secondLevelVars;
+					} else {
+						parsed.meta.vars = params.meta.vars.slice(varsScope);
+					}
 					// Add vars to scope
 					if (_instanceof(parsed, ReferenceInterface) || _instanceof(parsed, CallInterface)) {
 						_remove(parsed.meta.vars, parsed.context);

@@ -28,17 +28,41 @@ const Lexer = class {
 	 *
 	 * @see constructor()
 	 */
-	static lex(str, delims, options) {
+	static lex(str, delims, options = {}) {
 		if (!_isString(str)) {
 			throw new Error('Argument1 must be a string!');
 		}
-		// CREATE NEW -----------------------------
+		var copyResult = result => {
+			return {
+				delims: result.delims.slice(),
+				options: _copyPlain(result.options),
+				nesting: result.nesting.slice(),
+				maxDepth: result.maxDepth,
+				comments: result.comments.slice(),
+				tokens: result.tokens.slice(),
+				matches: result.matches.slice(),
+				matchesi: _copyPlain(result.matchesi),
+			};
+		};
+		// ASK CACHE ---------------------------
+		if (Lexer.$cache[str] && options.cache !== false) {
+			for (var i = 0; i < Lexer.$cache[str].length; i ++) {
+				var cached = Lexer.$cache[str][i];
+				if (_even(cached.delims, delims)) {
+					return copyResult(cached);
+				}
+			}
+		}
+		// FRESH PARSE	 -------------------------------
 		var instance = new Lexer(str, options);
-		// GIVE CACHE -----------------------------
-		Lexer.$cache[str] = Lexer.$cache[str] || [];
-		Lexer.$cache[str].push(instance);
-		// RETURN NEW -----------------------------
-		return instance.lex(delims);
+		var result = instance.lex(delims);
+		// SAVE TO CACHE -------------------------------
+		if (options.cache !== false) {
+			Lexer.$cache[str] = Lexer.$cache[str] || [];
+			Lexer.$cache[str].push(result);
+		}
+		return copyResult(result);
+		
 	}
 
 	/**
@@ -89,7 +113,6 @@ const Lexer = class {
 		if (!this.$options.comments) {
 			this.$options.comments = Lexer.$comments;
 		}
-		this.$cache = [];
 	}
 
 	/**
@@ -114,23 +137,10 @@ const Lexer = class {
 			matches: [],
 			matchesi: {},
 		};
-		// ASK INSTANCE CACHE ---------------------------
-		if (runtime.options.cache !== false) {
-			for (var i = 0; i < this.$cache.length; i ++) {
-				if (_even(this.$cache[i].delims, runtime.delims) && _even(this.$cache[i].options, runtime.options)) {
-					return _copyPlain(this.$cache[i]);
-				}
-			}
-		}
-		// EVALUATE NEW --------------------------------
 		// Iterate over each character, keep track of current row and column (of the returned array)
 		this._evalCharsAt(runtime, 0);
 		if (runtime.nesting.length) {
 			throw new Error('Error parsing the string: ' + this.$str + '. Unterminated blocks: ' + _flatten(runtime.nesting).join(', ') + '');
-		}
-		// GIVE CACHE ----------------------------------
-		if (runtime.options.cache !== false) {
-			this.$cache.push(runtime);
 		}
 		// RETURN NEW ----------------------------------
 		return runtime;
@@ -271,16 +281,16 @@ const Lexer = class {
 		var result = {};
 		(runtime.options.comments || []).forEach(block => {
 			if (!runtime.openComment) {
-				var m = this.$str.substr(i).match(new RegExp('^' + _first(block)));
-				if (m) {
+				var starting = _first(block);
+				if (this.$str.substr(i).startsWith(starting)) {
 					runtime.openComment = block;
-					result.starting = m[0];
+					result.starting = starting;
 				}
 			} else if (_last(block) === _last(runtime.openComment)) {
-				var m = this.$str.substr(i).match(new RegExp('^' + _last(block)));
-				if (m) {
+				var ending = _last(block);
+				if (this.$str.substr(i).startsWith(ending)) {
 					runtime.openComment = false;
-					result.ending = m[0];
+					result.ending = ending;
 				}
 			}
 		});
@@ -298,15 +308,15 @@ const Lexer = class {
 	_testNesting(runtime, i) {
 		var result = {};
 		(runtime.options.blocks || []).forEach(block => {
-			var starting = this.$str.substr(i).match(new RegExp('^' + _first(block)));
-			if (starting) {
+			var starting = _first(block);
+			if (this.$str.substr(i).startsWith(starting)) {
 				runtime.nesting = runtime.nesting.concat([block]);
-				result.starting = starting[0];
+				result.starting = starting;
 			} else if (runtime.nesting.length && _last(block) === _last(_last(runtime.nesting))) {
-				var ending = this.$str.substr(i).match(new RegExp('^' + _last(block)));
-				if (ending) {
+				var ending = _last(block);
+				if (this.$str.substr(i).startsWith(ending)) {
 					runtime.nesting = runtime.nesting.slice(0, -1);
-					result.ending = ending[0];
+					result.ending = ending;
 				}
 			}
 		});
@@ -440,7 +450,7 @@ const Lexer = class {
 /**
  * @var array
  */
-Lexer.$blocks = [['\\(', '\\)'], ['\\[', '\\]'], ['\\{', '\\}'],];
+Lexer.$blocks = [['(', ')'], ['[', ']'], ['{', '}'],];
 
 /**
  * @var array
@@ -450,7 +460,7 @@ Lexer.$quotes = ['"', "'", '`',];
 /**
  * @var array
  */
-Lexer.$comments = [['\\/\\*', '\\*\\/'], ['\\/\\/', '(\\r)?\\n'],];
+Lexer.$comments = [['/*', '*/'], ['//', "\n"],];
 
 /**
  * @var object
