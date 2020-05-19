@@ -16,6 +16,8 @@ import Assertion from './Expr/Assertion.js';
 import AssertionInterface from './Expr/AssertionInterface.js';
 import Assignment from './Expr/Assignment.js';
 import AssignmentInterface from './Expr/AssignmentInterface.js';
+import Block from './Expr/Block.js';
+import BlockInterface from './Expr/BlockInterface.js';
 import Bool from './Expr/Bool.js';
 import BoolInterface from './Expr/BoolInterface.js';
 import Call from './Expr/Call.js';
@@ -42,8 +44,6 @@ import Reference from './Expr/Reference.js';
 import ReferenceInterface from './Expr/ReferenceInterface.js';
 import Return from './Expr/Return.js';
 import ReturnInterface from './Expr/ReturnInterface.js';
-import Statements from './Expr/Statements.js';
-import StatementsInterface from './Expr/StatementsInterface.js';
 import Str from './Expr/Str.js';
 import StrInterface from './Expr/StrInterface.js';
 
@@ -52,7 +52,7 @@ import StrInterface from './Expr/StrInterface.js';
  */
 Jsen.grammars = {
 	If: If,						// if (condition) expr1 else expre2
-	//Statements: Statements,		// field1 = 3; field2 = val2
+	//Block: Block,				// field1 = 3; field2 = val2
 	Return: Return,				// return field1
 	Deletion: Deletion,			// delete field1
 	Assignment: Assignment,		// field1[key1].key2 = k
@@ -86,6 +86,7 @@ export {
 	Arguments,
 	Assertion,
 	Assignment,
+	Block,
 	Bool,
 	Call,
 	Comparison,
@@ -100,7 +101,6 @@ export {
 	Reference,
 	Return,
 	Str,
-	Statements
 };
 export {
 	AbstractionInterface,
@@ -108,6 +108,7 @@ export {
 	ArgumentsInterface,
 	AssertionInterface,
 	AssignmentInterface,
+	BlockInterface,
 	BoolInterface,
 	CallInterface,
 	ComparisonInterface,
@@ -122,6 +123,5 @@ export {
 	ReferenceInterface,
 	ReturnInterface,
 	StrInterface,
-	StatementsInterface
 };
 export default Jsen;

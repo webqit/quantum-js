@@ -61,7 +61,7 @@ const Assignment = class extends AssignmentInterface {
 				initKeyword = _before(reference, ' ');
 				reference = _after(reference, ' ').trim();
 			}
-			if (!((reference = parseCallback(reference)) instanceof ReferenceInterface) 
+			if (!((reference = parseCallback(reference, null, {lodge: false})) instanceof ReferenceInterface) 
 			|| !(val = parseCallback(val))) {
 				throw new Error('Invalid assignment expression: ' + expr);
 			}

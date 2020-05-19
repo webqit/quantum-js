@@ -4,9 +4,10 @@
  */
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
+import Contexts from '../Contexts.js';
 import Lexer from '../Lexer.js';
 import IfInterface from './IfInterface.js';
-import Statements from './Statements.js';
+import Block from './Block.js';
 
 /**
  * ---------------------------
@@ -31,19 +32,20 @@ const If = class extends IfInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, trap = {}) {
-		return this.assertion.eval(context, trap) 
-			? (this.onTrue ? this.onTrue.eval(context, trap) : undefined)
-			: (this.onFalse ? this.onFalse.eval(context, trap) : undefined);
+        var newContext = new Contexts({main:{}, super:context}, 2/** type */);
+		return this.assertion.eval(context/** original context */, trap)
+			? (this.onTrue ? this.onTrue.eval(newContext, trap) : undefined)
+			: (this.onFalse ? this.onFalse.eval(newContext, trap) : undefined);
 	}
 	
 	/**
 	 * @inheritdoc
 	 */
 	toString(context = null) {
-        var onTrue = this.params.onTrueIsBlock 
+        var onTrue = this.onTrue && this.params.onTrueIsBlock 
             ? '{' + this.onTrue.toString(context) + '}' 
             : (this.onTrue ? this.onTrue.toString(context) : '');
-        var onFalse = this.params.onFalseIsBlock 
+        var onFalse = this.onFalse && this.params.onFalseIsBlock 
             ? '{' + this.onFalse.toString(context) + '}' 
             : (this.onFalse ? this.onFalse.toString(context) : '');
 		return 'if (' + this.assertion.toString(context) + ')' + onTrue + (onFalse ? ' else ' + onFalse : '');
@@ -64,21 +66,29 @@ const If = class extends IfInterface {
                 // The braces gives us the onTrue block
                 onTrueIsBlock = true;
                 onTrue = _unwrap(onTrue, '{', '}').trim();
-                onTrue = parseCallback(onTrue, [Statements], {assert:false}) || parseCallback(onTrue);
+                onTrue = parseCallback(onTrue, [Block], {assert:false, meta:null}) || parseCallback(onTrue, null, {meta:null});
             } else {
-                onTrue = parseCallback(onTrue);
+                onTrue = parseCallback(onTrue, null, {meta:null});
             }
             if (onFalse) {
                 if (_wrapped(onFalse, '{', '}')) {
                     // The braces gives us the onTrue block
                     onFalseIsBlock = true;
                     onFalse = _unwrap(onFalse, '{', '}').trim();
-                    onFalse = parseCallback(onFalse, [Statements], {assert:false}) || parseCallback(onFalse);
-            } else {
-                    onFalse = parseCallback(onFalse);
+                    onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
+                } else {
+                    onFalse = parseCallback(onFalse, null, {meta:null});
                 }
             }
-			return new Static(assertion, onTrue, onFalse, {onTrueIsBlock, onFalseIsBlock});
+			return new Static(
+                assertion, 
+                onTrue ? (onTrue.jsenType === 'Block' ? onTrue : new Block([onTrue])) : null, 
+                onFalse ? (onFalse.jsenType === 'Block' ? onFalse : new Block([onFalse])) : null, 
+                {
+                    onTrueIsBlock,
+                    onFalseIsBlock,
+                }
+            );
          }
 	}
 };

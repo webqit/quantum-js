@@ -5,7 +5,9 @@
 import _isTypeObject from '@web-native-js/commons/js/isTypeObject.js';
 import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import _isFunction from '@web-native-js/commons/js/isFunction.js';
+import _isClass from '@web-native-js/commons/js/isClass.js';
 import _isString from '@web-native-js/commons/js/isString.js';
+import _isNull from '@web-native-js/commons/js/isNull.js';
 import _isNumber from '@web-native-js/commons/js/isNumber.js';
 
 /**
@@ -16,18 +18,79 @@ export default class Contexts {
 	/**
 	 * Creates a new context stack.
 	 *
-	 * @param any		 	mainContext
-	 * @param Contexts	 	superContext
-	 * @param object	 	localContext
-	 * @param object	 	localContextMeta
+	 * @param object	 	params
+	 * @param int		 	type
 	 *
 	 * @return Contexts
 	 */
-	constructor(mainContext, superContext = null, localContext = {}, localContextMeta = {}) {
-		this.mainContext = mainContext;
-		this.superContext = superContext ? Contexts.create(superContext) : null;
-		this.localContext = localContext
-		this.localContextMeta = localContextMeta
+	constructor(stack, type = 1) {
+		this.stack = stack;
+		this.type = type;
+		if (!('main' in this.stack)) {
+			throw new Error('A "main" context must be provided!');
+		}
+		if (this.stack.super) {
+			this.stack.super = Contexts.create(this.stack.super);
+		}
+		this.stack.local = this.stack.local || {};
+		this.stack.$local = this.stack.$local || {};
+	}
+
+	/**
+	 * Binds a callback to changes
+	 * that happen in the contexts.
+	 *
+	 * @param string|arrat 		props
+	 * @param function		 	callback
+	 * @param object		 	options
+	 * @param object		 	trap
+	 *
+	 * @return Contexts
+	 */
+	observe(props, callback, options, trap = {}) {
+		if (trap.observe && props.length) {
+			// Observe super
+			// but changes will be blocked if all the affected props
+			// are also in main.
+			if (this.stack.super) {
+				this.stack.super.observe(props, (a, b, e) => {
+					if (e.fields.filter(prop => !_has(this.stack.local, prop, trap) && !_has(this.stack.main, prop, trap)).length) {
+						return callback(a, b, e);
+					}
+				}, options, trap);
+			}
+			// Observe main, for sure
+			if (_isTypeObject(this.stack.main)) {
+				trap.observe(this.stack.main, props, (a, b, e) => {
+					if (e.fields.filter(prop => !_has(this.stack.local, prop, trap)).length) {
+						return callback(a, b, e);
+					}
+				}, options);
+			}
+		}
+	}
+	
+	/**
+	 * Unbinds callbacks previously bound
+	 * with observe()
+	 *
+	 * @param string|arrat 		props
+	 * @param function		 	callback
+	 * @param object		 	options
+	 * @param object		 	trap
+	 *
+	 * @return Contexts
+	 */
+	unobserve(props, callback, options, trap = {}) {
+		if (trap.unobserve) {
+			if (this.stack.super) {
+				this.stack.super.unobserve(props, callback, options, trap);
+			}
+			// Observe main, for sure
+			if (this.stack.main) {
+				trap.unobserve(this.stack.main, props, callback, options);
+			}
+		}
 	}
 	
 	/**
@@ -41,19 +104,22 @@ export default class Contexts {
 	 */
 	handle(prop, callback, final, level = 0) {
 		var callMain = () => {
-			return callback(this.mainContext, null, () => {
-				if (this.superContext) {
-					return this.superContext.handle(prop, callback, final, level + 1);
+			return callback(this.stack.main, null, () => {
+				if (this.stack.super) {
+					return this.stack.super.handle(prop, callback, final, level + 1);
 				}
 				if (final) {
 					return final();
 				}
 			}, level);
 		};
-		if (prop === 'toString' && this.localContext.toString === Object.prototype.toString) {
+		// Normally, we would begin with local...
+		// but no if...
+		if (prop === 'toString' && this.stack.local.toString === Object.prototype.toString) {
 			return callMain();
 		}
-		return callback(this.localContext, this.localContextMeta, callMain, level);
+		// Conditions are right, we begin with local
+		return callback(this.stack.local, this.stack.$local, callMain, level);
 	}
 
 	/**
@@ -74,7 +140,7 @@ export default class Contexts {
 			var val = _get(contxtObj, prop, trap);
 			// asking first mught not go well generally && _has(this[i], prop, trap)
 			if (!_isUndefined(val) || _has(contxtObj, prop, trap)) {
-				if (_isFunction(val) && bindThis) {
+				if (_isFunction(val) && !_isClass(val) && bindThis) {
 					return val.bind(contxtObj);
 				}
 				return val;
@@ -95,6 +161,9 @@ export default class Contexts {
 	 * @return bool
 	 */
 	set(prop, val, trap = {}, initKeyword = false) {
+		if (this.type === 2 && initKeyword === 'var' && this.stack.super) {
+			return this.stack.super.set(prop, val, trap, initKeyword);
+		}
 		if (prop instanceof String) {
 			// incase we recieved new String()
 			prop = prop + '';
@@ -109,7 +178,7 @@ export default class Contexts {
 		return this.handle(initKeyword ? true : prop, (contxtObj, localContxtMeta, advance) => {
 			// Whatever the level of localContext...
 			if (localContxtMeta && localContxtMeta[prop] === 'const') {
-				throw new Error('CONST ' + prop + 'cannot be modified!');
+				throw new Error('CONST ' + prop + ' cannot be modified!');
 			}
 			// Set this locally, we wont be getting to advance()
 			if (initKeyword) {
@@ -142,6 +211,9 @@ export default class Contexts {
 		}
 		return this.handle(prop, (contxtObj, contxtMeta, advance) => {
 			if (_has(contxtObj, prop, trap)) {
+				if (contxtMeta) {
+					delete contxtMeta[prop];
+				}
 				if (trap.deleteProperty || trap.del) {
 					return (trap.deleteProperty || trap.del)(contxtObj, prop);
 				}
@@ -224,15 +296,15 @@ export default class Contexts {
 	 * @return Contexts
 	 */
 	static create(cntxt) {
-		return cntxt instanceof Contexts ? cntxt : new Contexts(cntxt);
+		return cntxt instanceof Contexts ? cntxt : new Contexts({
+			main: cntxt,
+		});
 	}
 };
 
-const _get = (cntxt, prop, trap) => trap.get ? trap.get(cntxt, prop) 
-	: ((_isTypeObject(cntxt) && cntxt) || _isString(cntxt) || _isNumber(cntxt) ? cntxt[prop] : undefined);;
+const _get = (cntxt, prop, trap) => trap.get && _isTypeObject(cntxt) && !_isNull(cntxt) ? trap.get(cntxt, prop) 
+	: ((_isTypeObject(cntxt) || _isString(cntxt) || _isNumber(cntxt)) && !_isNull(cntxt) ? cntxt[prop] : undefined);
 
-const _has = (cntxt, prop, trap) => trap.has ? trap.has(cntxt, prop) : (
-	_isTypeObject(cntxt) && cntxt ? prop in cntxt : !_isUndefined(cntxt[prop])
+const _has = (cntxt, prop, trap) => trap.has && _isTypeObject(cntxt) && !_isNull(cntxt) ? trap.has(cntxt, prop) : (
+	_isTypeObject(cntxt) && !_isNull(cntxt) ? prop in cntxt : !_isNull(cntxt) && !_isUndefined(cntxt[prop])
 );
-
-class LocalContext {};

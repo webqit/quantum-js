@@ -8,7 +8,7 @@
   "homepage": "https://web-native.dev",
   "icon": "https://web-native.dev/icon.svg",
   "author": "Oxford Harrison <oxharriscreative@gmail.com>",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -23,7 +23,7 @@
     "watch": "webpack --watch"
   },
   "dependencies": {
-    "@web-native-js/commons": "^0.0.1"
+    "@web-native-js/commons": "^0.0.3"
   },
   "devDependencies": {
     "webpack": "^4.41.6",

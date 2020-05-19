@@ -6,12 +6,12 @@ import ExprInterface from '../ExprInterface.js';
 
 /**
  * ---------------------------
- * StatementsInterface
+ * BlockInterface
  * ---------------------------
  */				
 
 const Interface = class extends ExprInterface {};
 Object.defineProperty(Interface.prototype, 'jsenType', {
-	get() { return 'Statements'; },
+	get() { return 'Block'; },
 });
 export default Interface;

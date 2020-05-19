@@ -1,6 +1,5 @@
 # JSEN (JavaScript Expression Notation)
-
-JSEN lets you parse JavaScript expressions and execute them in user-defined scopes. JSEN introduces scoped-JS, to complement the novel scoped-CSS concept!
+JSEN is a general-purpose library for parsing JavaScript expressions that execute in user-defined scopes
 
 Visit the [project homepage](https://docs.web-native.dev/jsen/) to learn more!
 

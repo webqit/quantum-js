@@ -10,7 +10,7 @@ import _unwrap from '@web-native-js/commons/str/unwrap.js';
 import FuncInterface from './FuncInterface.js';
 import Contexts from '../Contexts.js';
 import Lexer from '../Lexer.js';
-import Statements from './Statements.js';
+import Block from './Block.js';
 
 /**
  * ---------------------------
@@ -77,7 +77,7 @@ const Func = class extends FuncInterface {
 						: null);
 			});
 			// But this newer context should come first
-			var nestedContext = new Contexts(newMainContext, context);
+			var nestedContext = new Contexts({main:newMainContext, super:context});
 			return this.statements.eval(nestedContext, trap);
 		};
 	}
@@ -132,13 +132,23 @@ const Func = class extends FuncInterface {
 		Lexer.split(funcHead, [',']).forEach(param => {
 			var paramSplit = param.split('=');
 			if (paramSplit[1]) {
-				paramters[paramSplit[0].trim()] = parseCallback(paramSplit[1].trim());
+				paramters[paramSplit[0].trim()] = parseCallback(paramSplit[1].trim(), null, {
+					// Any varaibles should be added to public vars
+					meta: null,
+				});
 			} else {
 				paramters[param.trim()] = null;
 			}
 		});
-		var statements = parseCallback(funcBody, [Statements], {assert:false}) || parseCallback(funcBody);
-		return new Static(paramters, statements, arrowFunctionFormatting);
+		var block = parseCallback(funcBody, [Block], {assert:false}) || parseCallback(funcBody, null, {
+			// Any varaibles should be added to public vars
+			meta: null,
+		});
+		return new Static(
+			paramters,
+			block.jsenType === 'Block' ? block : new Block([block]),
+			arrowFunctionFormatting,
+		);
 	}
 };
 
