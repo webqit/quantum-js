@@ -56,7 +56,7 @@ const Comparison = class extends ComparisonInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Comparison) {
+	static parse(expr, parseCallback, params = {}, Static = Comparison) {
 		var operators = _flatten(Static.operators).map(oper => ' ' + oper + ' ');
 		var parse = Lexer.lex(expr, operators);
 		if (parse.tokens.length > 1) {
@@ -104,6 +104,7 @@ const Comparison = class extends ComparisonInterface {
 				return operand1 <= operand2;
 			case '!=':
 				return operand1 != operand2;
+			case '<>':
 			case '!==':
 				return operand1 !== operand2;
 			case '^=':

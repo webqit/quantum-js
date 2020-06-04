@@ -29,7 +29,7 @@ const Assertion = class extends AssertionInterface {
 	 * @inheritdoc
 	 */
 	 eval(context = null, trap = {}) {
-		if (this.logic === '!') {
+		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
 			return !_first(this.exprs).eval(context, trap);
 		}
 		var operators = _flatten(Assertion.operators);
@@ -71,8 +71,8 @@ const Assertion = class extends AssertionInterface {
 	 * @inheritdoc
 	 */
 	 toString(context = null) {
-		if (this.logic === '!') {
-			return '!' + _first(this.exprs).toString(context);
+		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
+			return this.logic + _first(this.exprs).toString(context);
 		}
 		return this.exprs.map(expr => expr.toString(context)).join(' ' + this.logic + ' ');
 	}
@@ -80,11 +80,11 @@ const Assertion = class extends AssertionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Assertion) {
-		if (expr.startsWith('!')) {
+	static parse(expr, parseCallback, params = {}, Static = Assertion) {
+		if (expr.toUpperCase().startsWith(Assertion.negation.toUpperCase())) {
 			return new Static(
-				[parseCallback(expr.substr(1))],
-				'!'
+				[parseCallback(expr.substr(Assertion.negation.length))],
+				Assertion.negation
 			);
 		}
 		var parse = Lexer.lex(expr, _flatten(Static.operators));
@@ -100,6 +100,11 @@ const Assertion = class extends AssertionInterface {
 		}
 	}
 };
+
+/**
+ * @prop object
+ */
+Assertion.negation = '!';
 
 /**
  * @prop object

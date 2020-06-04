@@ -42,7 +42,7 @@ const Return = class extends ReturnInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Return) {
+	static parse(expr, parseCallback, params = {}, Static = Return) {
 		var exprLc = expr.toLowerCase();
 		if (exprLc.startsWith('return ') || exprLc === 'return') {
 			return new Static(

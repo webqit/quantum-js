@@ -3,44 +3,44 @@
  * @imports
  */
 import Lexer from '../Lexer.js';
-import BoolInterface from './BoolInterface.js';
+import VoidInterface from './VoidInterface.js';
 
 /**
  * ---------------------------
- * Bool (boolean) class
+ * Void (boolean) class
  * ---------------------------
  */				
 
-const Bool = class extends BoolInterface {
+const Void = class extends VoidInterface {
 	
 	/**
 	 * @inheritdoc
 	 */
-	constructor(state) {
+	constructor(val) {
 		super();
-		this.state = state;
+		this.val = val;
 	}
 	 
 	/**
 	 * @inheritdoc
 	 */
 	eval() {
-		return this.state.toLowerCase().trim() === 'true';
+		return this.val.toLowerCase().trim() === 'null' ? null : undefined;
 	}
 	
 	/**
 	 * @inheritdoc
 	 */
 	toString() {
-		return this.state;
+		return this.val;
 	}
 	
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Bool) {
+	static parse(expr, parseCallback, params = {}, Static = Void) {
 		var expr = expr.toLowerCase().trim();
-		if (expr === 'true' || expr === 'false') {
+		if (expr === 'null' || expr === 'undefined') {
 			return new Static(expr);
 		}
 	}
@@ -49,4 +49,4 @@ const Bool = class extends BoolInterface {
 /**
  * @exports
  */
-export default Bool;
+export default Void;

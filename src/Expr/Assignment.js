@@ -53,7 +53,7 @@ const Assignment = class extends AssignmentInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Assignment) {
+	static parse(expr, parseCallback, params = {}, Static = Assignment) {
 		var parse = Lexer.lex(expr, Static.operators);
 		if (parse.tokens.length === 2) {
 			var initKeyword, reference = parse.tokens.shift().trim(), val = parse.tokens.shift().trim();

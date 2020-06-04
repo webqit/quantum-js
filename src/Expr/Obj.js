@@ -65,7 +65,7 @@ const Obj = class extends ObjInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Obj) {
+	static parse(expr, parseCallback, params = {}, Static = Obj) {
 		if (_wrapped(expr, '{', '}') && !Lexer.match(expr.trim(), [' ']).length) {
 			var entries = {};
 			var _entriesSplit = Lexer.split(_unwrap(expr, '{', '}'), [Obj.operators.sup])

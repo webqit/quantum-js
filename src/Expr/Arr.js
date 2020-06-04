@@ -53,7 +53,7 @@ const Arr = class extends ArrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Arr) {
+	static parse(expr, parseCallback, params = {}, Static = Arr) {
 		if (_wrapped(expr, '[', ']') && !Lexer.match(expr.trim(), [' ']).length) {
 			var splits = Lexer.split(_unwrap(expr, '[', ']'), [','])
 				.map(n => n.trim()).filter(n => n).map(expr => parseCallback(expr));

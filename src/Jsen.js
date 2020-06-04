@@ -25,18 +25,18 @@ export default class Jsen {
 	 */
 	static parse(expr, Parsers, params = {}, Static = Jsen) {
 		if (expr.length) {
-			if (cache[expr]) {
+			if (cache[expr] && !Parsers && params.allowCache !== false) {
 				var _parsed;
-				if (_parsed = Jsen.parseOne(expr, cache[expr], params, Static)) {
+				if (_parsed = Static.parseOne(expr, cache[expr], params, Static)) {
 					return _parsed;
 				}
 			}
 			// -----------------------------
 			var parsers = Object.values(Parsers || Static.grammars);
 			for (var i = 0; i < parsers.length; i ++) {
-				var parsed = Jsen.parseOne(expr, parsers[i], params, Static);
+				var parsed = Static.parseOne(expr, parsers[i], params, Static);
 				if (parsed) {
-					if (!Parsers) {
+					if (!Parsers && params.allowCache !== false) {
 						cache[expr] = parsers[i];
 					}
 					return parsed;
@@ -58,7 +58,7 @@ export default class Jsen {
 		// From this point forward, all vars is within current scope
 		var vars = []
 		var parsed = Parser.parse(expr, (_expr, _Parsers, _params = {}) => {
-			var subStmt = Jsen.parse(_expr, _Parsers, _params ? _merge(params, _params) : params, Static);
+			var subStmt = Static.parse(_expr, _Parsers, _params ? _merge(params, _params) : params, Static);
 			if (_params.lodge !== false) {
 				if (_instanceof(subStmt, ReferenceInterface) || _instanceof(subStmt, CallInterface)) {
 					vars.push(subStmt);
@@ -67,7 +67,7 @@ export default class Jsen {
 				}
 			}
 			return subStmt;
-		});
+		}, params);
 		// Add/remove vars to scope
 		if (parsed) {
 			if (!parsed.meta) {

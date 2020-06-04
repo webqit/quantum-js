@@ -80,7 +80,7 @@ export default class Block extends BlockInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Block) {
+	static parse(expr, parseCallback, params = {}, Static = Block) {
 		var parse = Lexer.lex(expr + ';', _flatten(Static.operators).concat([Block.testBlockEnd]));
 		if (parse.matches.length) {
 			return new Static(

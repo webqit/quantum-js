@@ -47,7 +47,7 @@ const Deletion = class extends DeletionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Deletion) {
+	static parse(expr, parseCallback, params = {}, Static = Deletion) {
 		var parse = Lexer.lex(expr, Object.values(Static.operators));
 		if (parse.matches.length === 1 && expr.startsWith(parse.matches[0] + ' ')) {
 			var reference;

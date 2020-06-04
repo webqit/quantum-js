@@ -76,7 +76,7 @@ const Reference = class extends ReferenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Reference) {
+	static parse(expr, parseCallback, params = {}, Static = Reference) {
 		if (!Lexer.match(expr.trim(), [' ']).length) {
 			var splits = Lexer.split(expr, []);
 			// ------------------------

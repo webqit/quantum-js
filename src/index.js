@@ -46,6 +46,8 @@ import Return from './Expr/Return.js';
 import ReturnInterface from './Expr/ReturnInterface.js';
 import Str from './Expr/Str.js';
 import StrInterface from './Expr/StrInterface.js';
+import Void from './Expr/Void.js';
+import VoidInterface from './Expr/VoidInterface.js';
 
 /**
  * @var object
@@ -68,6 +70,7 @@ Jsen.grammars = {
 	Num: Num,					// [0-9]
 	Str: Str,					// ""
 	Bool: Bool,					// true
+	Void: Void,					// null|undefined
 	Call: Call,					// field1()
 	Reference: Reference,		// field1
 };
@@ -101,6 +104,7 @@ export {
 	Reference,
 	Return,
 	Str,
+	Void,
 };
 export {
 	AbstractionInterface,
@@ -123,5 +127,6 @@ export {
 	ReferenceInterface,
 	ReturnInterface,
 	StrInterface,
+	VoidInterface,
 };
 export default Jsen;

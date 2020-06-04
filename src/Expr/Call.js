@@ -52,7 +52,7 @@ const Call = class extends CallInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Call) {
+	static parse(expr, parseCallback, params = {}, Static = Call) {
 		if (!expr.startsWith('(') && expr.endsWith(')') && !Lexer.match(expr, [' ']).length) {
 			var tokens = Lexer.split(expr, []);
 			var reference, args = tokens.pop();

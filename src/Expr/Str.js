@@ -42,7 +42,7 @@ const Str = class extends StrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Str) {
+	static parse(expr, parseCallback, params = {}, Static = Str) {
 		expr = expr.trim();
 		if ((_wrapped(expr, '"', '"') || _wrapped(expr, "'", "'")) 
 		&& !Lexer.match(expr, [' ']).length) {

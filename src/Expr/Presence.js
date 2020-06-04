@@ -49,7 +49,7 @@ const Presence = class extends PresenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Presence) {
+	static parse(expr, parseCallback, params = {}, Static = Presence) {
 		var parse = Lexer.lex(expr, Static.operators);
 		if (parse.tokens.length === 2) {
 			var prop, reference;

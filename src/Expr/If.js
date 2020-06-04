@@ -54,7 +54,7 @@ const If = class extends IfInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = If) {
+	static parse(expr, parseCallback, params = {}, Static = If) {
         expr = expr.trim();
         var splits;
         if (expr.startsWith('if') 

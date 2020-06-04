@@ -61,7 +61,7 @@ const Math = class extends MathInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Math) {
+	static parse(expr, parseCallback, params = {}, Static = Math) {
 		var parse = Lexer.lex(expr, _flatten(Static.operators));
 		if (parse.tokens.length > 1 && parse.matches.length === parse.tokens.length - 1) {
 			var operators = _unique(parse.matches);

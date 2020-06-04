@@ -40,7 +40,7 @@ const Arguments = class extends ArgumentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Arguments) {
+	static parse(expr, parseCallback, params = {}, Static = Arguments) {
 		var args; expr = expr.trim();
 		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
 			return new Static(

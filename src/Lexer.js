@@ -29,7 +29,7 @@ const Lexer = class {
 	 * @see constructor()
 	 */
 	static lex(str, delims, options = {}) {
-		if (!_isString(str)) {
+		if (!_isString(str = str + '')) {
 			throw new Error('Argument1 must be a string!');
 		}
 		var copyResult = result => {

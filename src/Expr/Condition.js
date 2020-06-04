@@ -48,7 +48,7 @@ const Condition = class extends ConditionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Condition) {
+	static parse(expr, parseCallback, params = {}, Static = Condition) {
 		var splits = Lexer.split(expr, Static.operators);
 		if (splits.length > 1) {
 			if (splits.length === 2) {

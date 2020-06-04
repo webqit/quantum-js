@@ -102,7 +102,7 @@ const Func = class extends FuncInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Func) {
+	static parse(expr, parseCallback, params = {}, Static = Func) {
 		expr = expr.trim();
 		var splits;
 		if (expr.startsWith('function') 

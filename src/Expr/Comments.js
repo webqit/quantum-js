@@ -40,7 +40,7 @@ const Comments = class extends CommentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Comments) {
+	static parse(expr, parseCallback, params = {}, Static = Comments) {
 		var _comments = null;
 		var _expr = null;
 		var type = 0;

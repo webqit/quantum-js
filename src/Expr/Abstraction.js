@@ -40,7 +40,7 @@ const Abstraction = class extends AbstractionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, Static = Abstraction) {
+	static parse(expr, parseCallback, params = {}, Static = Abstraction) {
 		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
 			return new Static(
 				parseCallback(_unwrap(expr, '(', ')'))
