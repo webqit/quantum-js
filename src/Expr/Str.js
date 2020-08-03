@@ -5,7 +5,7 @@
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
 import StrInterface from './StrInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import Bool from './Bool.js';
 
 /**

@@ -7,7 +7,7 @@ import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import DeletionInterface from './DeletionInterface.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -29,12 +29,12 @@ const Deletion = class extends DeletionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		var reference = this.reference.getEval(context, trap);
+	eval(context = null, env = {}, trap = {}) {
+		var reference = this.reference.getEval(context, env, trap);
 		if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
 			return Contexts.create(reference.context).del(reference.name, trap);
 		}
-		throw new Error('"' + this + '" is undefined!');
+		throw new Error('[Reference Error][' + this + ']: "' + (this.context || this) + '" is undefined!');
 	}
 	 
 	/**

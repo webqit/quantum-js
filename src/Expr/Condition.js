@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import ConditionInterface from './ConditionInterface.js';
 
 /**
@@ -26,10 +26,10 @@ const Condition = class extends ConditionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		return this.assertion.eval(context, trap) 
-			? this.onTrue.eval(context, trap) 
-			: this.onFalse.eval(context, trap);
+	eval(context = null, env = {}, trap = {}) {
+		return this.assertion.eval(context, env, trap) 
+			? this.onTrue.eval(context, env, trap) 
+			: this.onFalse.eval(context, env, trap);
 	}
 	
 	/**

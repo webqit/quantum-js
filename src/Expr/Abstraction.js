@@ -4,8 +4,8 @@
  */
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import AbstractionInterface from './AbstractionInterface.js';
-import Lexer from '../Lexer.js';
 
 /**
  * ---------------------------
@@ -26,8 +26,8 @@ const Abstraction = class extends AbstractionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		return this.expr.eval(context, trap);
+	eval(context = null, env = {}, trap = {}) {
+		return this.expr.eval(context, env, trap);
 	}
 	
 	/**

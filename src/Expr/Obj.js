@@ -8,7 +8,7 @@ import _first from '@web-native-js/commons/arr/first.js';
 import _last from '@web-native-js/commons/arr/last.js';
 import _each from '@web-native-js/commons/obj/each.js';
 import ObjInterface from './ObjInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -43,10 +43,10 @@ const Obj = class extends ObjInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
+	eval(context = null, env = {}, trap = {}) {
 		var items = {};
 		_each(this.entries, (key, expr) => {
-			items[key] = expr.eval(context, trap);
+			items[key] = expr.eval(context, env, trap);
 		});
 		return items;
 	}

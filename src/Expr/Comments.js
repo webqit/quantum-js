@@ -5,7 +5,7 @@
 import _after from '@web-native-js/commons/str/after.js';
 import _before from '@web-native-js/commons/str/before.js';
 import CommentsInterface from './CommentsInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -27,7 +27,7 @@ const Comments = class extends CommentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
+	eval(context = null, env = {}, trap = {}) {
 	}
 	 
 	/**

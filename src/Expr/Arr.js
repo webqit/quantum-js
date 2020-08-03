@@ -5,7 +5,7 @@
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
 import ArrInterface from './ArrInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -39,8 +39,8 @@ const Arr = class extends ArrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		return this.exprs.map(expr => expr.eval(context, trap));
+	eval(context = null, env = {}, trap = {}) {
+		return this.exprs.map(expr => expr.eval(context, env, trap));
 	}
 	
 	/**

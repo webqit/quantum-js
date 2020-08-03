@@ -11,7 +11,7 @@ import _isObject from '@web-native-js/commons/js/isObject.js';
 import _isString from '@web-native-js/commons/js/isString.js';
 import _each from '@web-native-js/commons/obj/each.js';
 import ComparisonInterface from './ComparisonInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -34,10 +34,10 @@ const Comparison = class extends ComparisonInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
+	eval(context = null, env = {}, trap = {}) {
 		return Comparison.compare(
-			this.operand1.eval(context, trap), 
-			this.operand2.eval(context, trap), 
+			this.operand1.eval(context, env, trap), 
+			this.operand2.eval(context, env, trap), 
 			this.operator
 		);
 	}

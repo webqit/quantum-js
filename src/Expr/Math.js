@@ -7,7 +7,7 @@ import _flatten from '@web-native-js/commons/arr/flatten.js';
 import _intersect from '@web-native-js/commons/arr/intersect.js';
 import _unique from '@web-native-js/commons/arr/unique.js';
 import MathInterface from './MathInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -29,9 +29,9 @@ const Math = class extends MathInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
+	eval(context = null, env = {}, trap = {}) {
 		return this.exprs.reduce((currentTotal, expr) => {
-			var val = expr.val.eval(context, trap);
+			var val = expr.val.eval(context, env, trap);
 			var operator = expr.operator.trim();
 			if ((!_isNumeric(currentTotal) || !_isNumeric(val)) && operator !== '+') {
 				throw new Error('Invalid Math expression: ' + this.toString() + '!');
@@ -46,7 +46,7 @@ const Math = class extends MathInterface {
 				case '/':
 					return currentTotal / val;
 			}
-		}, this.val.eval(context, trap));
+		}, this.val.eval(context, env, trap));
 	}
 	
 	/**
@@ -84,7 +84,7 @@ const Math = class extends MathInterface {
  */
 Math.operators = {
 	sup: ['*', '/'],
-	sub: [' + ', ' - '],
+	sub: ['+', '-'],
 };
 
 /**

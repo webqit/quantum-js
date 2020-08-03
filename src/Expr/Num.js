@@ -4,7 +4,7 @@
  */
 import _isNumeric from '@web-native-js/commons/js/isNumeric.js';
 import NumInterface from './NumInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------

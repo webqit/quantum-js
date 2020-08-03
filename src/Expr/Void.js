@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import VoidInterface from './VoidInterface.js';
 
 /**

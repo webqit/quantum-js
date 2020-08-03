@@ -8,7 +8,7 @@ import _unwrap from '@web-native-js/commons/str/unwrap.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import ExprInterface from '../ExprInterface.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -31,13 +31,13 @@ const Reference = class extends ReferenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	getEval(context = null, trap = {}) {
+	getEval(context = null, env = {}, trap = {}) {
 		var sourceContext = context, name = this.name;
 		if (this.context) {
 			if (name instanceof ExprInterface) {
-				name = name.eval(context, trap);
+				name = name.eval(context, env, trap);
 			}
-			sourceContext = this.context.eval(context, trap);
+			sourceContext = this.context.eval(context, env, trap);
 		}
 		return {context:sourceContext, name:name,};
 	}
@@ -45,11 +45,12 @@ const Reference = class extends ReferenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		var parts = this.getEval(context, trap);
+	eval(context = null, env = {}, trap = {}) {
+		var parts = this.getEval(context, env, trap);
 		if (!_isUndefined(parts.context) && !_isUndefined(parts.name)) {
 			return Contexts.create(parts.context).get(parts.name, trap);
 		}
+		throw new Error('[Reference Error][' + this + ']: "' + (this.context || this) + '" is undefined!');
 	}
 	 
 	/**

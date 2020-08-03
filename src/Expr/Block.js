@@ -5,10 +5,12 @@
 import _unique from '@web-native-js/commons/arr/unique.js';
 import _before from '@web-native-js/commons/str/before.js';
 import _flatten from '@web-native-js/commons/arr/flatten.js';
+import _copy from '@web-native-js/commons/obj/copy.js';
 import BlockInterface from './BlockInterface.js';
 import ReturnInterface from './ReturnInterface.js';
+import AssignmentInterface from './AssignmentInterface.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -30,43 +32,49 @@ export default class Block extends BlockInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
+	eval(context = null, env = {}, trap = {}) {
 		// Current!
+		env = env ? _copy(env) : {};
 		context = Contexts.create(context);
+		var errorLevel = context.params.errorLevel;
 		// Stringifies JSEN vars
 		var stringifyEach = list => _unique(list.map(expr => _before(_before(expr.toString(), '['), '(')));
+		var callEval = (stmt, context, env, trap) => {
+			if (errorLevel !== 2) {
+				try {
+					return stmt.eval(context, env, trap);
+				} catch(e) {
+					if (errorLevel === 1) {
+						console.warn(e.message);
+					}
+				};
+				return;
+			}
+			return stmt.eval(context, env, trap);
+		};
 
 		var results = [];
 		for (var i = 0; i < this.stmts.length; i ++) {
 			var stmt = this.stmts[i];
-			if (stmt instanceof ReturnInterface) {
-				return stmt.eval(context, trap);
-			}
-			results[i] = stmt.eval(context, trap);
 			// Lets be called...
-			var props = stringifyEach(stmt.meta.vars);
-			//if (props.length)
-			(function(stmt, props, prevContext) {
-				// Prev?
-				if (0) {
-					// Lets be called...
-					prevContext.unobserve(props, null/** regardless callback */, {
-						tags: ['#block', stmt],
-					}, trap);
+			var vars = stringifyEach(stmt.meta.vars);
+			var deepVars = stringifyEach(stmt.meta.deepVars || []);
+			var isDirectEventTarget = (env.references || []).filter(f => vars.filter(v => (f + '.').startsWith(v + '.') || (v + '.').startsWith(f + '.')).length),
+				isIndirectEventTarget = (env.references || []).filter(f => deepVars.filter(v => (f + '.').startsWith(v + '.') || (v + '.').startsWith(f + '.')).length);
+			if (!env.references || !env.references.length 
+			|| (isDirectEventTarget = isDirectEventTarget.length)
+			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {
+				if (stmt instanceof ReturnInterface) {
+					return callEval(stmt, context, !isDirectEventTarget ? env : null, trap);
 				}
-				context.observe(props, (a, b, e) => {
-					var evalReturn = stmt.eval(context, trap);
-					// If the result of this evaluation is false,
-					// e.stopPropagation will be called and subsequent expressions
-					// will not be evaluated. So we must not allow false to be returned.
-					// All expressions are meant to be evaluated in parallel, independent of each other.
-					if (evalReturn !== false) {
-						return evalReturn;
-					}
-				}, {observeDown: true, data: false, tags: ['#block', stmt]}, trap);
-			})(stmt, props, this.prevContext);
+				results[i] = callEval(stmt, context, !isDirectEventTarget ? env : null, trap);
+				// Add this change for subsequent statements
+				if (env.references && (stmt instanceof AssignmentInterface)) {
+					env.references = env.references.concat(stringifyEach([stmt.reference]));
+				}
+			}
 		}
-		this.prevContext = context;
+
 		return results;
 	}
 	 

@@ -3,12 +3,18 @@
  * @imports
  */
 import _isTypeObject from '@web-native-js/commons/js/isTypeObject.js';
+import _isObject from '@web-native-js/commons/js/isTypeObject.js';
 import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import _isFunction from '@web-native-js/commons/js/isFunction.js';
 import _isClass from '@web-native-js/commons/js/isClass.js';
 import _isString from '@web-native-js/commons/js/isString.js';
 import _isNull from '@web-native-js/commons/js/isNull.js';
 import _isNumber from '@web-native-js/commons/js/isNumber.js';
+import _after from '@web-native-js/commons/str/after.js';
+import _before from '@web-native-js/commons/str/before.js';
+import _unique from '@web-native-js/commons/arr/unique.js';
+import ReferenceError from './ReferenceError.js';
+import SyntaxError from './SyntaxError.js';
 
 /**
  * @exports
@@ -19,18 +25,18 @@ export default class Contexts {
 	 * Creates a new context stack.
 	 *
 	 * @param object	 	params
-	 * @param int		 	type
+	 * @param object		params
 	 *
 	 * @return Contexts
 	 */
-	constructor(stack, type = 1) {
+	constructor(stack, params = {}) {
 		this.stack = stack;
-		this.type = type;
+		this.params = params;
 		if (!('main' in this.stack)) {
 			throw new Error('A "main" context must be provided!');
 		}
 		if (this.stack.super) {
-			this.stack.super = Contexts.create(this.stack.super);
+			this.stack.super = Contexts.create(this.stack.super, {errorLevel: params.errorLevel});
 		}
 		this.stack.local = this.stack.local || {};
 		this.stack.$local = this.stack.$local || {};
@@ -40,57 +46,58 @@ export default class Contexts {
 	 * Binds a callback to changes
 	 * that happen in the contexts.
 	 *
-	 * @param string|arrat 		props
-	 * @param function		 	callback
-	 * @param object		 	options
 	 * @param object		 	trap
+	 * @param function		 	callback
 	 *
 	 * @return Contexts
 	 */
-	observe(props, callback, options, trap = {}) {
-		if (trap.observe && props.length) {
-			// Observe super
-			// but changes will be blocked if all the affected props
-			// are also in main.
-			if (this.stack.super) {
-				this.stack.super.observe(props, (a, b, e) => {
-					if (e.fields.filter(prop => !_has(this.stack.local, prop, trap) && !_has(this.stack.main, prop, trap)).length) {
-						return callback(a, b, e);
-					}
-				}, options, trap);
-			}
-			// Observe main, for sure
-			if (_isTypeObject(this.stack.main)) {
-				trap.observe(this.stack.main, props, (a, b, e) => {
-					if (e.fields.filter(prop => !_has(this.stack.local, prop, trap)).length) {
-						return callback(a, b, e);
-					}
-				}, options);
-			}
+	observe(trap, callback) {
+		if (this.stack.super) {
+			this.stack.super.observe(trap, (e) => {
+				if (e.props.filter(prop => !_has(this.stack.local, prop, trap) && !_has(this.stack.main, prop, trap)).length) {
+					e.scope = 'super';
+					return callback(e);
+				}
+			});
 		}
+		trap.observe(this.stack, changes => {
+			var references = changes.map(delta => _after(delta.path, '.')).filter(path => path);
+			var props = references.map(path => _before(path, '.'));
+			if (!references.length && changes[0].value) {
+				props
+					= references
+					= _unique(Object.keys(_isObject(changes[0].value.main) ? changes[0].value.main : []).concat(changes[0].oldValue && _isObject(changes[0].oldValue.main) ? Object.keys(changes[0].oldValue.main) : []));
+			}
+			if (props.filter(prop => !_has(this.stack.local, prop, trap)).length) {
+				return callback({
+					props,
+					references,
+					scope:'local',
+				});
+			}
+		}, {
+			subtree:true,
+			tags:[this, 'jsen-context',],
+		});
 	}
 	
 	/**
 	 * Unbinds callbacks previously bound
 	 * with observe()
 	 *
-	 * @param string|arrat 		props
-	 * @param function		 	callback
-	 * @param object		 	options
 	 * @param object		 	trap
+	 * @param function		 	callback
 	 *
 	 * @return Contexts
 	 */
-	unobserve(props, callback, options, trap = {}) {
-		if (trap.unobserve) {
-			if (this.stack.super) {
-				this.stack.super.unobserve(props, callback, options, trap);
-			}
-			// Observe main, for sure
-			if (this.stack.main) {
-				trap.unobserve(this.stack.main, props, callback, options);
-			}
+	unobserve(trap, callback) {
+		if (this.stack.super) {
+			this.stack.super.unobserve(trap, callback);
 		}
+		trap.unobserve(this.stack, callback, {
+			subtree:true,
+			tags:[this, 'jsen-context',],
+		});
 	}
 	
 	/**
@@ -161,7 +168,7 @@ export default class Contexts {
 	 * @return bool
 	 */
 	set(prop, val, trap = {}, initKeyword = false) {
-		if (this.type === 2 && initKeyword === 'var' && this.stack.super) {
+		if (this.params.type === 2 && initKeyword === 'var' && this.stack.super) {
 			return this.stack.super.set(prop, val, trap, initKeyword);
 		}
 		if (prop instanceof String) {
@@ -178,12 +185,12 @@ export default class Contexts {
 		return this.handle(initKeyword ? true : prop, (contxtObj, localContxtMeta, advance) => {
 			// Whatever the level of localContext...
 			if (localContxtMeta && localContxtMeta[prop] === 'const') {
-				throw new Error('CONST ' + prop + ' cannot be modified!');
+				throw new ReferenceError('CONST ' + prop + ' cannot be modified!');
 			}
 			// Set this locally, we wont be getting to advance()
 			if (initKeyword) {
 				if (!['var', 'let', 'const'].includes(initKeyword)) {
-					throw new Error('Unrecognized declarator: ' + initKeyword + '!');
+					throw new SyntaxError('Unrecognized declarator: ' + initKeyword + '!');
 				}
 				localContxtMeta[prop] = initKeyword;
 				return _set(contxtObj, prop, val, trap);
@@ -193,7 +200,7 @@ export default class Contexts {
 				return _set(contxtObj, prop, val, trap);
 			}
 			return advance();
-		}, () => {throw new Error('"' + prop + '" is undefined!');});
+		}, () => {throw new ReferenceError('"' + prop + '" is undefined!');});
 	}
 	
 	/**
@@ -248,7 +255,7 @@ export default class Contexts {
 				return _has(contextObj2, prop2, trap);
 			}
 			return advance();
-		}, () => {throw new Error('"' + prop + '" is undefined!');});
+		}, () => {throw new ReferenceError('"' + prop + '" is undefined!');});
 	}
 	
 	/**
@@ -272,7 +279,7 @@ export default class Contexts {
 					if (trap.exec) {
 						return trap.exec(contxtObj, prop, args);
 					}
-					throw new Error('"' + prop + '" is not a function! (Called on type: ' + typeof contxtObj + '.)');
+					throw new ReferenceError('"' + prop + '" is not a function! (Called on type: ' + typeof contxtObj + '.)');
 				}
 				if (trap.apply) {
 					return trap.apply(fn, contxtObj, args);
@@ -284,7 +291,7 @@ export default class Contexts {
 			if (trap.execUnknown) {
 				return trap.execUnknown(this, prop, args);
 			}
-			throw new Error('"' + prop + '()" is undefined!');
+			throw new ReferenceError('"' + prop + '()" is undefined!');
 		});
 	}
 
@@ -292,13 +299,14 @@ export default class Contexts {
 	 * Factory method for making a Contexts instance.
 	 *
 	 * @param array|object 	cntxt
+	 * @param object 		params
 	 *
 	 * @return Contexts
 	 */
-	static create(cntxt) {
+	static create(cntxt, params = {}) {
 		return cntxt instanceof Contexts ? cntxt : new Contexts({
 			main: cntxt,
-		});
+		}, params);
 	}
 };
 

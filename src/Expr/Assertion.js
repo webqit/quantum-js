@@ -6,7 +6,7 @@ import _first from '@web-native-js/commons/arr/first.js';
 import _flatten from '@web-native-js/commons/arr/flatten.js';
 import _unique from '@web-native-js/commons/arr/unique.js';
 import AssertionInterface from './AssertionInterface.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -28,9 +28,9 @@ const Assertion = class extends AssertionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	 eval(context = null, trap = {}) {
+	 eval(context = null, env = {}, trap = {}) {
 		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
-			return !_first(this.exprs).eval(context, trap);
+			return !_first(this.exprs).eval(context, env, trap);
 		}
 		var operators = _flatten(Assertion.operators);
 		var logic = (this.logic || '').trim().toUpperCase();
@@ -40,7 +40,7 @@ const Assertion = class extends AssertionInterface {
 		var isNand = logic === (Assertion.operators.nand || '').trim().toUpperCase();
 		var lastResult = true, trues = 0;
 		for(var i = 0; i < this.exprs.length; i ++) {
-			lastResult = this.exprs[i].eval(context, trap);
+			lastResult = this.exprs[i].eval(context, env, trap);
 			if (isAnd && !lastResult) {
 				return false;
 			}

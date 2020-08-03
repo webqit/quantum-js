@@ -5,7 +5,7 @@
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import IfInterface from './IfInterface.js';
 import Block from './Block.js';
 
@@ -31,11 +31,15 @@ const If = class extends IfInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-        var newContext = new Contexts({main:{}, super:context}, 2/** type */);
-		return this.assertion.eval(context/** original context */, trap)
-			? (this.onTrue ? this.onTrue.eval(newContext, trap) : undefined)
-			: (this.onFalse ? this.onFalse.eval(newContext, trap) : undefined);
+	eval(context = null, env = {}, trap = {}) {
+        var errorLevel = context instanceof Contexts ? context.params.errorLevel : undefined;
+        var _context = new Contexts({
+            main:{}, 
+            super:context,
+        }, {type: 2, errorLevel});
+		return  this.assertion.eval(context/** original context */, env, trap)
+			? (this.onTrue ? this.onTrue.eval(_context, env, trap) : undefined)
+            : (this.onFalse ? this.onFalse.eval(_context, env, trap) : undefined);
 	}
 	
 	/**

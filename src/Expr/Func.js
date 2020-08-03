@@ -9,7 +9,7 @@ import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
 import FuncInterface from './FuncInterface.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import Block from './Block.js';
 
 /**
@@ -62,23 +62,28 @@ const Func = class extends FuncInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		return (...args) => {
+	eval(context = null, env = {}, trap = {}) {
+		var instance = this;
+		return function(...args) {
 			var newMainContext = {};
-			_each(Object.keys(this.paramters), (i, name) => {
-				var defaultVal = this.paramters[name];
+			_each(Object.keys(instance.paramters), (i, name) => {
+				var defaultVal = instance.paramters[name];
 				if (args.length - 1 < i && !defaultVal) {
 					throw new Error('The parameter "' + name + '" is required.');
 				}
 				newMainContext[name] = args.length > i 
 					? args[i] 
-					: (this.paramters[name] 
-						? this.paramters[name].eval(context, trap) 
+					: (instance.paramters[name] 
+						? instance.paramters[name].eval(context, env, trap) 
 						: null);
 			});
+			if (!instance.arrowFunctionFormatting) {
+				newMainContext['this'] = this;
+			}
 			// But this newer context should come first
-			var nestedContext = new Contexts({main:newMainContext, super:context});
-			return this.statements.eval(nestedContext, trap);
+			var errorLevel = context instanceof Contexts ? context.params.errorLevel : undefined;
+			var nestedContext = new Contexts({main:newMainContext, super:context}, {errorLevel});
+			return instance.statements.eval(nestedContext, env, trap);
 		};
 	}
 	

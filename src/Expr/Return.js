@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import ReturnInterface from './ReturnInterface.js';
 
 /**
@@ -24,8 +24,8 @@ const Return = class extends ReturnInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		return this.expr ? this.expr.eval(context, trap) : undefined;
+	eval(context = null, env = {}, trap = {}) {
+		return this.expr ? this.expr.eval(context, env, trap) : undefined;
 	}
 	
 	/**

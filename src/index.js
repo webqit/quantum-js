@@ -4,7 +4,6 @@
  */
 import Jsen from './Jsen.js';
 import ExprInterface from './ExprInterface.js';
-import Lexer from './Lexer.js';
 import Contexts from './Contexts.js';
 import Abstraction from './Expr/Abstraction.js';
 import AbstractionInterface from './Expr/AbstractionInterface.js';
@@ -80,7 +79,6 @@ Jsen.grammars = {
  */
 export {
 	ExprInterface,
-	Lexer,
 	Contexts
 };
 export {

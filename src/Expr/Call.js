@@ -7,7 +7,9 @@ import ReferenceInterface from './ReferenceInterface.js';
 import CallInterface from './CallInterface.js';
 import Arguments from './Arguments.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
+import ReferenceError from '../ReferenceError.js';
+import SyntaxError from '../SyntaxError.js';
 
 /**
  * ---------------------------
@@ -29,17 +31,23 @@ const Call = class extends CallInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-			var reference = this.reference.getEval(context, trap);
-			var args = this.args.eval(context, trap);
-			if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
-				return Contexts.create(reference.context).exec(reference.name, args, trap);
-			}
-		try {
-		} catch(e) {
-			throw new Error('[Execution Error][' + this + ']: ' + e.message);
+	eval(context = null, env = {}, trap = {}) {
+		var reference = this.reference.getEval(context, env, trap);
+		var args = this.args.eval(context, env, trap);
+		if (_isUndefined(reference.context) || _isUndefined(reference.name)) {
+			throw new Error('[Reference Error][' + this + ']: "' + (this.reference.context || this.reference) + '" is undefined!');
 		}
-		throw new Error('"' + this + '" is undefined!');
+		try {
+			return Contexts.create(reference.context).exec(reference.name, args, trap);
+		} catch(e) {
+			if (e instanceof ReferenceError) {
+				throw new Error('[Reference Error][' + this + ']: ' + e.message);
+			} else if (e instanceof SyntaxError) {
+				throw new Error('[Syntax Error][' + this + ']: ' + e.message);
+			} else {
+				throw e;
+			}
+		}
 	}
 	 
 	/**

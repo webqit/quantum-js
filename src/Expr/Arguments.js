@@ -4,8 +4,8 @@
  */
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import ArgumentsInterface from './ArgumentsInterface.js';
-import Lexer from '../Lexer.js';
 
 /**
  * ---------------------------
@@ -26,8 +26,8 @@ const Arguments = class extends ArgumentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		return this.list.map(arg => arg.eval(context, trap));
+	eval(context = null, env = {}, trap = {}) {
+		return this.list.map(arg => arg.eval(context, env, trap));
 	}
 	
 	/**

@@ -7,7 +7,7 @@ import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import PresenceInterface from './PresenceInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import Contexts from '../Contexts.js';
-import Lexer from '../Lexer.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -30,9 +30,9 @@ const Presence = class extends PresenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, trap = {}) {
-		var reference = this.reference.getEval(context, trap);
-		var prop = this.prop.eval(context, trap);
+	eval(context = null, env = {}, trap = {}) {
+		var reference = this.reference.getEval(context, env, trap);
+		var prop = this.prop.eval(context, env, trap);
 		if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
 			return Contexts.create(reference.context).has(reference.name, prop, trap);
 		}

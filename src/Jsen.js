@@ -56,13 +56,14 @@ export default class Jsen {
 
 	static parseOne(expr, Parser, params = {}, Static = Jsen) {
 		// From this point forward, all vars is within current scope
-		var vars = []
+		var vars = [], deepVars = [];
 		var parsed = Parser.parse(expr, (_expr, _Parsers, _params = {}) => {
 			var subStmt = Static.parse(_expr, _Parsers, _params ? _merge(params, _params) : params, Static);
 			if (_params.lodge !== false) {
 				if (_instanceof(subStmt, ReferenceInterface) || _instanceof(subStmt, CallInterface)) {
 					vars.push(subStmt);
-				} else if (subStmt && !_instanceof(subStmt, FuncInterface) && !_instanceof(subStmt, IfInterface)) {
+				}
+				if (subStmt) {
 					subStmt.meta.vars.forEach(_var => vars.push(_var));
 				}
 			}
@@ -74,6 +75,25 @@ export default class Jsen {
 				parsed.meta = {};
 			}
 			parsed.meta.vars = vars;
+			parsed.meta.deepVars = [];
+			if (_instanceof(parsed, FuncInterface)) {
+				parsed.meta.vars.splice(0);
+			} else if (_instanceof(parsed, IfInterface)) {
+				if (parsed.onTrue) {
+					parsed.onTrue.meta.vars.forEach(_var => {
+						_remove(parsed.meta.vars, _var);
+						parsed.meta.deepVars.push(_var);
+					});
+				}
+				if (parsed.onFalse) {
+					parsed.onFalse.meta.vars.forEach(_var => {
+						_remove(parsed.meta.vars, _var);
+						parsed.meta.deepVars.push(_var);
+					});
+				}
+			} else {
+				parsed.meta.vars.push(...deepVars);
+			}
 			if (_isArray(params.explain)) {
 				params.explain.push(expr + ' >>------------->> ' + parsed.jsenType);
 			}
