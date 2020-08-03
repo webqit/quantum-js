@@ -4,7 +4,7 @@ JS.E(N) (JavaScript Expression Notation) - a small library for parsing and execu
 
 ## Documentation
 
-+ [JSEN Guide](https://docs.web-native.dev/jsen/v050/guide.md)
++ [JSEN Guide](https://docs.web-native.dev/jsen/guide)
 
 ## Issues
 
