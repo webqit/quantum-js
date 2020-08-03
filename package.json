@@ -1,14 +1,20 @@
 {
   "name": "@web-native-js/jsen",
   "title": "JSEN",
-  "description": "JS.E(N) (JavaScript Expression Notation) Domain-Specific Language (DSL) parser+evaluator.",
+  "description": "JS.E(N) (JavaScript Expression Notation) - a small library for parsing and executing JavaScript expressions in custom scopes.",
   "keywords": [
-    "Scoped-JS"
+    "Scoped-JS",
+    "JavaScript parser",
+    "JavaScript runtime",
+    "DSL"
   ],
   "homepage": "https://web-native.dev",
   "icon": "https://web-native.dev/icon.svg",
-  "author": "Oxford Harrison <oxharriscreative@gmail.com>",
-  "version": "0.5.0",
+  "author": {
+    "name": "Oxford Harrison",
+    "email": "oxharris.dev@gmail.com"
+  },
+  "version": "0.5.1",
   "license": "MIT",
   "type": "module",
   "repository": {

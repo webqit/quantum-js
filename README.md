@@ -1,6 +1,6 @@
 # JSEN v0.5.0
 
-JSEN is a general-purpose library for parsing JavaScript expressions that execute in user-defined scopes.
+JS.E(N) (JavaScript Expression Notation) - a small library for parsing and executing JavaScript expressions in custom scopes.
 
 ## Documentation
 
