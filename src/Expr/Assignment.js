@@ -6,6 +6,7 @@ import _last from '@web-native-js/commons/arr/last.js';
 import _before from '@web-native-js/commons/str/before.js';
 import _after from '@web-native-js/commons/str/after.js';
 import _isNumber from '@web-native-js/commons/js/isNumber.js';
+import _isArray from '@web-native-js/commons/js/isArray.js';
 import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
@@ -94,7 +95,7 @@ const Assignment = class extends AssignmentInterface {
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}, Static = Assignment) {
-		var parse = Lexer.lex(expr, Static.operators);
+		var parse = Lexer.lex(expr, Static.operators.concat([testBlockEnd]));
 		if (parse.matches.length) {
 			var initKeyword, reference, val, operator = parse.matches[0].trim(), isIncrDecr = ['++', '--'].includes(operator), postIncrDecr;
 			if (isIncrDecr) {
@@ -124,7 +125,6 @@ const Assignment = class extends AssignmentInterface {
  * @prop array
  */
 Assignment.operators = [
-	'=',
 	'+=',
 	'-=',
 	'*=',
@@ -132,6 +132,14 @@ Assignment.operators = [
 	'++',
 	'--',
 ];
+
+const testBlockEnd = (a, b) => {
+	// Match exactly "=", not "=>", "==", "==="
+	if (!a.endsWith('=') && b.startsWith('=') && !b.startsWith('=>') && !b.startsWith('==') && !b.startsWith('===')) {
+		return '=';
+	}
+	return false;
+};
 
 /**
  * @exports
