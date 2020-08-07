@@ -59,8 +59,8 @@ export default class Block extends BlockInterface {
 			// Lets be called...
 			var vars = stringifyEach(stmt.meta.vars);
 			var deepVars = stringifyEach(stmt.meta.deepVars || []);
-			var isDirectEventTarget = (env.references || []).filter(f => vars.filter(v => (f + '.').startsWith(v + '.') || (v + '.').startsWith(f + '.')).length),
-				isIndirectEventTarget = (env.references || []).filter(f => deepVars.filter(v => (f + '.').startsWith(v + '.') || (v + '.').startsWith(f + '.')).length);
+			var isDirectEventTarget = (env.references || []).filter(f => vars.filter(v => (v + '.').startsWith(f + '.')).length);
+			var isIndirectEventTarget = (env.references || []).filter(f => deepVars.filter(v => (v + '.').startsWith(f + '.')).length);
 			if (!env.references || !env.references.length 
 			|| (isDirectEventTarget = isDirectEventTarget.length)
 			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {

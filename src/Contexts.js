@@ -61,9 +61,12 @@ export default class Contexts {
 			});
 		}
 		trap.observe(this.stack, changes => {
-			var references = changes.map(delta => _after(delta.path, '.')).filter(path => path);
+			// Changes firing directly from super and local should be ignored
+			changes = changes.filter(delta => delta.name === 'main');
+			var references = changes.map(delta => _after(delta.path, '.'))
+				.filter(path => path);
 			var props = references.map(path => _before(path, '.'));
-			if (!references.length && changes[0].value) {
+			if (!references.length && changes.length && changes[0].value) {
 				props
 					= references
 					= _unique(Object.keys(_isObject(changes[0].value.main) ? changes[0].value.main : []).concat(changes[0].oldValue && _isObject(changes[0].oldValue.main) ? Object.keys(changes[0].oldValue.main) : []));

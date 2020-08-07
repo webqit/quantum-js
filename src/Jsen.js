@@ -60,8 +60,11 @@ export default class Jsen {
 		var parsed = Parser.parse(expr, (_expr, _Parsers, _params = {}) => {
 			var subStmt = Static.parse(_expr, _Parsers, _params ? _merge(params, _params) : params, Static);
 			if (_params.lodge !== false) {
-				if (_instanceof(subStmt, ReferenceInterface) || _instanceof(subStmt, CallInterface)) {
+				if (_instanceof(subStmt, ReferenceInterface)) {
 					vars.push(subStmt);
+				}
+				if (_instanceof(subStmt, CallInterface)) {
+					vars.push(subStmt.reference);
 				}
 				if (subStmt) {
 					subStmt.meta.vars.forEach(_var => vars.push(_var));
@@ -76,7 +79,11 @@ export default class Jsen {
 			}
 			parsed.meta.vars = vars;
 			parsed.meta.deepVars = [];
-			if (_instanceof(parsed, FuncInterface)) {
+			if (_instanceof(parsed, CallInterface)) {
+				if (parsed.reference.context) {
+					parsed.meta.vars.push(parsed.reference.context);
+				}
+			} else if (_instanceof(parsed, FuncInterface)) {
 				parsed.meta.vars.splice(0);
 			} else if (_instanceof(parsed, IfInterface)) {
 				if (parsed.onTrue) {
