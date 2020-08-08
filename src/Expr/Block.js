@@ -32,25 +32,20 @@ export default class Block extends BlockInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
+	eval(context = null, params = {}, trap = {}) {
 		// Current!
-		env = env ? _copy(env) : {};
+		params = params ? _copy(params) : {};
 		context = Contexts.create(context);
-		var errorLevel = context.params.errorLevel;
 		// Stringifies JSEN vars
 		var stringifyEach = list => _unique(list.map(expr => _before(_before(expr.toString(), '['), '(')));
-		var callEval = (stmt, context, env, trap) => {
-			if (errorLevel !== 2) {
-				try {
-					return stmt.eval(context, env, trap);
-				} catch(e) {
-					if (errorLevel === 1) {
-						console.warn(e.message);
-					}
-				};
-				return;
-			}
-			return stmt.eval(context, env, trap);
+		var callEval = (stmt, context, _params, trap) => {
+			try {
+				return stmt.eval(context, _params, trap);
+			} catch(e) {
+				if (_params.catch) {
+					_params.catch(e);
+				}
+			};
 		};
 
 		var results = [];
@@ -59,18 +54,23 @@ export default class Block extends BlockInterface {
 			// Lets be called...
 			var vars = stringifyEach(stmt.meta.vars);
 			var deepVars = stringifyEach(stmt.meta.deepVars || []);
-			var isDirectEventTarget = (env.references || []).filter(f => vars.filter(v => (v + '.').startsWith(f + '.')).length);
-			var isIndirectEventTarget = (env.references || []).filter(f => deepVars.filter(v => (v + '.').startsWith(f + '.')).length);
-			if (!env.references || !env.references.length 
+			var isDirectEventTarget = (params.references || []).filter(f => vars.filter(v => (v + '.').startsWith(f + '.')).length);
+			var isIndirectEventTarget = (params.references || []).filter(f => deepVars.filter(v => (v + '.').startsWith(f + '.')).length);
+			if (!params.references || !params.references.length 
 			|| (isDirectEventTarget = isDirectEventTarget.length)
 			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {
-				if (stmt instanceof ReturnInterface) {
-					return callEval(stmt, context, !isDirectEventTarget ? env : null, trap);
+				var _params = params;
+				if (isDirectEventTarget) {
+					_params = _copy(params);
+					delete _params.references;
 				}
-				results[i] = callEval(stmt, context, !isDirectEventTarget ? env : null, trap);
+				if (stmt instanceof ReturnInterface) {
+					return callEval(stmt, context, _params, trap);
+				}
+				results[i] = callEval(stmt, context, _params, trap);
 				// Add this change for subsequent statements
-				if (env.references && (stmt instanceof AssignmentInterface)) {
-					env.references = env.references.concat(stringifyEach([stmt.reference]));
+				if (params.references && (stmt instanceof AssignmentInterface)) {
+					params.references = params.references.concat(stringifyEach([stmt.reference]));
 				}
 			}
 		}

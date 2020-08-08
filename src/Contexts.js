@@ -3,7 +3,6 @@
  * @imports
  */
 import _isTypeObject from '@web-native-js/commons/js/isTypeObject.js';
-import _isObject from '@web-native-js/commons/js/isTypeObject.js';
 import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import _isFunction from '@web-native-js/commons/js/isFunction.js';
 import _isClass from '@web-native-js/commons/js/isClass.js';
@@ -67,9 +66,11 @@ export default class Contexts {
 				.filter(path => path);
 			var props = references.map(path => _before(path, '.'));
 			if (!references.length && changes.length && changes[0].value) {
-				props
-					= references
-					= _unique(Object.keys(_isObject(changes[0].value.main) ? changes[0].value.main : []).concat(changes[0].oldValue && _isObject(changes[0].oldValue.main) ? Object.keys(changes[0].oldValue.main) : []));
+				props = _unique((
+						_isTypeObject(changes[0].value) ? Object.keys(changes[0].value) : []
+					).concat(changes[0].oldValue && _isTypeObject(changes[0].oldValue) ? Object.keys(changes[0].oldValue) : [])
+				);
+				references = props;
 			}
 			if (props.filter(prop => !_has(this.stack.local, prop, trap)).length) {
 				return callback({
