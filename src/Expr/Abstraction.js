@@ -26,8 +26,8 @@ const Abstraction = class extends AbstractionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		return this.expr.eval(context, env, trap);
+	eval(context = null, params = {}) {
+		return this.expr.eval(context, params);
 	}
 	
 	/**
@@ -40,9 +40,9 @@ const Abstraction = class extends AbstractionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Abstraction) {
+	static parse(expr, parseCallback, params = {}) {
 		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
-			return new Static(
+			return new this(
 				parseCallback(_unwrap(expr, '(', ')'))
 			);
 		}

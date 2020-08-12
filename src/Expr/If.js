@@ -4,10 +4,10 @@
  */
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import Contexts from '../Contexts.js';
 import Lexer from '@web-native-js/commons/str/Lexer.js';
 import IfInterface from './IfInterface.js';
 import Block from './Block.js';
+import Scope from '../Scope.js';
 
 /**
  * ---------------------------
@@ -31,15 +31,15 @@ const If = class extends IfInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-        var errorLevel = context instanceof Contexts ? context.params.errorLevel : undefined;
-        var _context = new Contexts({
+	eval(context = null, params = {}) {
+        var errorLevel = context instanceof Scope ? context.params.errorLevel : undefined;
+        var _context = new Scope({
             main:{}, 
             super:context,
         }, {type: 2, errorLevel});
-		return  this.assertion.eval(context/** original context */, env, trap)
-			? (this.onTrue ? this.onTrue.eval(_context, env, trap) : undefined)
-            : (this.onFalse ? this.onFalse.eval(_context, env, trap) : undefined);
+		return  this.assertion.eval(context/** original context */, params)
+			? (this.onTrue ? this.onTrue.eval(_context, params) : undefined)
+            : (this.onFalse ? this.onFalse.eval(_context, params) : undefined);
 	}
 	
 	/**
@@ -58,7 +58,7 @@ const If = class extends IfInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = If) {
+	static parse(expr, parseCallback, params = {}) {
         expr = expr.trim();
         var splits;
         if (expr.startsWith('if') 
@@ -84,7 +84,7 @@ const If = class extends IfInterface {
                     onFalse = parseCallback(onFalse, null, {meta:null});
                 }
             }
-			return new Static(
+			return new this(
                 assertion, 
                 onTrue ? (onTrue.jsenType === 'Block' ? onTrue : new Block([onTrue])) : null, 
                 onFalse ? (onFalse.jsenType === 'Block' ? onFalse : new Block([onFalse])) : null, 

@@ -42,12 +42,12 @@ const Str = class extends StrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Str) {
+	static parse(expr, parseCallback, params = {}) {
 		expr = expr.trim();
 		if ((_wrapped(expr, '"', '"') || _wrapped(expr, "'", "'")) 
 		&& !Lexer.match(expr, [' ']).length) {
 			var quote = _wrapped(expr, '"', '"') ? '"' : "'";
-			return new Static(
+			return new this(
 				_unwrap(expr, quote, quote),
 				quote
 			);

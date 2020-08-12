@@ -18,7 +18,7 @@ import SyntaxError from './SyntaxError.js';
 /**
  * @exports
  */
-export default class Contexts {
+export default class Scope {
 
 	/**
 	 * Creates a new context stack.
@@ -26,7 +26,7 @@ export default class Contexts {
 	 * @param object	 	params
 	 * @param object		params
 	 *
-	 * @return Contexts
+	 * @return Scope
 	 */
 	constructor(stack, params = {}) {
 		this.stack = stack;
@@ -35,7 +35,7 @@ export default class Contexts {
 			throw new Error('A "main" context must be provided!');
 		}
 		if (this.stack.super) {
-			this.stack.super = Contexts.create(this.stack.super, {errorLevel: params.errorLevel});
+			this.stack.super = Scope.create(this.stack.super, {errorLevel: params.errorLevel});
 		}
 		this.stack.local = this.stack.local || {};
 		this.stack.$local = this.stack.$local || {};
@@ -48,7 +48,7 @@ export default class Contexts {
 	 * @param object		 	trap
 	 * @param function		 	callback
 	 *
-	 * @return Contexts
+	 * @return Scope
 	 */
 	observe(trap, callback) {
 		if (this.stack.super) {
@@ -92,7 +92,7 @@ export default class Contexts {
 	 * @param object		 	trap
 	 * @param function		 	callback
 	 *
-	 * @return Contexts
+	 * @return Scope
 	 */
 	unobserve(trap, callback) {
 		if (this.stack.super) {
@@ -111,7 +111,7 @@ export default class Contexts {
 	 * @param function		 	callback
 	 * @param function		 	final
 	 *
-	 * @return Contexts
+	 * @return Scope
 	 */
 	handle(prop, callback, final, level = 0) {
 		var callMain = () => {
@@ -300,15 +300,15 @@ export default class Contexts {
 	}
 
 	/**
-	 * Factory method for making a Contexts instance.
+	 * Factory method for making a Scope instance.
 	 *
 	 * @param array|object 	cntxt
 	 * @param object 		params
 	 *
-	 * @return Contexts
+	 * @return Scope
 	 */
 	static create(cntxt, params = {}) {
-		return cntxt instanceof Contexts ? cntxt : new Contexts({
+		return cntxt instanceof Scope ? cntxt : new Scope({
 			main: cntxt,
 		}, params);
 	}

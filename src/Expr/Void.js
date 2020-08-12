@@ -38,10 +38,10 @@ const Void = class extends VoidInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Void) {
+	static parse(expr, parseCallback, params = {}) {
 		var expr = expr.toLowerCase().trim();
 		if (expr === 'null' || expr === 'undefined') {
-			return new Static(expr);
+			return new this(expr);
 		}
 	}
 };

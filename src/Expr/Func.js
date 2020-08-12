@@ -7,10 +7,10 @@ import _each from '@web-native-js/commons/obj/each.js';
 import _flatten from '@web-native-js/commons/arr/flatten.js';
 import _wrapped from '@web-native-js/commons/str/wrapped.js';
 import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import FuncInterface from './FuncInterface.js';
-import Contexts from '../Contexts.js';
 import Lexer from '@web-native-js/commons/str/Lexer.js';
+import FuncInterface from './FuncInterface.js';
 import Block from './Block.js';
+import Scope from '../Scope.js';
 
 /**
  * ---------------------------
@@ -62,7 +62,7 @@ const Func = class extends FuncInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
+	eval(context = null, params = {}) {
 		var instance = this;
 		return function(...args) {
 			var newMainContext = {};
@@ -74,16 +74,16 @@ const Func = class extends FuncInterface {
 				newMainContext[name] = args.length > i 
 					? args[i] 
 					: (instance.paramters[name] 
-						? instance.paramters[name].eval(context, env, trap) 
+						? instance.paramters[name].eval(context, params) 
 						: null);
 			});
 			if (!instance.arrowFunctionFormatting) {
 				newMainContext['this'] = this;
 			}
 			// But this newer context should come first
-			var errorLevel = context instanceof Contexts ? context.params.errorLevel : undefined;
-			var nestedContext = new Contexts({main:newMainContext, super:context}, {errorLevel});
-			return instance.statements.eval(nestedContext, env, trap);
+			var errorLevel = context instanceof Scope ? context.params.errorLevel : undefined;
+			var nestedContext = new Scope({main:newMainContext, super:context}, {errorLevel});
+			return instance.statements.eval(nestedContext, params);
 		};
 	}
 	
@@ -107,7 +107,7 @@ const Func = class extends FuncInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Func) {
+	static parse(expr, parseCallback, params = {}) {
 		expr = expr.trim();
 		var splits;
 		if (expr.startsWith('function') 
@@ -149,7 +149,7 @@ const Func = class extends FuncInterface {
 			// Any varaibles should be added to public vars
 			meta: null,
 		});
-		return new Static(
+		return new this(
 			paramters,
 			block.jsenType === 'Block' ? block : new Block([block]),
 			arrowFunctionFormatting,

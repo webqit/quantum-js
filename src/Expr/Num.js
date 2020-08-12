@@ -40,10 +40,10 @@ const Num = class extends NumInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Num) {
+	static parse(expr, parseCallback, params = {}) {
 		if (_isNumeric(expr)) {
 			var expr = expr.split('.');
-			return new Static(
+			return new this(
 				parseInt(expr.shift()),
 				parseInt(expr.shift())
 			);

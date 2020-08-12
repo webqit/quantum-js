@@ -23,18 +23,18 @@ export default class Jsen {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, Parsers, params = {}, Static = Jsen) {
+	static parse(expr, Parsers, params = {}) {
 		if (expr.length) {
 			if (cache[expr] && !Parsers && params.allowCache !== false) {
 				var _parsed;
-				if (_parsed = Static.parseOne(expr, cache[expr], params, Static)) {
+				if (_parsed = this.parseOne(expr, cache[expr], params)) {
 					return _parsed;
 				}
 			}
 			// -----------------------------
-			var parsers = Object.values(Parsers || Static.grammars);
+			var parsers = Object.values(Parsers || this.grammars);
 			for (var i = 0; i < parsers.length; i ++) {
-				var parsed = Static.parseOne(expr, parsers[i], params, Static);
+				var parsed = this.parseOne(expr, parsers[i], params);
 				if (parsed) {
 					if (!Parsers && params.allowCache !== false) {
 						cache[expr] = parsers[i];
@@ -54,17 +54,14 @@ export default class Jsen {
 	 * @inheritdoc
 	 */
 
-	static parseOne(expr, Parser, params = {}, Static = Jsen) {
+	static parseOne(expr, Parser, params = {}) {
 		// From this point forward, all vars is within current scope
 		var vars = [], deepVars = [];
 		var parsed = Parser.parse(expr, (_expr, _Parsers, _params = {}) => {
-			var subStmt = Static.parse(_expr, _Parsers, _params ? _merge(params, _params) : params, Static);
+			var subStmt = this.parse(_expr, _Parsers, _params ? _merge(params, _params) : params);
 			if (_params.lodge !== false) {
-				if (_instanceof(subStmt, ReferenceInterface)) {
+				if (_instanceof(subStmt, ReferenceInterface) || _instanceof(subStmt, CallInterface)) {
 					vars.push(subStmt);
-				}
-				if (_instanceof(subStmt, CallInterface)) {
-					vars.push(subStmt.reference);
 				}
 				if (subStmt) {
 					subStmt.meta.vars.forEach(_var => vars.push(_var));
@@ -78,6 +75,7 @@ export default class Jsen {
 				parsed.meta = {};
 			}
 			parsed.meta.vars = vars;
+			parsed.meta.deepVars = [];
 			parsed.meta.deepVars = [];
 			if (_instanceof(parsed, CallInterface)) {
 				if (parsed.reference.context) {

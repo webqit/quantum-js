@@ -27,7 +27,7 @@ const Comments = class extends CommentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
+	eval(context = null, params = {}) {
 	}
 	 
 	/**
@@ -40,7 +40,7 @@ const Comments = class extends CommentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Comments) {
+	static parse(expr, parseCallback, params = {}) {
 		var _comments = null;
 		var _expr = null;
 		var type = 0;
@@ -70,7 +70,7 @@ const Comments = class extends CommentsInterface {
 					.filter(line => line.trim());
 			}
 			console.log(_comments, commentPlacement, expr);
-			_comments = new Static(_comments, type);
+			_comments = new this(_comments, type);
 		}
 		if (_expr) {
 			_expr = parseCallback(_expr);

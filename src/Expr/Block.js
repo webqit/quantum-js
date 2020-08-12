@@ -6,11 +6,11 @@ import _unique from '@web-native-js/commons/arr/unique.js';
 import _before from '@web-native-js/commons/str/before.js';
 import _flatten from '@web-native-js/commons/arr/flatten.js';
 import _copy from '@web-native-js/commons/obj/copy.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import BlockInterface from './BlockInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
-import Contexts from '../Contexts.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Scope from '../Scope.js';
 
 /**
  * ---------------------------
@@ -32,15 +32,15 @@ export default class Block extends BlockInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, params = {}, trap = {}) {
+	eval(context = null, params = {}) {
 		// Current!
 		params = params ? _copy(params) : {};
-		context = Contexts.create(context);
+		context = Scope.create(context);
 		// Stringifies JSEN vars
 		var stringifyEach = list => _unique(list.map(expr => _before(_before(expr.toString(), '['), '(')));
-		var callEval = (stmt, context, _params, trap) => {
+		var callEval = (stmt, context, _params) => {
 			try {
-				return stmt.eval(context, _params, trap);
+				return stmt.eval(context, _params);
 			} catch(e) {
 				if (_params.catch) {
 					_params.catch(e);
@@ -65,9 +65,9 @@ export default class Block extends BlockInterface {
 					delete _params.references;
 				}
 				if (stmt instanceof ReturnInterface) {
-					return callEval(stmt, context, _params, trap);
+					return callEval(stmt, context, _params);
 				}
-				results[i] = callEval(stmt, context, _params, trap);
+				results[i] = callEval(stmt, context, _params);
 				// Add this change for subsequent statements
 				if (params.references && (stmt instanceof AssignmentInterface)) {
 					params.references = params.references.concat(stringifyEach([stmt.reference]));
@@ -88,10 +88,10 @@ export default class Block extends BlockInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Block) {
-		var parse = Lexer.lex(expr + ';', _flatten(Static.operators).concat([Block.testBlockEnd]));
+	static parse(expr, parseCallback, params = {}) {
+		var parse = Lexer.lex(expr + ';', _flatten(this.operators).concat([Block.testBlockEnd]));
 		if (parse.matches.length) {
-			return new Static(
+			return new this(
 				parse.tokens.map(stmt => parseCallback(stmt.trim())).filter(a => a),
 				parse.matches[0].trim()
 			);

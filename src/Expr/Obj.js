@@ -43,10 +43,10 @@ const Obj = class extends ObjInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
+	eval(context = null, params = {}) {
 		var items = {};
 		_each(this.entries, (key, expr) => {
-			items[key] = expr.eval(context, env, trap);
+			items[key] = expr.eval(context, params);
 		});
 		return items;
 	}
@@ -65,7 +65,7 @@ const Obj = class extends ObjInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Obj) {
+	static parse(expr, parseCallback, params = {}) {
 		if (_wrapped(expr, '{', '}') && !Lexer.match(expr.trim(), [' ']).length) {
 			var entries = {};
 			var _entriesSplit = Lexer.split(_unwrap(expr, '{', '}'), [Obj.operators.sup])
@@ -74,7 +74,7 @@ const Obj = class extends ObjInterface {
 				var entry = Lexer.split(expr, [Obj.operators.sub], {limit:1}/*IMPORTANT*/);
 				entries[_first(entry).trim()] = parseCallback(_last(entry).trim());
 			});
-			return new Static(entries);
+			return new this(entries);
 		}
 	}
 };

@@ -28,9 +28,9 @@ const Assertion = class extends AssertionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	 eval(context = null, env = {}, trap = {}) {
+	 eval(context = null, params = {}) {
 		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
-			return !_first(this.exprs).eval(context, env, trap);
+			return !_first(this.exprs).eval(context, params);
 		}
 		var operators = _flatten(Assertion.operators);
 		var logic = (this.logic || '').trim().toUpperCase();
@@ -40,7 +40,7 @@ const Assertion = class extends AssertionInterface {
 		var isNand = logic === (Assertion.operators.nand || '').trim().toUpperCase();
 		var lastResult = true, trues = 0;
 		for(var i = 0; i < this.exprs.length; i ++) {
-			lastResult = this.exprs[i].eval(context, env, trap);
+			lastResult = this.exprs[i].eval(context, params);
 			if (isAnd && !lastResult) {
 				return false;
 			}
@@ -80,20 +80,20 @@ const Assertion = class extends AssertionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Assertion) {
+	static parse(expr, parseCallback, params = {}) {
 		if (expr.toUpperCase().startsWith(Assertion.negation.toUpperCase())) {
-			return new Static(
+			return new this(
 				[parseCallback(expr.substr(Assertion.negation.length))],
 				Assertion.negation
 			);
 		}
-		var parse = Lexer.lex(expr, _flatten(Static.operators));
+		var parse = Lexer.lex(expr, _flatten(this.operators));
 		if (parse.tokens.length > 1) {
 			var logic = _unique(parse.matches);
 			if (logic.length > 1) {
 				throw new Error('"AND" and "OR" logic cannot be asserted in the same expression: ' + expr + '!');
 			}
-			return new Static(
+			return new this(
 				parse.tokens.map(expr => parseCallback(expr.trim())),
 				_first(logic)
 			);

@@ -8,10 +8,10 @@ import _after from '@web-native-js/commons/str/after.js';
 import _isNumber from '@web-native-js/commons/js/isNumber.js';
 import _isArray from '@web-native-js/commons/js/isArray.js';
 import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
+import Lexer from '@web-native-js/commons/str/Lexer.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
-import Contexts from '../Contexts.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Scope from '../Scope.js';
 
 /**
  * ---------------------------
@@ -36,10 +36,10 @@ const Assignment = class extends AssignmentInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		var val, initialVal, reference = this.reference.getEval(context, env, trap);
+	eval(context = null, params = {}) {
+		var val, initialVal, reference = this.reference.getEval(context, params);
 		if (['++', '--'].includes(this.operator)) {
-			initialVal = this.reference.eval(context, env, trap);
+			initialVal = this.reference.eval(context, params);
 			if (!_isNumber(initialVal)) {
 				throw new Error(this.reference + ' must be a number!');
 			}
@@ -49,8 +49,8 @@ const Assignment = class extends AssignmentInterface {
 				val = initialVal - 1;
 			}
 		} else if (['+=', '-=', '*=', '/='].includes(this.operator)) {
-			var operandA = this.reference.eval(context, env, trap);
-			var operandB = this.val.eval(context, env, trap);
+			var operandA = this.reference.eval(context, params);
+			var operandB = this.val.eval(context, params);
 			if (this.operator !== '+=' && (!_isNumber(operandA) || !_isNumber(operandB))) {
 				throw new Error(this + ' - operands must each be a number!');
 			}
@@ -64,13 +64,13 @@ const Assignment = class extends AssignmentInterface {
 				val = operandA + operandB;
 			}
 		} else {
-			val = this.val.eval(context, env, trap);
+			val = this.val.eval(context, params);
 		}
 		if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
-			if (env && _isArray(env.references)) {
-				_pushUnique(env.references, this.reference.toString());
+			if (params && _isArray(params.references)) {
+				_pushUnique(params.references, this.reference.toString());
 			}
-			if (Contexts.create(reference.context).set(reference.name, val, trap, this.initKeyword)) {
+			if (Scope.create(reference.context).set(reference.name, val, params.trap, this.initKeyword)) {
 				return this.postIncrDecr ? initialVal : val;
 			};
 			throw new Error('[' + this + '] Operation failed!');
@@ -94,8 +94,8 @@ const Assignment = class extends AssignmentInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Assignment) {
-		var parse = Lexer.lex(expr, Static.operators.concat([testBlockEnd]));
+	static parse(expr, parseCallback, params = {}) {
+		var parse = Lexer.lex(expr, this.operators.concat([testBlockEnd]));
 		if (parse.matches.length) {
 			var initKeyword, reference, val, operator = parse.matches[0].trim(), isIncrDecr = ['++', '--'].includes(operator), postIncrDecr;
 			if (isIncrDecr) {
@@ -116,7 +116,7 @@ const Assignment = class extends AssignmentInterface {
 			|| (!isIncrDecr && !(val = parseCallback(val)))) {
 				throw new Error('Invalid assignment expression: ' + expr);
 			}
-			return new Static(initKeyword, reference, val, operator, postIncrDecr);
+			return new this(initKeyword, reference, val, operator, postIncrDecr);
 		}
 	}
 };	

@@ -38,10 +38,10 @@ const Bool = class extends BoolInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Bool) {
+	static parse(expr, parseCallback, params = {}) {
 		var expr = expr.toLowerCase().trim();
 		if (expr === 'true' || expr === 'false') {
-			return new Static(expr);
+			return new this(expr);
 		}
 	}
 };

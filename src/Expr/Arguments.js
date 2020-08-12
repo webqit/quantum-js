@@ -26,8 +26,8 @@ const Arguments = class extends ArgumentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		return this.list.map(arg => arg.eval(context, env, trap));
+	eval(context = null, params = {}) {
+		return this.list.map(arg => arg.eval(context, params));
 	}
 	
 	/**
@@ -40,10 +40,10 @@ const Arguments = class extends ArgumentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Arguments) {
+	static parse(expr, parseCallback, params = {}) {
 		var args; expr = expr.trim();
 		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
-			return new Static(
+			return new this(
 				Lexer.split(_unwrap(expr, '(', ')'), [',']).map(arg => parseCallback(arg.trim()))
 			);
 		}

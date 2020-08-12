@@ -11,7 +11,7 @@ import ConditionInterface from './ConditionInterface.js';
  * ---------------------------
  */				
 
-const Condition = class extends ConditionInterface {
+export default class Condition extends ConditionInterface {
 	
 	/**
 	 * @inheritdoc
@@ -26,10 +26,10 @@ const Condition = class extends ConditionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		return this.assertion.eval(context, env, trap) 
-			? this.onTrue.eval(context, env, trap) 
-			: this.onFalse.eval(context, env, trap);
+	eval(context = null, params = {}) {
+		return this.assertion.eval(context, params) 
+			? this.onTrue.eval(context, params) 
+			: this.onFalse.eval(context, params);
 	}
 	
 	/**
@@ -38,9 +38,9 @@ const Condition = class extends ConditionInterface {
 	toString(context = null) {
 		return [
 			this.assertion.toString(context), 
-			Condition.operators[0], 
+			this.constructor.operators[0], 
 			this.onTrue.toString(context),
-			Condition.operators[1], 
+			this.constructor.operators[1], 
 			this.onFalse.toString(context)
 		].join(' ');
 	}
@@ -48,13 +48,13 @@ const Condition = class extends ConditionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Condition) {
-		var splits = Lexer.split(expr, Static.operators);
+	static parse(expr, parseCallback, params = {}) {
+		var splits = Lexer.split(expr, this.operators);
 		if (splits.length > 1) {
 			if (splits.length === 2) {
 				throw new Error('Malformed ternary expression: ' + expr + '!');
 			}
-			return new Static(
+			return new this(
 				parseCallback(splits[0].trim()),
 				parseCallback(splits[1].trim()),
 				parseCallback(splits[2].trim())
@@ -66,9 +66,7 @@ const Condition = class extends ConditionInterface {
 /**
  * @prop object
  */
-Condition.operators = ['?', ':'];
-
-/**
- * @exports
- */
-export default Condition;
+Condition.operators = [
+	'?', 
+	':',
+];

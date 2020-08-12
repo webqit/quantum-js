@@ -19,7 +19,7 @@ import Lexer from '@web-native-js/commons/str/Lexer.js';
  * ---------------------------
  */				
 
-const Comparison = class extends ComparisonInterface {
+export default class Comparison extends ComparisonInterface {
 	
 	/**
 	 * @inheritdoc
@@ -34,10 +34,10 @@ const Comparison = class extends ComparisonInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		return Comparison.compare(
-			this.operand1.eval(context, env, trap), 
-			this.operand2.eval(context, env, trap), 
+	eval(context = null, params = {}) {
+		return this.constructor.compare(
+			this.operand1.eval(context, params), 
+			this.operand2.eval(context, params), 
 			this.operator
 		);
 	}
@@ -56,14 +56,14 @@ const Comparison = class extends ComparisonInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Comparison) {
-		var operators = _flatten(Static.operators).map(oper => ' ' + oper + ' ');
+	static parse(expr, parseCallback, params = {}) {
+		var operators = _flatten(this.operators).map(oper => ' ' + oper + ' ');
 		var parse = Lexer.lex(expr, operators);
 		if (parse.tokens.length > 1) {
 			if (parse.tokens.length > 2) {
 				throw new Error('Malformed "Comparison" expression: ' + expr + '!');
 			}
-			return new Static(
+			return new this(
 				parseCallback(_first(parse.tokens).trim()),
 				parseCallback(_last(parse.tokens).trim()),
 				parse.matches[0].trim()
@@ -85,7 +85,7 @@ const Comparison = class extends ComparisonInterface {
 	 * @return bool
 	 */
 	static compare(operand1, operand2, operator = '==') {
-		if (_flatten(Comparison.operators).indexOf(operator) === -1) {
+		if (_flatten(this.operators).indexOf(operator) === -1) {
 			throw new Error('The operator "' + operator + '" is not recognized.');
 		}
 		switch(operator) {
@@ -140,7 +140,7 @@ const Comparison = class extends ComparisonInterface {
 	 * @return bool
 	 */
 	static diff(operand1, operand2, strict) {
-		return !Comparison.compare(operand1, operand2, strict ? '===' : '==');
+		return !this.compare(operand1, operand2, strict ? '===' : '==');
 	}
 };
 
@@ -171,8 +171,3 @@ Comparison.operators = {
 		matches: '/**/',
 	},
 };
-
-/**
- * @exports
- */
-export default Comparison;

@@ -39,8 +39,8 @@ const Arr = class extends ArrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		return this.exprs.map(expr => expr.eval(context, env, trap));
+	eval(context = null, params = {}) {
+		return this.exprs.map(expr => expr.eval(context, params));
 	}
 	
 	/**
@@ -53,11 +53,11 @@ const Arr = class extends ArrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Arr) {
+	static parse(expr, parseCallback, params = {}) {
 		if (_wrapped(expr, '[', ']') && !Lexer.match(expr.trim(), [' ']).length) {
 			var splits = Lexer.split(_unwrap(expr, '[', ']'), [','])
 				.map(n => n.trim()).filter(n => n).map(expr => parseCallback(expr));
-			return new Static(splits);
+			return new this(splits);
 		}
 	}
 };

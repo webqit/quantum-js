@@ -24,8 +24,8 @@ const Return = class extends ReturnInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
-		return this.expr ? this.expr.eval(context, env, trap) : undefined;
+	eval(context = null, params = {}) {
+		return this.expr ? this.expr.eval(context, params) : undefined;
 	}
 	
 	/**
@@ -42,10 +42,10 @@ const Return = class extends ReturnInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Return) {
+	static parse(expr, parseCallback, params = {}) {
 		var exprLc = expr.toLowerCase();
 		if (exprLc.startsWith('return ') || exprLc === 'return') {
-			return new Static(
+			return new this(
 				parseCallback(expr.substr(6).trim())
 			);
 		}

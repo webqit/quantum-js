@@ -29,9 +29,9 @@ const Math = class extends MathInterface {
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, env = {}, trap = {}) {
+	eval(context = null, params = {}) {
 		return this.exprs.reduce((currentTotal, expr) => {
-			var val = expr.val.eval(context, env, trap);
+			var val = expr.val.eval(context, params);
 			var operator = expr.operator.trim();
 			if ((!_isNumeric(currentTotal) || !_isNumeric(val)) && operator !== '+') {
 				throw new Error('Invalid Math expression: ' + this.toString() + '!');
@@ -46,7 +46,7 @@ const Math = class extends MathInterface {
 				case '/':
 					return currentTotal / val;
 			}
-		}, this.val.eval(context, env, trap));
+		}, this.val.eval(context, params));
 	}
 	
 	/**
@@ -61,14 +61,14 @@ const Math = class extends MathInterface {
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, parseCallback, params = {}, Static = Math) {
-		var parse = Lexer.lex(expr, _flatten(Static.operators));
+	static parse(expr, parseCallback, params = {}) {
+		var parse = Lexer.lex(expr, _flatten(this.operators));
 		if (parse.tokens.length > 1 && parse.matches.length === parse.tokens.length - 1) {
 			var operators = _unique(parse.matches);
-			if (_intersect(operators, Math.operators.sup).length && _intersect(operators, Math.operators.sub).length) {
+			if (_intersect(operators, this.operators.sup).length && _intersect(operators, this.operators.sub).length) {
 				throw new Error('"Addition/subtraction" and "multiplication/division" operators cannot be used in the same expression: ' + expr + '!');
 			}
-			return new Static(
+			return new this(
 				parseCallback(parse.tokens.shift().trim()),
 				parse.tokens.map((expr, i) => {return {
 					operator: parse.matches[i],
