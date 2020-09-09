@@ -7,9 +7,8 @@ import ReferenceInterface from './ReferenceInterface.js';
 import CallInterface from './CallInterface.js';
 import Arguments from './Arguments.js';
 import Lexer from '@web-native-js/commons/str/Lexer.js';
-import ReferenceError from '../ReferenceError.js';
 import SyntaxError from '../SyntaxError.js';
-import Scope from '../Scope.js';
+import ReferenceError from '../ReferenceError.js';
 
 /**
  * ---------------------------
@@ -32,18 +31,12 @@ const Call = class extends CallInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		var reference = this.reference.getEval(context, params);
-		var args = this.args.eval(context, params);
-		if (_isUndefined(reference.context) || _isUndefined(reference.name)) {
-			throw new Error('[Reference Error][' + this + ']: "' + (this.reference.context || this.reference) + '" is undefined!');
-		}
 		try {
-			return Scope.create(reference.context).exec(reference.name, args, params.trap);
+			var args = this.args.eval(context, params);
+			return this.reference.getEval(context, params).exec(args);
 		} catch(e) {
 			if (e instanceof ReferenceError) {
-				throw new Error('[Reference Error][' + this + ']: ' + e.message);
-			} else if (e instanceof SyntaxError) {
-				throw new Error('[Syntax Error][' + this + ']: ' + e.message);
+				throw new ReferenceError('[' + this + ']: ' + e.message);
 			} else {
 				throw e;
 			}
@@ -66,7 +59,7 @@ const Call = class extends CallInterface {
 			var reference, args = tokens.pop();
 			if (!((reference = parseCallback(tokens.join(''), null, {lodge: false})) instanceof ReferenceInterface) 
 			|| !(args = parseCallback(args, [Arguments]))) {
-				throw new Error('Invalid call directive: ' + expr);
+				throw new SyntaxError(expr);
 			}
 			return new this(reference, args);
 		}

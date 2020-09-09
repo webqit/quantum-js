@@ -13,7 +13,6 @@ import _after from '@web-native-js/commons/str/after.js';
 import _before from '@web-native-js/commons/str/before.js';
 import _unique from '@web-native-js/commons/arr/unique.js';
 import ReferenceError from './ReferenceError.js';
-import SyntaxError from './SyntaxError.js';
 
 /**
  * @exports
@@ -157,7 +156,7 @@ export default class Scope {
 				return val;
 			}
 			return advance();
-		});
+		}/* Not good for RQL derived fields , () => {throw new ReferenceError('"' + prop + '" is undefined!');}*/);
 	}
 	
 	/**
@@ -189,13 +188,10 @@ export default class Scope {
 		return this.handle(initKeyword ? true : prop, (contxtObj, localContxtMeta, advance) => {
 			// Whatever the level of localContext...
 			if (localContxtMeta && localContxtMeta[prop] === 'const') {
-				throw new ReferenceError('CONST ' + prop + ' cannot be modified!');
+				throw new LogicalError('CONST ' + prop + ' cannot be modified!');
 			}
 			// Set this locally, we wont be getting to advance()
 			if (initKeyword) {
-				if (!['var', 'let', 'const'].includes(initKeyword)) {
-					throw new SyntaxError('Unrecognized declarator: ' + initKeyword + '!');
-				}
 				localContxtMeta[prop] = initKeyword;
 				return _set(contxtObj, prop, val, trap);
 			}
@@ -314,9 +310,20 @@ export default class Scope {
 	}
 };
 
-const _get = (cntxt, prop, trap) => trap.get && _isTypeObject(cntxt) && !_isNull(cntxt) ? trap.get(cntxt, prop) 
-	: ((_isTypeObject(cntxt) || _isString(cntxt) || _isNumber(cntxt)) && !_isNull(cntxt) ? cntxt[prop] : undefined);
+const _get = (cntxt, prop, trap) => {
+	if (_isNull(cntxt) || _isUndefined(cntxt)) {
+		return;
+	}
+	return trap.get && _isTypeObject(cntxt) ? trap.get(cntxt, prop) : (
+		cntxt[prop]
+	);
+};
 
-const _has = (cntxt, prop, trap) => trap.has && _isTypeObject(cntxt) && !_isNull(cntxt) ? trap.has(cntxt, prop) : (
-	_isTypeObject(cntxt) && !_isNull(cntxt) ? prop in cntxt : !_isNull(cntxt) && !_isUndefined(cntxt[prop])
-);
+const _has = (cntxt, prop, trap) => {
+	if (_isNull(cntxt) || _isUndefined(cntxt)) {
+		return false;
+	}
+	return trap.has && _isTypeObject(cntxt) ? trap.has(cntxt, prop) : (
+		_isTypeObject(cntxt) ? prop in cntxt : !_isUndefined(cntxt[prop])
+	);
+};

@@ -10,36 +10,51 @@
   ],
   "homepage": "https://web-native.dev",
   "icon": "https://web-native.dev/icon.svg",
-  "author": {
-    "name": "Oxford Harrison",
-    "email": "oxharris.dev@gmail.com"
-  },
-  "version": "0.6.1",
+  "version": "0.6.2",
   "license": "MIT",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/web-native/jsen.git"
   },
-  "funding": {
-    "type": "patreon",
-    "url": "https://patreon.com/ox_harris"
+  "bugs": {
+    "url": "https://github.com/web-native/jsen/issues"
   },
+  "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "test": "node ./tests/index.js",
+    "test": "node ./.tests/index.js",
     "build-prod": "webpack --config ../webpack.config.prod.js",
     "build": "webpack --config ../webpack.config.js",
     "watch": "webpack --watch"
   },
   "dependencies": {
-    "@web-native-js/commons": "^0.5.0"
+    "@web-native-js/commons": "^0.5.1"
   },
   "devDependencies": {
-    "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11"
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   },
-  "bugs": {
-    "url": "https://github.com/web-native/jsen/issues"
+  "author": "Oxford Harrison <oxharris.dev@gmail.com>",
+  "maintainers": [
+    "Oxford Harrison <oxharris.dev@gmail.com>"
+  ],
+  "contributors": [],
+  "funding": {
+    "type": "patreon",
+    "url": "https://patreon.com/ox_harris"
+  },
+  "badges": {
+    "list": [
+      "npmversion",
+      "npmdownloads",
+      "patreon"
+    ],
+    "config": {
+      "patreonUsername": "ox_harris",
+      "githubUsername": "web-native",
+      "githubRepository": "jsen",
+      "githubSlug": "web-native/jsen",
+      "npmPackageName": "@web-native-js/observables"
+    }
   }
 }

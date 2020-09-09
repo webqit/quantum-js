@@ -11,6 +11,7 @@ import ReferenceInterface from './Expr/ReferenceInterface.js';
 import CallInterface from './Expr/CallInterface.js';
 import FuncInterface from './Expr/FuncInterface.js';
 import IfInterface from './Expr/IfInterface.js';
+import SyntaxError from './SyntaxError.js';
 
 /**
  * ---------------------------
@@ -46,7 +47,7 @@ export default class Jsen {
 			if (params.assert === false) {
 				return;
 			}
-			throw new Error('[Syntax error:] ' + expr);
+			throw new SyntaxError(expr);
 		}
 	}
 	 

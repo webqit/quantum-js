@@ -7,7 +7,8 @@ import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import Lexer from '@web-native-js/commons/str/Lexer.js';
 import PresenceInterface from './PresenceInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
-import Scope from '../Scope.js';
+import SyntaxError from '../SyntaxError.js';
+import ReferenceError from '../ReferenceError.js';
 
 /**
  * ---------------------------
@@ -31,12 +32,16 @@ const Presence = class extends PresenceInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		var reference = this.reference.getEval(context, params);
 		var prop = this.prop.eval(context, params);
-		if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
-			return Scope.create(reference.context).has(reference.name, prop, params.trap);
+		try {
+			return this.reference.getEval(context, params).has(prop);
+		} catch(e) {
+			if (e instanceof ReferenceError) {
+				throw new ReferenceError('[' + this + ']: ' + e.message);
+			} else {
+				throw e;
+			}
 		}
-		throw new Error('"' + this + '" is undefined!');
 	}
 	 
 	/**
@@ -55,7 +60,7 @@ const Presence = class extends PresenceInterface {
 			var prop, reference;
 			if (!(prop = parseCallback(parse.tokens.shift().trim()))
 			|| !((reference = parseCallback(parse.tokens.shift().trim())) instanceof ReferenceInterface)) {
-				throw new Error('Invalid presence check expression: ' + expr);
+				throw new SyntaxError(expr);
 			}
 			return new this(prop, reference, parse.matches[0].trim());
 		}

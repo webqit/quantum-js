@@ -9,6 +9,8 @@ import Lexer from '@web-native-js/commons/str/Lexer.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import ExprInterface from '../ExprInterface.js';
 import Scope from '../Scope.js';
+import SyntaxError from '../SyntaxError.js';
+import ReferenceError from '../ReferenceError.js';
 
 /**
  * ---------------------------
@@ -39,18 +41,38 @@ const Reference = class extends ReferenceInterface {
 			}
 			sourceContext = this.context.eval(context, params);
 		}
-		return {context:sourceContext, name:name,};
+		return {
+			get() {
+				return Scope.create(sourceContext).get(name, params.trap);
+			},
+			del() {
+				return Scope.create(sourceContext).del(name, params.trap);
+			},
+			has(prop) {
+				return Scope.create(sourceContext).has(name, prop, params.trap);
+			},
+			set(val, initKeyword = null) {
+				return Scope.create(sourceContext).set(name, val, params.trap, initKeyword);
+			},
+			exec(args) {
+				return Scope.create(sourceContext).exec(name, args, params.trap);
+			},
+		};
 	}
 	 
 	/**
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		var parts = this.getEval(context, params);
-		if (!_isUndefined(parts.context) && !_isUndefined(parts.name)) {
-			return Scope.create(parts.context).get(parts.name, params.trap);
+		try {
+			return this.getEval(context, params).get();
+		} catch(e) {
+			if (e instanceof ReferenceError) {
+				throw new ReferenceError('[' + this + ']: ' + e.message);
+			} else {
+				throw e;
+			}
 		}
-		throw new Error('[Reference Error][' + this + ']: "' + (this.context || this) + '" is undefined!');
 	}
 	 
 	/**
@@ -102,7 +124,7 @@ const Reference = class extends ReferenceInterface {
 			}
 			if (_wrapped(name, '[', ']')) {
 				if (!context) {
-					throw new Error('Invalid reference: ' + expr + '!');
+					throw new SyntaxError(expr);
 				}
 				name = parseCallback(_unwrap(name, '[', ']'));
 			}

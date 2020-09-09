@@ -83,7 +83,11 @@ const Func = class extends FuncInterface {
 			// But this newer context should come first
 			var errorLevel = context instanceof Scope ? context.params.errorLevel : undefined;
 			var nestedContext = new Scope({main:newMainContext, super:context}, {errorLevel});
-			return instance.statements.eval(nestedContext, params);
+			var retrn = instance.statements.eval(nestedContext, params);
+			if (instance.arrowFunctionFormatting.body === false) {
+				return retrn[0];
+			}
+			return retrn;
 		};
 	}
 	

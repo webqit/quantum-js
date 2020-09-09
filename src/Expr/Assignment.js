@@ -11,7 +11,8 @@ import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import Lexer from '@web-native-js/commons/str/Lexer.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
-import Scope from '../Scope.js';
+import SyntaxError from '../SyntaxError.js';
+import ReferenceError from '../ReferenceError.js';
 
 /**
  * ---------------------------
@@ -49,7 +50,7 @@ const Assignment = class extends AssignmentInterface {
 				val = initialVal - 1;
 			}
 		} else if (['+=', '-=', '*=', '/='].includes(this.operator)) {
-			var operandA = this.reference.eval(context, params);
+			var operandA = reference.get();
 			var operandB = this.val.eval(context, params);
 			if (this.operator !== '+=' && (!_isNumber(operandA) || !_isNumber(operandB))) {
 				throw new Error(this + ' - operands must each be a number!');
@@ -66,16 +67,19 @@ const Assignment = class extends AssignmentInterface {
 		} else {
 			val = this.val.eval(context, params);
 		}
-		if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
+		try {
+			reference.set(val, this.initKeyword);
 			if (params && _isArray(params.references)) {
 				_pushUnique(params.references, this.reference.toString());
 			}
-			if (Scope.create(reference.context).set(reference.name, val, params.trap, this.initKeyword)) {
-				return this.postIncrDecr ? initialVal : val;
-			};
-			throw new Error('[' + this + '] Operation failed!');
+			return this.postIncrDecr ? initialVal : val;
+		} catch(e) {
+			if (e instanceof ReferenceError) {
+				throw new ReferenceError('[' + this + ']: ' + e.message);
+			} else {
+				throw e;
+			}
 		}
-		throw new Error('"' + this + '" is undefined!');
 	}
 	 
 	/**
@@ -107,14 +111,14 @@ const Assignment = class extends AssignmentInterface {
 			}
 			if (['var', 'let', 'const'].includes(_before(reference, ' '))) {
 				if (operator !== '=') {
-					throw new Error('Invalid declaration: ' + expr);
+					throw new SyntaxError('Invalid declaration: ' + expr);
 				}
 				initKeyword = _before(reference, ' ');
 				reference = _after(reference, ' ').trim();
 			}
 			if (!((reference = parseCallback(reference, null, {lodge: false})) instanceof ReferenceInterface) 
 			|| (!isIncrDecr && !(val = parseCallback(val)))) {
-				throw new Error('Invalid assignment expression: ' + expr);
+				throw new SyntaxError(expr);
 			}
 			return new this(initKeyword, reference, val, operator, postIncrDecr);
 		}

@@ -7,7 +7,8 @@ import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
 import Lexer from '@web-native-js/commons/str/Lexer.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import DeletionInterface from './DeletionInterface.js';
-import Scope from '../Scope.js';
+import SyntaxError from '../SyntaxError.js';
+import ReferenceError from '../ReferenceError.js';
 
 /**
  * ---------------------------
@@ -30,11 +31,15 @@ const Deletion = class extends DeletionInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		var reference = this.reference.getEval(context, params);
-		if (!_isUndefined(reference.context) && !_isUndefined(reference.name)) {
-			return Scope.create(reference.context).del(reference.name, params.trap);
+		try {
+			return this.reference.getEval(context, params).del();
+		} catch(e) {
+			if (e instanceof ReferenceError) {
+				throw new ReferenceError('[' + this + ']: ' + e.message);
+			} else {
+				throw e;
+			}
 		}
-		throw new Error('[Reference Error][' + this + ']: "' + (this.context || this) + '" is undefined!');
 	}
 	 
 	/**
@@ -52,7 +57,7 @@ const Deletion = class extends DeletionInterface {
 		if (parse.matches.length === 1 && expr.startsWith(parse.matches[0] + ' ')) {
 			var reference;
 			if (!((reference = parseCallback(parse.tokens.pop().trim())) instanceof ReferenceInterface)) {
-				throw new Error('Invalid delete directive: ' + expr);
+				throw new SyntaxError(expr);
 			}
 			return new this(reference, parse.matches[0].trim());
 		}
