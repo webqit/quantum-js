@@ -95,7 +95,7 @@ const Reference = class extends ReferenceInterface {
 				name = '`' + name + '`';
 			}
 		} else {
-			var subjectContext = context;
+			var subjectContext = params.context;
 			if (this.backticks) {
 				name = '`' + name + '`';
 			}
