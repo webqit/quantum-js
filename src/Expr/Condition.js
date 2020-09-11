@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import ConditionInterface from './ConditionInterface.js';
 
 /**
@@ -35,13 +35,20 @@ export default class Condition extends ConditionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		return [
-			this.assertion.toString(context), 
+			this.assertion.stringify(params), 
 			this.constructor.operators[0], 
-			this.onTrue.toString(context),
+			this.onTrue.stringify(params),
 			this.constructor.operators[1], 
-			this.onFalse.toString(context)
+			this.onFalse.stringify(params)
 		].join(' ');
 	}
 	

@@ -2,12 +2,12 @@
 /**
  * @imports
  */
-import _isNumeric from '@web-native-js/commons/js/isNumeric.js';
-import _flatten from '@web-native-js/commons/arr/flatten.js';
-import _intersect from '@web-native-js/commons/arr/intersect.js';
-import _unique from '@web-native-js/commons/arr/unique.js';
+import _isNumeric from '@onephrase/util/js/isNumeric.js';
+import _flatten from '@onephrase/util/arr/flatten.js';
+import _intersect from '@onephrase/util/arr/intersect.js';
+import _unique from '@onephrase/util/arr/unique.js';
 import MathInterface from './MathInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -52,9 +52,16 @@ const Math = class extends MathInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return [this.val.toString(context)].concat(
-			this.exprs.map(expr => expr.operator + ' ' + expr.val.toString(context))
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return [this.val.stringify(params)].concat(
+			this.exprs.map(expr => expr.operator + ' ' + expr.val.stringify(params))
 		).join(' ');
 	}
 	

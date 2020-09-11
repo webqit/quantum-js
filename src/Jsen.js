@@ -2,11 +2,11 @@
 /**
  * @imports
  */
-import _merge from '@web-native-js/commons/obj/merge.js';
-import _isEmpty from '@web-native-js/commons/js/isEmpty.js';
-import _remove from '@web-native-js/commons/arr/remove.js';
-import _isArray from '@web-native-js/commons/js/isArray.js';
-import _instanceof from '@web-native-js/commons/js/instanceof.js';
+import _merge from '@onephrase/util/obj/merge.js';
+import _isEmpty from '@onephrase/util/js/isEmpty.js';
+import _remove from '@onephrase/util/arr/remove.js';
+import _isArray from '@onephrase/util/js/isArray.js';
+import _instanceof from '@onephrase/util/js/instanceof.js';
 import ReferenceInterface from './Expr/ReferenceInterface.js';
 import CallInterface from './Expr/CallInterface.js';
 import FuncInterface from './Expr/FuncInterface.js';

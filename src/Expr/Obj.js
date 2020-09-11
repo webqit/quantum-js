@@ -2,13 +2,13 @@
 /**
  * @imports
  */
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import _first from '@web-native-js/commons/arr/first.js';
-import _last from '@web-native-js/commons/arr/last.js';
-import _each from '@web-native-js/commons/obj/each.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
+import _first from '@onephrase/util/arr/first.js';
+import _last from '@onephrase/util/arr/last.js';
+import _each from '@onephrase/util/obj/each.js';
 import ObjInterface from './ObjInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -54,10 +54,17 @@ const Obj = class extends ObjInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		var str = [];
 		_each(this.entries, (key, expr) => {
-			str.push(key + Obj.operators.sub + expr.toString(context));
+			str.push(key + Obj.operators.sub + expr.stringify(params));
 		});
 		return '{' + str.join(Obj.operators.sup) + '}';
 	}

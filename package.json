@@ -8,9 +8,8 @@
     "JavaScript runtime",
     "DSL"
   ],
-  "homepage": "https://web-native.dev",
-  "icon": "https://web-native.dev/icon.svg",
-  "version": "0.6.2",
+  "homepage": "https://web-native.dev/package/jsen",
+  "version": "0.6.3",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,13 +21,13 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "watch": "webpack --watch",
     "test": "node ./.tests/index.js",
-    "build-prod": "webpack --config ../webpack.config.prod.js",
-    "build": "webpack --config ../webpack.config.js",
-    "watch": "webpack --watch"
+    "build-dev": "webpack --config ./webpack.config.dev.cjs",
+    "build": "webpack --config ./webpack.config.cjs"
   },
   "dependencies": {
-    "@web-native-js/commons": "^0.5.1"
+    "@onephrase/util": "^0.5.5"
   },
   "devDependencies": {
     "webpack": "^4.44.1",
@@ -54,7 +53,7 @@
       "githubUsername": "web-native",
       "githubRepository": "jsen",
       "githubSlug": "web-native/jsen",
-      "npmPackageName": "@web-native-js/observables"
+      "npmPackageName": "@web-native-js/jsen"
     }
   }
 }

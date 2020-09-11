@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import IfInterface from './IfInterface.js';
 import Block from './Block.js';
 import Scope from '../Scope.js';
@@ -45,14 +45,21 @@ const If = class extends IfInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
         var onTrue = this.onTrue && this.params.onTrueIsBlock 
-            ? '{' + this.onTrue.toString(context) + '}' 
-            : (this.onTrue ? this.onTrue.toString(context) : '');
+            ? '{' + this.onTrue.stringify(params) + '}' 
+            : (this.onTrue ? this.onTrue.stringify(params) : '');
         var onFalse = this.onFalse && this.params.onFalseIsBlock 
-            ? '{' + this.onFalse.toString(context) + '}' 
-            : (this.onFalse ? this.onFalse.toString(context) : '');
-		return 'if (' + this.assertion.toString(context) + ')' + onTrue + (onFalse ? ' else ' + onFalse : '');
+            ? '{' + this.onFalse.stringify(params) + '}' 
+            : (this.onFalse ? this.onFalse.stringify(params) : '');
+		return 'if (' + this.assertion.stringify(params) + ')' + onTrue + (onFalse ? ' else ' + onFalse : '');
 	}
 	
 	/**

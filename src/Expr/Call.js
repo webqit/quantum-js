@@ -2,11 +2,11 @@
 /**
  * @imports
  */
-import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
+import _isUndefined from '@onephrase/util/js/isUndefined.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import CallInterface from './CallInterface.js';
 import Arguments from './Arguments.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import SyntaxError from '../SyntaxError.js';
 import ReferenceError from '../ReferenceError.js';
 
@@ -46,8 +46,15 @@ const Call = class extends CallInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return this.reference.toString(context) + this.args.toString(context);
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return this.reference.stringify(params) + this.args.stringify(params);
 	}
 	
 	/**

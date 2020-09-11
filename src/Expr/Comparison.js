@@ -2,16 +2,16 @@
 /**
  * @imports
  */
-import _flatten from '@web-native-js/commons/arr/flatten.js';
-import _first from '@web-native-js/commons/arr/first.js';
-import _last from '@web-native-js/commons/arr/last.js';
-import _difference from '@web-native-js/commons/arr/difference.js';
-import _isArray from '@web-native-js/commons/js/isArray.js';
-import _isObject from '@web-native-js/commons/js/isObject.js';
-import _isString from '@web-native-js/commons/js/isString.js';
-import _each from '@web-native-js/commons/obj/each.js';
+import _flatten from '@onephrase/util/arr/flatten.js';
+import _first from '@onephrase/util/arr/first.js';
+import _last from '@onephrase/util/arr/last.js';
+import _difference from '@onephrase/util/arr/difference.js';
+import _isArray from '@onephrase/util/js/isArray.js';
+import _isObject from '@onephrase/util/js/isObject.js';
+import _isString from '@onephrase/util/js/isString.js';
+import _each from '@onephrase/util/obj/each.js';
 import ComparisonInterface from './ComparisonInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -45,11 +45,18 @@ export default class Comparison extends ComparisonInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		return [
-			this.operand1.toString(context), 
+			this.operand1.stringify(params), 
 			this.operator, 
-			this.operand2.toString(context)
+			this.operand2.stringify(params)
 		].join(' ');
 	}
 	

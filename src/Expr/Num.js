@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _isNumeric from '@web-native-js/commons/js/isNumeric.js';
+import _isNumeric from '@onephrase/util/js/isNumeric.js';
 import NumInterface from './NumInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -33,7 +33,14 @@ const Num = class extends NumInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		return this.int + (this.dec ? '.' + this.dec : null);
 	}
 	

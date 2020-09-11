@@ -2,8 +2,8 @@
 /**
  * @imports
  */
-import _isObject from '@web-native-js/commons/js/isObject.js';
-import _even from '@web-native-js/commons/obj/even.js';
+import _isObject from '@onephrase/util/js/isObject.js';
+import _even from '@onephrase/util/obj/even.js';
 
 /**
  * ---------------------------

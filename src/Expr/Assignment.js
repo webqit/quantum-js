@@ -2,13 +2,13 @@
 /**
  * @imports
  */
-import _last from '@web-native-js/commons/arr/last.js';
-import _before from '@web-native-js/commons/str/before.js';
-import _after from '@web-native-js/commons/str/after.js';
-import _isNumber from '@web-native-js/commons/js/isNumber.js';
-import _isArray from '@web-native-js/commons/js/isArray.js';
-import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _last from '@onephrase/util/arr/last.js';
+import _before from '@onephrase/util/str/before.js';
+import _after from '@onephrase/util/str/after.js';
+import _isNumber from '@onephrase/util/js/isNumber.js';
+import _isArray from '@onephrase/util/js/isArray.js';
+import _isUndefined from '@onephrase/util/js/isUndefined.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import SyntaxError from '../SyntaxError.js';
@@ -85,14 +85,21 @@ const Assignment = class extends AssignmentInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		if (['++', '--'].includes(this.operator)) {
 			return this.postIncrDecr 
-				? this.reference.toString(context) + this.operator
-				: this.operator + this.reference.toString(context);
+				? this.reference.stringify(params) + this.operator
+				: this.operator + this.reference.stringify(params);
 		}
 		return (this.initKeyword ? this.initKeyword + ' ' : '')
-			+ [this.reference.toString(context), this.operator, this.val.toString(context)].join(' ');
+			+ [this.reference.stringify(params), this.operator, this.val.stringify(params)].join(' ');
 	}
 	
 	/**

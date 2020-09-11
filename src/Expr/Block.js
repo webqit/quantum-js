@@ -2,11 +2,11 @@
 /**
  * @imports
  */
-import _unique from '@web-native-js/commons/arr/unique.js';
-import _before from '@web-native-js/commons/str/before.js';
-import _flatten from '@web-native-js/commons/arr/flatten.js';
-import _copy from '@web-native-js/commons/obj/copy.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _unique from '@onephrase/util/arr/unique.js';
+import _before from '@onephrase/util/str/before.js';
+import _flatten from '@onephrase/util/arr/flatten.js';
+import _copy from '@onephrase/util/obj/copy.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import BlockInterface from './BlockInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
@@ -81,8 +81,15 @@ export default class Block extends BlockInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return this.stmts.map(stmt => stmt.toString(context)).join(this.delim);
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return this.stmts.map(stmt => stmt.stringify(params)).join(this.delim);
 	}
 	 
 	/**

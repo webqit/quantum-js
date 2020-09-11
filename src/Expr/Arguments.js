@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import ArgumentsInterface from './ArgumentsInterface.js';
 
 /**
@@ -33,8 +33,15 @@ const Arguments = class extends ArgumentsInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return '(' + this.list.map(arg => arg.toString(context)).join(', ') + ')';
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return '(' + this.list.map(arg => arg.stringify(params)).join(', ') + ')';
 	}
 	
 	/**

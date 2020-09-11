@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import VoidInterface from './VoidInterface.js';
 
 /**
@@ -32,6 +32,13 @@ const Void = class extends VoidInterface {
 	 * @inheritdoc
 	 */
 	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		return this.val;
 	}
 	

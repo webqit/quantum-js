@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _last from '@web-native-js/commons/arr/last.js';
-import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _last from '@onephrase/util/arr/last.js';
+import _isUndefined from '@onephrase/util/js/isUndefined.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import PresenceInterface from './PresenceInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import SyntaxError from '../SyntaxError.js';
@@ -47,8 +47,15 @@ const Presence = class extends PresenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return [this.prop.toString(context), this.operator, this.reference.toString(context)].join(' ');
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return [this.prop.stringify(params), this.operator, this.reference.stringify(params)].join(' ');
 	}
 	
 	/**

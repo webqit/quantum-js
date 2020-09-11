@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import AbstractionInterface from './AbstractionInterface.js';
 
 /**
@@ -33,8 +33,15 @@ const Abstraction = class extends AbstractionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return '(' + this.expr.toString(context) + ')';
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return '(' + this.expr.stringify(params) + ')';
 	}
 	
 	/**

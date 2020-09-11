@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _last from '@web-native-js/commons/arr/last.js';
-import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _last from '@onephrase/util/arr/last.js';
+import _isUndefined from '@onephrase/util/js/isUndefined.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import DeletionInterface from './DeletionInterface.js';
 import SyntaxError from '../SyntaxError.js';
@@ -45,8 +45,15 @@ const Deletion = class extends DeletionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return this.operator + ' ' + this.reference.toString(context);
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return this.operator + ' ' + this.reference.stringify(params);
 	}
 	
 	/**

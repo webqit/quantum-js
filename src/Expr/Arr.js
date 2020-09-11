@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
 import ArrInterface from './ArrInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -46,8 +46,15 @@ const Arr = class extends ArrInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return '[' + this.exprs.map(expr => expr.toString(context)).join(', ') + ']';
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return '[' + this.exprs.map(expr => expr.stringify(params)).join(', ') + ']';
 	}
 	
 	/**

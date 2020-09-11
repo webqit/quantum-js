@@ -2,11 +2,11 @@
 /**
  * @imports
  */
-import _first from '@web-native-js/commons/arr/first.js';
-import _flatten from '@web-native-js/commons/arr/flatten.js';
-import _unique from '@web-native-js/commons/arr/unique.js';
+import _first from '@onephrase/util/arr/first.js';
+import _flatten from '@onephrase/util/arr/flatten.js';
+import _unique from '@onephrase/util/arr/unique.js';
 import AssertionInterface from './AssertionInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 
 /**
  * ---------------------------
@@ -70,11 +70,18 @@ const Assertion = class extends AssertionInterface {
 	/**
 	 * @inheritdoc
 	 */
-	 toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
-			return this.logic + _first(this.exprs).toString(context);
+			return this.logic + _first(this.exprs).stringify(params);
 		}
-		return this.exprs.map(expr => expr.toString(context)).join(' ' + this.logic + ' ');
+		return this.exprs.map(expr => expr.stringify(params)).join(' ' + this.logic + ' ');
 	}
 	
 	/**

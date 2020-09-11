@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
 import StrInterface from './StrInterface.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import Bool from './Bool.js';
 
 /**
@@ -36,6 +36,13 @@ const Str = class extends StrInterface {
 	 * @inheritdoc
 	 */
 	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		return this.quote + this.expr + this.quote;
 	}
 	 

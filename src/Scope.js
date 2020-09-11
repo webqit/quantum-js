@@ -2,16 +2,16 @@
 /**
  * @imports
  */
-import _isTypeObject from '@web-native-js/commons/js/isTypeObject.js';
-import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
-import _isFunction from '@web-native-js/commons/js/isFunction.js';
-import _isClass from '@web-native-js/commons/js/isClass.js';
-import _isString from '@web-native-js/commons/js/isString.js';
-import _isNull from '@web-native-js/commons/js/isNull.js';
-import _isNumber from '@web-native-js/commons/js/isNumber.js';
-import _after from '@web-native-js/commons/str/after.js';
-import _before from '@web-native-js/commons/str/before.js';
-import _unique from '@web-native-js/commons/arr/unique.js';
+import _isTypeObject from '@onephrase/util/js/isTypeObject.js';
+import _isUndefined from '@onephrase/util/js/isUndefined.js';
+import _isFunction from '@onephrase/util/js/isFunction.js';
+import _isClass from '@onephrase/util/js/isClass.js';
+import _isString from '@onephrase/util/js/isString.js';
+import _isNull from '@onephrase/util/js/isNull.js';
+import _isNumber from '@onephrase/util/js/isNumber.js';
+import _after from '@onephrase/util/str/after.js';
+import _before from '@onephrase/util/str/before.js';
+import _unique from '@onephrase/util/arr/unique.js';
 import ReferenceError from './ReferenceError.js';
 
 /**

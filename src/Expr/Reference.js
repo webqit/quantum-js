@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import _isUndefined from '@web-native-js/commons/js/isUndefined.js';
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _isUndefined from '@onephrase/util/js/isUndefined.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import ExprInterface from '../ExprInterface.js';
 import Scope from '../Scope.js';
@@ -78,12 +78,19 @@ const Reference = class extends ReferenceInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		var name = this.name;
 		if (this.context) {
-			var subjectContext = this.context.toString(context);
+			var subjectContext = this.context.stringify(params);
 			if (name instanceof ExprInterface) {
-				name = '[' + name.toString(context) + ']';
+				name = '[' + name.stringify(params) + ']';
 			} else if (this.backticks) {
 				name = '`' + name + '`';
 			}

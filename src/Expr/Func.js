@@ -2,12 +2,12 @@
 /**
  * @imports
  */
-import _copy from '@web-native-js/commons/obj/copy.js';
-import _each from '@web-native-js/commons/obj/each.js';
-import _flatten from '@web-native-js/commons/arr/flatten.js';
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import _copy from '@onephrase/util/obj/copy.js';
+import _each from '@onephrase/util/obj/each.js';
+import _flatten from '@onephrase/util/arr/flatten.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import FuncInterface from './FuncInterface.js';
 import Block from './Block.js';
 import Scope from '../Scope.js';
@@ -94,18 +94,25 @@ const Func = class extends FuncInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
 		var paramters = [];
 		_each(this.paramters, (name, value) => {
-			paramters.push(name + (value ? '=' + value.toString(context) : ''));
+			paramters.push(name + (value ? '=' + value.stringify(params) : ''));
 		});
 		if (this.arrowFunctionFormatting) {
 			var headNoWrap = this.arrowFunctionFormatting.head === false || (paramters.length === 1 && paramters[0].indexOf('=') === -1);
 			var bodyNoWrap = this.arrowFunctionFormatting.body === false
 			return (headNoWrap ? paramters[0] : '(' + paramters.join(', ') + ')')
-			+ ' => ' + (bodyNoWrap ? this.statements.toString(context) : '{' + this.statements.toString(context) + '}');
+			+ ' => ' + (bodyNoWrap ? this.statements.stringify(params) : '{' + this.statements.stringify(params) + '}');
 		}
-		return 'function (' + paramters.join(', ') + ') {' + this.statements.toString(context) + '}';
+		return 'function (' + paramters.join(', ') + ') {' + this.statements.stringify(params) + '}';
 	}
 	
 	/**

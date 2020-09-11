@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '@web-native-js/commons/str/Lexer.js';
+import Lexer from '@onephrase/util/str/Lexer.js';
 import ReturnInterface from './ReturnInterface.js';
 
 /**
@@ -31,8 +31,15 @@ const Return = class extends ReturnInterface {
 	/**
 	 * @inheritdoc
 	 */
-	toString(context = null) {
-		return this.expr ? 'return ' + this.expr.toString(context) : 'return';
+	toString() {
+		return this.stringify();
+	}
+	
+	/**
+	 * @inheritdoc
+	 */
+	stringify(params = {}) {
+		return this.expr ? 'return ' + this.expr.stringify(params) : 'return';
 	}
 	
 	/**
