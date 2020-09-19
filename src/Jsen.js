@@ -66,6 +66,7 @@ export default class Jsen {
 				}
 				if (subStmt) {
 					subStmt.meta.vars.forEach(_var => vars.push(_var));
+					subStmt.meta.deepVars.forEach(_var => deepVars.push(_var));
 				}
 			}
 			return subStmt;
@@ -76,8 +77,7 @@ export default class Jsen {
 				parsed.meta = {};
 			}
 			parsed.meta.vars = vars;
-			parsed.meta.deepVars = [];
-			parsed.meta.deepVars = [];
+			parsed.meta.deepVars = deepVars;
 			if (_instanceof(parsed, CallInterface)) {
 				if (parsed.reference.context) {
 					parsed.meta.vars.push(parsed.reference.context);
@@ -86,19 +86,17 @@ export default class Jsen {
 				parsed.meta.vars.splice(0);
 			} else if (_instanceof(parsed, IfInterface)) {
 				if (parsed.onTrue) {
-					parsed.onTrue.meta.vars.forEach(_var => {
+					parsed.onTrue.meta.vars.concat(parsed.onTrue.meta.deepVars).forEach(_var => {
 						_remove(parsed.meta.vars, _var);
 						parsed.meta.deepVars.push(_var);
 					});
 				}
 				if (parsed.onFalse) {
-					parsed.onFalse.meta.vars.forEach(_var => {
+					parsed.onFalse.meta.vars.concat(parsed.onFalse.meta.deepVars).forEach(_var => {
 						_remove(parsed.meta.vars, _var);
 						parsed.meta.deepVars.push(_var);
 					});
 				}
-			} else {
-				parsed.meta.vars.push(...deepVars);
 			}
 			if (_isArray(params.explain)) {
 				params.explain.push(expr + ' >>------------->> ' + parsed.jsenType);

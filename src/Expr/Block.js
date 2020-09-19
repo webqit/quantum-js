@@ -2,11 +2,11 @@
 /**
  * @imports
  */
+import Lexer from '@onephrase/util/str/Lexer.js';
+import _copy from '@onephrase/util/obj/copy.js';
 import _unique from '@onephrase/util/arr/unique.js';
 import _before from '@onephrase/util/str/before.js';
 import _flatten from '@onephrase/util/arr/flatten.js';
-import _copy from '@onephrase/util/obj/copy.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
 import BlockInterface from './BlockInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
