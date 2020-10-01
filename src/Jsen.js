@@ -84,6 +84,7 @@ export default class Jsen {
 				}
 			} else if (_instanceof(parsed, FuncInterface)) {
 				parsed.meta.vars.splice(0);
+				parsed.meta.deepVars.splice(0);
 			} else if (_instanceof(parsed, IfInterface)) {
 				if (parsed.onTrue) {
 					parsed.onTrue.meta.vars.concat(parsed.onTrue.meta.deepVars).forEach(_var => {

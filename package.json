@@ -9,7 +9,7 @@
     "DSL"
   ],
   "homepage": "https://web-native.dev/package/jsen",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -27,10 +27,10 @@
     "build": "webpack --config ./webpack.config.cjs"
   },
   "dependencies": {
-    "@onephrase/util": "^0.5.5"
+    "@onephrase/util": "^0.6.0"
   },
   "devDependencies": {
-    "webpack": "^4.44.1",
+    "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   },
   "author": "Oxford Harrison <oxharris.dev@gmail.com>",

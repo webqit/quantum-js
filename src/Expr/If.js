@@ -77,25 +77,17 @@ const If = class extends IfInterface {
                 // The braces gives us the onTrue block
                 onTrueIsBlock = true;
                 onTrue = _unwrap(onTrue, '{', '}').trim();
-                onTrue = parseCallback(onTrue, [Block], {assert:false, meta:null}) || parseCallback(onTrue, null, {meta:null});
-            } else {
-                onTrue = parseCallback(onTrue, null, {meta:null});
             }
+            onTrue = parseCallback(onTrue, [Block], {assert:false, meta:null}) || parseCallback(onTrue, null, {meta:null});
             if (onFalse) {
                 if (_wrapped(onFalse, '{', '}')) {
                     // The braces gives us the onTrue block
                     onFalseIsBlock = true;
                     onFalse = _unwrap(onFalse, '{', '}').trim();
-                    onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
-                } else {
-                    onFalse = parseCallback(onFalse, null, {meta:null});
                 }
+                onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
             }
-			return new this(
-                assertion, 
-                onTrue ? (onTrue.jsenType === 'Block' ? onTrue : new Block([onTrue])) : null, 
-                onFalse ? (onFalse.jsenType === 'Block' ? onFalse : new Block([onFalse])) : null, 
-                {
+			return new this(assertion, onTrue, onFalse, {
                     onTrueIsBlock,
                     onFalseIsBlock,
                 }
