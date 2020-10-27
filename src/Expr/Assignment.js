@@ -127,6 +127,7 @@ const Assignment = class extends AssignmentInterface {
 			|| (!isIncrDecr && !(val = parseCallback(val)))) {
 				throw new SyntaxError(expr);
 			}
+			reference.role = 'ASSIGNMENT_SPECIFIER';
 			return new this(initKeyword, reference, val, operator, postIncrDecr);
 		}
 	}

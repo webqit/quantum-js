@@ -68,6 +68,7 @@ const Call = class extends CallInterface {
 			|| !(args = parseCallback(args, [Arguments]))) {
 				throw new SyntaxError(expr);
 			}
+			reference.role = 'CALL_SPECIFIER';
 			return new this(reference, args);
 		}
 	}

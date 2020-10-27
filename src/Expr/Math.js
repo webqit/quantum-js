@@ -70,7 +70,7 @@ const Math = class extends MathInterface {
 	 */
 	static parse(expr, parseCallback, params = {}) {
 		var parse = Lexer.lex(expr, _flatten(this.operators));
-		if (parse.tokens.length > 1 && parse.matches.length === parse.tokens.length - 1) {
+		if (parse.tokens.filter(t => t).length > 1 && parse.matches.length === parse.tokens.length - 1) {
 			var operators = _unique(parse.matches);
 			if (_intersect(operators, this.operators.sup).length && _intersect(operators, this.operators.sub).length) {
 				throw new Error('"Addition/subtraction" and "multiplication/division" operators cannot be used in the same expression: ' + expr + '!');

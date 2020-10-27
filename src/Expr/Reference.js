@@ -18,7 +18,7 @@ import ReferenceError from '../ReferenceError.js';
  * ---------------------------
  */				
 
-const Reference = class extends ReferenceInterface {
+export default class Reference extends ReferenceInterface {
 
 	/**
 	 * @inheritdoc
@@ -127,7 +127,7 @@ const Reference = class extends ReferenceInterface {
 			// ------------------------
 			if (splits.length) {
 				context = parseCallback(splits.join(''));
-				context.isContext = true;
+				context.role = 'CONTEXT';
 			}
 			if (_wrapped(name, '[', ']')) {
 				if (!context) {
@@ -144,8 +144,3 @@ const Reference = class extends ReferenceInterface {
  * @prop string
  */
 Reference.separator = '.';
-
-/**
- * @exports
- */
-export default Reference;

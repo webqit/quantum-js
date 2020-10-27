@@ -2,16 +2,16 @@
 /**
  * @imports
  */
-import IndependentExprInterface from '../IndependentExprInterface.js';
+import ExprInterface from '../ExprInterface.js';
 
 /**
  * ---------------------------
- * FuncInterface
+ * IfInterface
  * ---------------------------
  */				
 
-const Interface = class extends IndependentExprInterface {};
+const Interface = class extends ExprInterface {};
 Object.defineProperty(Interface.prototype, 'jsenType', {
-	get() { return 'FunctionType'; },
+	get() { return 'SwitchConstruct'; },
 });
 export default Interface;

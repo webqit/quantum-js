@@ -29,6 +29,7 @@ const Assertion = class extends AssertionInterface {
 	 * @inheritdoc
 	 */
 	 eval(context = null, params = {}) {
+		var Assertion = this.constructor;
 		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
 			return !_first(this.exprs).eval(context, params);
 		}
@@ -78,6 +79,7 @@ const Assertion = class extends AssertionInterface {
 	 * @inheritdoc
 	 */
 	stringify(params = {}) {
+		var Assertion = this.constructor;
 		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
 			return this.logic + _first(this.exprs).stringify(params);
 		}
@@ -88,10 +90,10 @@ const Assertion = class extends AssertionInterface {
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		if (expr.toUpperCase().startsWith(Assertion.negation.toUpperCase())) {
+		if (expr.toUpperCase().startsWith(this.negation.toUpperCase())) {
 			return new this(
-				[parseCallback(expr.substr(Assertion.negation.length))],
-				Assertion.negation
+				[parseCallback(expr.substr(this.negation.length))],
+				this.negation
 			);
 		}
 		var parse = Lexer.lex(expr, _flatten(this.operators));

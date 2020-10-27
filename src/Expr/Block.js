@@ -10,6 +10,7 @@ import _flatten from '@onephrase/util/arr/flatten.js';
 import BlockInterface from './BlockInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
+import DeletionInterface from './DeletionInterface.js';
 import Scope from '../Scope.js';
 
 /**
@@ -69,7 +70,8 @@ export default class Block extends BlockInterface {
 				}
 				results[i] = callEval(stmt, context, _params);
 				// Add this change for subsequent statements
-				if (params.references && (stmt instanceof AssignmentInterface)) {
+				// This is a local change!
+				if (params.references && ((stmt instanceof AssignmentInterface) || (stmt instanceof DeletionInterface))) {
 					params.references = params.references.concat(stringifyEach([stmt.reference]));
 				}
 			}

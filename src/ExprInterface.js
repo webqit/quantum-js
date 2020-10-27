@@ -76,17 +76,7 @@ export default class {
 	 *
 	 * @return mixed
 	 */
-	//eval(context = null, trap = {})
-	
-	/**
-	 * Serializes the expression instance back to a string,
-	 * optionally in the context of an object.
-	 *
-	 * @param object context
-	 *
-	 * @return string
-	 */
-	//toString(context = null)
+	//eval(context = null, params = {})
 	
 	/**
 	 * SAttempts to parse a string into the class instance.

@@ -12,6 +12,6 @@ import ExprInterface from '../ExprInterface.js';
 
 const Interface = class extends ExprInterface {};
 Object.defineProperty(Interface.prototype, 'jsenType', {
-	get() { return 'IfConditional'; },
+	get() { return 'IfConstruct'; },
 });
 export default Interface;

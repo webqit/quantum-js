@@ -4,6 +4,7 @@
  */
 import Jsen from './Jsen.js';
 import ExprInterface from './ExprInterface.js';
+import IndependentExprInterface from './IndependentExprInterface.js';
 import Scope from './Scope.js';
 import Abstraction from './Expr/Abstraction.js';
 import AbstractionInterface from './Expr/AbstractionInterface.js';
@@ -79,6 +80,7 @@ Jsen.grammars = {
  */
 export {
 	ExprInterface,
+	IndependentExprInterface,
 	Scope
 };
 export {
