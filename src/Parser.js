@@ -7,38 +7,38 @@ import _isEmpty from '@onephrase/util/js/isEmpty.js';
 import _remove from '@onephrase/util/arr/remove.js';
 import _isArray from '@onephrase/util/js/isArray.js';
 import _instanceof from '@onephrase/util/js/instanceof.js';
-import ReferenceInterface from './Expr/ReferenceInterface.js';
-import CallInterface from './Expr/CallInterface.js';
+import ReferenceInterface from './grammar/ReferenceInterface.js';
+import CallInterface from './grammar/CallInterface.js';
 import IndependentExprInterface from './IndependentExprInterface.js';
-import IfInterface from './Expr/IfInterface.js';
+import IfInterface from './grammar/IfInterface.js';
 import SyntaxError from './SyntaxError.js';
 
 /**
  * ---------------------------
- * Jsen (base) class
+ * Parser class
  * ---------------------------
  */				
 const cache = {};
-export default class Jsen {
+export default class Parser {
 	 
 	/**
 	 * @inheritdoc
 	 */
-	static parse(expr, Parsers, params = {}) {
+	static parse(expr, grammar, params = {}) {
 		if (expr.length) {
-			if (cache[expr] && !Parsers && params.allowCache !== false) {
+			if (cache[expr] && !grammar && params.allowCache !== false) {
 				var _parsed;
 				if (_parsed = this.parseOne(expr, cache[expr], params)) {
 					return _parsed;
 				}
 			}
 			// -----------------------------
-			var parsers = Object.values(Parsers || this.grammars);
-			for (var i = 0; i < parsers.length; i ++) {
-				var parsed = this.parseOne(expr, parsers[i], params);
+			var _grammar = Object.values(grammar || this.grammar);
+			for (var i = 0; i < _grammar.length; i ++) {
+				var parsed = this.parseOne(expr, _grammar[i], params);
 				if (parsed) {
-					if (!Parsers && params.allowCache !== false) {
-						cache[expr] = parsers[i];
+					if (!grammar && params.allowCache !== false) {
+						cache[expr] = _grammar[i];
 					}
 					return parsed;
 				}
@@ -55,12 +55,12 @@ export default class Jsen {
 	 * @inheritdoc
 	 */
 
-	static parseOne(expr, Parser, params = {}) {
+	static parseOne(expr, Expr, params = {}) {
 		// From this point forward, all vars is within current scope
 		var vars = [], deepVars = [],
 			varsUnlodged = [], deepVarsUnlodged = [];
-		var parsed = Parser.parse(expr, (_expr, _Parsers, _params = {}) => {
-			var subStmt = this.parse(_expr, _Parsers, _params ? _merge({}, params, _params) : params);
+		var parsed = Expr.parse(expr, (_expr, _grammar, _params = {}) => {
+			var subStmt = this.parse(_expr, _grammar, _params ? _merge({}, params, _params) : params);
 			if (_instanceof(subStmt, ReferenceInterface) || _instanceof(subStmt, CallInterface)) {
 				if (_params.lodge !== false) {
 					vars.push(subStmt);
