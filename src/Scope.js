@@ -185,7 +185,7 @@ export default class Scope {
 			cntxt[prop] = val;
 			return true;
 		};
-		return this.handle(initKeyword ? true : prop, (contxtObj, localContxtMeta, advance) => {
+		return this.handle(initKeyword ? true : prop, (contxtObj, localContxtMeta, advance, level) => {
 			// Whatever the level of localContext...
 			if (localContxtMeta && localContxtMeta[prop] === 'const') {
 				throw new LogicalError('CONST ' + prop + ' cannot be modified!');
@@ -199,8 +199,16 @@ export default class Scope {
 			if (_has(contxtObj, prop, trap)) {
 				return _set(contxtObj, prop, val, trap);
 			}
-			return advance();
-		}, () => {throw new ReferenceError('"' + prop + '" is undefined!');});
+			try {
+				return advance();
+			} catch(e) {
+				if ((e instanceof ReferenceError) && !localContxtMeta && level === 0 && this.params.strictMode === false) {
+					// Assign to undeclared variables
+					return _set(contxtObj, prop, val, trap);
+				}
+				throw e;
+			}
+		}, () => {throw new ReferenceError('"' + prop + '" does not exist in scope!');});
 	}
 	
 	/**

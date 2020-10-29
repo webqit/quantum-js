@@ -43,19 +43,19 @@ export default class Reference extends ReferenceInterface {
 		}
 		return {
 			get() {
-				return Scope.create(sourceContext).get(name, params.trap);
+				return Scope.create(sourceContext, params).get(name, params.trap);
 			},
 			del() {
-				return Scope.create(sourceContext).del(name, params.trap);
+				return Scope.create(sourceContext, params).del(name, params.trap);
 			},
 			has(prop) {
-				return Scope.create(sourceContext).has(name, prop, params.trap);
+				return Scope.create(sourceContext, params).has(name, prop, params.trap);
 			},
 			set(val, initKeyword = null) {
-				return Scope.create(sourceContext).set(name, val, params.trap, initKeyword);
+				return Scope.create(sourceContext, params).set(name, val, params.trap, initKeyword);
 			},
 			exec(args) {
-				return Scope.create(sourceContext).exec(name, args, params.trap);
+				return Scope.create(sourceContext, params).exec(name, args, params.trap);
 			},
 		};
 	}

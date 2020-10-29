@@ -1,22 +1,21 @@
 {
-  "name": "@web-native-js/jsen",
+  "name": "@web-native-js/subscript",
   "title": "JSEN",
-  "description": "JS.E(N) (JavaScript Expression Notation) - a small library for parsing and executing JavaScript expressions in custom scopes.",
+  "description": "",
   "keywords": [
-    "Scoped-JS",
-    "JavaScript parser",
-    "JavaScript runtime",
+    "js-runner",
+    "js-parser",
     "DSL"
   ],
-  "homepage": "https://web-native.dev/package/jsen",
-  "version": "0.6.7",
+  "homepage": "https://web-native.dev/package/subscript",
+  "version": "0.6.8",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/web-native/jsen.git"
+    "url": "git+https://github.com/web-native/subscript.git"
   },
   "bugs": {
-    "url": "https://github.com/web-native/jsen/issues"
+    "url": "https://github.com/web-native/subscript/issues"
   },
   "type": "module",
   "main": "src/index.js",
@@ -51,9 +50,9 @@
     "config": {
       "patreonUsername": "ox_harris",
       "githubUsername": "web-native",
-      "githubRepository": "jsen",
-      "githubSlug": "web-native/jsen",
-      "npmPackageName": "@web-native-js/jsen"
+      "githubRepository": "subscript",
+      "githubSlug": "web-native/subscript",
+      "npmPackageName": "@web-native-js/subscript"
     }
   }
 }
