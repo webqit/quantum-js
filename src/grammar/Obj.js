@@ -2,13 +2,13 @@
 /**
  * @imports
  */
-import _wrapped from '@onephrase/util/str/wrapped.js';
-import _unwrap from '@onephrase/util/str/unwrap.js';
-import _first from '@onephrase/util/arr/first.js';
-import _last from '@onephrase/util/arr/last.js';
-import _each from '@onephrase/util/obj/each.js';
+import _wrapped from '@webqit/util/str/wrapped.js';
+import _unwrap from '@webqit/util/str/unwrap.js';
+import _first from '@webqit/util/arr/first.js';
+import _last from '@webqit/util/arr/last.js';
+import _each from '@webqit/util/obj/each.js';
 import ObjInterface from './ObjInterface.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
  * ---------------------------

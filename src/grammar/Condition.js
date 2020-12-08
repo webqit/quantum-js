@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import ConditionInterface from './ConditionInterface.js';
 
 /**

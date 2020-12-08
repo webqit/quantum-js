@@ -2,8 +2,8 @@
 /**
  * @imports
  */
-import _isObject from '@onephrase/util/js/isObject.js';
-import _even from '@onephrase/util/obj/even.js';
+import _isObject from '@webqit/util/js/isObject.js';
+import _even from '@webqit/util/obj/even.js';
 
 /**
  * ---------------------------

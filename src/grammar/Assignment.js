@@ -2,13 +2,13 @@
 /**
  * @imports
  */
-import _last from '@onephrase/util/arr/last.js';
-import _before from '@onephrase/util/str/before.js';
-import _after from '@onephrase/util/str/after.js';
-import _isNumber from '@onephrase/util/js/isNumber.js';
-import _isArray from '@onephrase/util/js/isArray.js';
-import _isUndefined from '@onephrase/util/js/isUndefined.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import _last from '@webqit/util/arr/last.js';
+import _before from '@webqit/util/str/before.js';
+import _after from '@webqit/util/str/after.js';
+import _isNumber from '@webqit/util/js/isNumber.js';
+import _isArray from '@webqit/util/js/isArray.js';
+import _isUndefined from '@webqit/util/js/isUndefined.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import SyntaxError from '../SyntaxError.js';

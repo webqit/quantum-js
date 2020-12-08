@@ -2,11 +2,11 @@
 /**
  * @imports
  */
-import _isUndefined from '@onephrase/util/js/isUndefined.js';
+import _isUndefined from '@webqit/util/js/isUndefined.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import CallInterface from './CallInterface.js';
 import Arguments from './Arguments.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import SyntaxError from '../SyntaxError.js';
 import ReferenceError from '../ReferenceError.js';
 
@@ -64,7 +64,7 @@ const Call = class extends CallInterface {
 		if (!expr.startsWith('(') && expr.endsWith(')') && !Lexer.match(expr, [' ']).length) {
 			var tokens = Lexer.split(expr, []);
 			var reference, args = tokens.pop();
-			if (!((reference = parseCallback(tokens.join(''), null, {lodge: false})) instanceof ReferenceInterface) 
+			if (!((reference = parseCallback(tokens.join(''))) instanceof ReferenceInterface) 
 			|| !(args = parseCallback(args, [Arguments]))) {
 				throw new SyntaxError(expr);
 			}

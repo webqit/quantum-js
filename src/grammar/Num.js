@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _isNumeric from '@onephrase/util/js/isNumeric.js';
+import _isNumeric from '@webqit/util/js/isNumeric.js';
 import NumInterface from './NumInterface.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
  * ---------------------------

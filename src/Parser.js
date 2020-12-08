@@ -2,11 +2,10 @@
 /**
  * @imports
  */
-import _merge from '@onephrase/util/obj/merge.js';
-import _isEmpty from '@onephrase/util/js/isEmpty.js';
-import _remove from '@onephrase/util/arr/remove.js';
-import _isArray from '@onephrase/util/js/isArray.js';
-import _instanceof from '@onephrase/util/js/instanceof.js';
+import _merge from '@webqit/util/obj/merge.js';
+import _isEmpty from '@webqit/util/js/isEmpty.js';
+import _remove from '@webqit/util/arr/remove.js';
+import _isArray from '@webqit/util/js/isArray.js';
 import ReferenceInterface from './grammar/ReferenceInterface.js';
 import CallInterface from './grammar/CallInterface.js';
 import IndependentExprInterface from './IndependentExprInterface.js';
@@ -57,48 +56,49 @@ export default class Parser {
 
 	static parseOne(expr, Expr, params = {}) {
 		// From this point forward, all vars is within current scope
-		var vars = [], deepVars = [],
-			varsUnlodged = [], deepVarsUnlodged = [];
+		var vars = [], deepVars = [], varsUnlodged = [], deepVarsUnlodged = [];
 		var parsed = Expr.parse(expr, (_expr, _grammar, _params = {}) => {
 			var subStmt = this.parse(_expr, _grammar, _params ? _merge({}, params, _params) : params);
-			if (_instanceof(subStmt, ReferenceInterface) || _instanceof(subStmt, CallInterface)) {
-				if (_params.lodge !== false) {
-					vars.push(subStmt);
-				} else {
-					varsUnlodged.push(subStmt);
+			if (subStmt instanceof ReferenceInterface) {
+				var hasCallHead, _context = subStmt;
+				while(_context = _context.context) {
+					if (_context instanceof CallInterface) {
+						hasCallHead = true;
+					}
 				}
+				if (!hasCallHead && subStmt.role !== 'CONTEXT') {
+					if (_params.lodge) {
+						varsUnlodged.push(subStmt);
+					} else {
+						vars.push(subStmt);
+					}
+				}
+			} else if (subStmt instanceof CallInterface) {
+				varsUnlodged.push(subStmt);
 			}
 			if (subStmt) {
-				if (_params.lodge !== false) {
-					subStmt.meta.vars.forEach(_var => vars.push(_var));
-					subStmt.meta.deepVars.forEach(_var => deepVars.push(_var));
-				} else {
-					subStmt.meta.varsUnlodged.forEach(_var => varsUnlodged.push(_var));
-					subStmt.meta.deepVarsUnlodged.forEach(_var => deepVarsUnlodged.push(_var));
-				}
+				subStmt.meta.vars.forEach(_var => vars.push(_var));
+				subStmt.meta.deepVars.forEach(_var => deepVars.push(_var));
 			}
 			return subStmt;
 		}, params);
 
 		// Add/remove vars to scope
 		if (parsed) {
-			if (!parsed.meta) {
-				parsed.meta = {};
+			if (parsed instanceof IndependentExprInterface) {
+				parsed.meta = {
+					vars: [], deepVars: [], varsUnlodged: [], deepVarsUnlodged: [], 
+				}
+			} else {
+				parsed.meta = {
+					vars, deepVars, varsUnlodged, deepVarsUnlodged,
+				};
 			}
-			parsed.meta.vars = vars;
-			parsed.meta.deepVars = deepVars;
-			parsed.meta.varsUnlodged = varsUnlodged;
-			parsed.meta.deepVarsUnlodged = deepVarsUnlodged;
-			if (_instanceof(parsed, CallInterface)) {
-				if (parsed.reference.context) {
+			if ((parsed instanceof CallInterface)) {
+				if (parsed.reference.context && !(parsed.reference.context instanceof CallInterface)) {
 					parsed.meta.vars.push(parsed.reference.context);
 				}
-			} else if (_instanceof(parsed, IndependentExprInterface)) {
-				parsed.meta.vars.splice(0);
-				parsed.meta.deepVars.splice(0);
-				parsed.meta.varsUnlodged.splice(0);
-				parsed.meta.deepVarsUnlodged.splice(0);
-			} else if (_instanceof(parsed, IfInterface)) {
+			} else if ((parsed instanceof IfInterface)) {
 				if (parsed.onTrue) {
 					parsed.onTrue.meta.vars.concat(parsed.onTrue.meta.deepVars).forEach(_var => {
 						_remove(parsed.meta.vars, _var);

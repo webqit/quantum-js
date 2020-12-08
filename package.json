@@ -1,21 +1,21 @@
 {
-  "name": "@web-native-js/subscript",
-  "title": "JSEN",
-  "description": "",
+  "name": "@webqit/subscript",
+  "title": "Subscript",
+  "description": "Customizable JavaScript runtime",
   "keywords": [
     "js-runner",
     "js-parser",
     "DSL"
   ],
-  "homepage": "https://web-native.dev/package/subscript",
-  "version": "0.6.8",
+  "homepage": "https://webqit.dev/tooling/subscript",
+  "version": "1.0.1",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/web-native/subscript.git"
+    "url": "git+https://github.com/webqit/subscript.git"
   },
   "bugs": {
-    "url": "https://github.com/web-native/subscript/issues"
+    "url": "https://github.com/webqit/subscript/issues"
   },
   "type": "module",
   "main": "src/index.js",
@@ -26,7 +26,7 @@
     "build": "webpack --config ./webpack.config.cjs"
   },
   "dependencies": {
-    "@onephrase/util": "^0.6.3"
+    "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
     "webpack": "^4.44.2",
@@ -49,10 +49,10 @@
     ],
     "config": {
       "patreonUsername": "ox_harris",
-      "githubUsername": "web-native",
+      "githubUsername": "webqit",
       "githubRepository": "subscript",
-      "githubSlug": "web-native/subscript",
-      "npmPackageName": "@web-native-js/subscript"
+      "githubSlug": "webqit/subscript",
+      "npmPackageName": "@webqit/subscript"
     }
   }
 }

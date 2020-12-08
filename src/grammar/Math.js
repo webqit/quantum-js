@@ -2,12 +2,12 @@
 /**
  * @imports
  */
-import _isNumeric from '@onephrase/util/js/isNumeric.js';
-import _flatten from '@onephrase/util/arr/flatten.js';
-import _intersect from '@onephrase/util/arr/intersect.js';
-import _unique from '@onephrase/util/arr/unique.js';
+import _isNumeric from '@webqit/util/js/isNumeric.js';
+import _flatten from '@webqit/util/arr/flatten.js';
+import _intersect from '@webqit/util/arr/intersect.js';
+import _unique from '@webqit/util/arr/unique.js';
 import MathInterface from './MathInterface.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
  * ---------------------------

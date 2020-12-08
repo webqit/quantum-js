@@ -2,16 +2,16 @@
 /**
  * @imports
  */
-import _isTypeObject from '@onephrase/util/js/isTypeObject.js';
-import _isUndefined from '@onephrase/util/js/isUndefined.js';
-import _isFunction from '@onephrase/util/js/isFunction.js';
-import _isClass from '@onephrase/util/js/isClass.js';
-import _isString from '@onephrase/util/js/isString.js';
-import _isNull from '@onephrase/util/js/isNull.js';
-import _isNumber from '@onephrase/util/js/isNumber.js';
-import _after from '@onephrase/util/str/after.js';
-import _before from '@onephrase/util/str/before.js';
-import _unique from '@onephrase/util/arr/unique.js';
+import _isTypeObject from '@webqit/util/js/isTypeObject.js';
+import _isUndefined from '@webqit/util/js/isUndefined.js';
+import _isFunction from '@webqit/util/js/isFunction.js';
+import _isClass from '@webqit/util/js/isClass.js';
+import _isString from '@webqit/util/js/isString.js';
+import _isNull from '@webqit/util/js/isNull.js';
+import _isNumber from '@webqit/util/js/isNumber.js';
+import _after from '@webqit/util/str/after.js';
+import _before from '@webqit/util/str/before.js';
+import _unique from '@webqit/util/arr/unique.js';
 import ReferenceError from './ReferenceError.js';
 
 /**
@@ -49,27 +49,29 @@ export default class Scope {
 	 *
 	 * @return Scope
 	 */
-	observe(trap, callback) {
+	observe(trap, callback, params = {}) {
 		if (this.stack.super) {
 			this.stack.super.observe(trap, (e) => {
 				if (e.props.filter(prop => !_has(this.stack.local, prop, trap) && !_has(this.stack.main, prop, trap)).length) {
 					e.scope = 'super';
 					return callback(e);
 				}
-			});
+			}, params);
 		}
+		var _params  = {...params};
+		_params.subtree = true;
+		_params.tags = [this, 'jsen-context',];
 		trap.observe(this.stack, changes => {
 			// Changes firing directly from super and local should be ignored
 			changes = changes.filter(delta => delta.name === 'main');
-			var references = changes.map(delta => _after(delta.path, '.'))
-				.filter(path => path);
-			var props = references.map(path => _before(path, '.'));
+			var references = changes.map(delta => delta.path.slice(1)).filter(path => path.length);
+			var props = references.map(path => path[0]);
 			if (!references.length && changes.length && changes[0].value) {
 				props = _unique((
 						_isTypeObject(changes[0].value) ? Object.keys(changes[0].value) : []
 					).concat(changes[0].oldValue && _isTypeObject(changes[0].oldValue) ? Object.keys(changes[0].oldValue) : [])
 				);
-				references = props;
+				references = props.map(prop => [prop]);
 			}
 			if (props.filter(prop => !_has(this.stack.local, prop, trap)).length) {
 				return callback({
@@ -78,10 +80,7 @@ export default class Scope {
 					scope:'local',
 				});
 			}
-		}, {
-			subtree:true,
-			tags:[this, 'jsen-context',],
-		});
+		}, _params);
 	}
 	
 	/**

@@ -2,11 +2,11 @@
 /**
  * @imports
  */
-import _first from '@onephrase/util/arr/first.js';
-import _flatten from '@onephrase/util/arr/flatten.js';
-import _unique from '@onephrase/util/arr/unique.js';
+import _first from '@webqit/util/arr/first.js';
+import _flatten from '@webqit/util/arr/flatten.js';
+import _unique from '@webqit/util/arr/unique.js';
 import AssertionInterface from './AssertionInterface.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
  * ---------------------------

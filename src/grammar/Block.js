@@ -2,15 +2,14 @@
 /**
  * @imports
  */
-import Lexer from '@onephrase/util/str/Lexer.js';
-import _copy from '@onephrase/util/obj/copy.js';
-import _unique from '@onephrase/util/arr/unique.js';
-import _before from '@onephrase/util/str/before.js';
-import _flatten from '@onephrase/util/arr/flatten.js';
+import Lexer from '@webqit/util/str/Lexer.js';
+import _copy from '@webqit/util/obj/copy.js';
+import _flatten from '@webqit/util/arr/flatten.js';
 import BlockInterface from './BlockInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import DeletionInterface from './DeletionInterface.js';
+import { referencesToPaths, pathStartsWith } from '../util.js';
 import Scope from '../Scope.js';
 
 /**
@@ -34,11 +33,15 @@ export default class Block extends BlockInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
+
+		var returned, returnCallback = params.returnCallback;
+		params = {...params};
+		params.returnCallback = () => {
+			returned = true;
+		};
+
 		// Current!
-		params = params ? _copy(params) : {};
 		context = Scope.create(context);
-		// Stringifies JSEN vars
-		var stringifyEach = list => _unique(list.map(expr => _before(_before(expr.toString(), '['), '(')));
 		var callEval = (stmt, context, _params) => {
 			try {
 				return stmt.eval(context, _params);
@@ -48,31 +51,34 @@ export default class Block extends BlockInterface {
 				}
 			};
 		};
-
+		
 		var results = [];
 		for (var i = 0; i < this.stmts.length; i ++) {
 			var stmt = this.stmts[i];
 			// Lets be called...
-			var vars = stringifyEach(stmt.meta.vars);
-			var deepVars = stringifyEach(stmt.meta.deepVars || []);
-			var isDirectEventTarget = (params.references || []).filter(f => vars.filter(v => (v + '.').startsWith(f + '.')).length);
-			var isIndirectEventTarget = (params.references || []).filter(f => deepVars.filter(v => (v + '.').startsWith(f + '.')).length);
+			var vars = referencesToPaths(stmt.meta.vars);
+			var deepVars = referencesToPaths(stmt.meta.deepVars || []);
+			var isDirectEventTarget = (params.references || []).filter(f => vars.filter(v => pathStartsWith(v, f)).length);
+			var isIndirectEventTarget = (params.references || []).filter(f => deepVars.filter(v => pathStartsWith(v, f)).length);
 			if (!params.references || !params.references.length 
 			|| (isDirectEventTarget = isDirectEventTarget.length)
 			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {
 				var _params = params;
 				if (isDirectEventTarget) {
-					_params = _copy(params);
+					_params = {...params};
 					delete _params.references;
 				}
-				if (stmt instanceof ReturnInterface) {
-					return callEval(stmt, context, _params);
-				}
 				results[i] = callEval(stmt, context, _params);
+				if (stmt instanceof ReturnInterface || returned) {
+					if (returnCallback) {
+						returnCallback();
+					}
+					return results[i];
+				}
 				// Add this change for subsequent statements
 				// This is a local change!
 				if (params.references && ((stmt instanceof AssignmentInterface) || (stmt instanceof DeletionInterface))) {
-					params.references = params.references.concat(stringifyEach([stmt.reference]));
+					params.references = params.references.concat(referencesToPaths([stmt.reference]));
 				}
 			}
 		}

@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import _isUndefined from '@onephrase/util/js/isUndefined.js';
-import _wrapped from '@onephrase/util/str/wrapped.js';
-import _unwrap from '@onephrase/util/str/unwrap.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import _isUndefined from '@webqit/util/js/isUndefined.js';
+import _wrapped from '@webqit/util/str/wrapped.js';
+import _unwrap from '@webqit/util/str/unwrap.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import ExprInterface from '../ExprInterface.js';
 import Scope from '../Scope.js';

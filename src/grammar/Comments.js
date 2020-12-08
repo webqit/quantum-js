@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import _after from '@onephrase/util/str/after.js';
-import _before from '@onephrase/util/str/before.js';
+import _after from '@webqit/util/str/after.js';
+import _before from '@webqit/util/str/before.js';
 import CommentsInterface from './CommentsInterface.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
  * ---------------------------

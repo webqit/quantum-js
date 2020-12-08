@@ -2,12 +2,12 @@
 /**
  * @imports
  */
-import _copy from '@onephrase/util/obj/copy.js';
-import _each from '@onephrase/util/obj/each.js';
-import _flatten from '@onephrase/util/arr/flatten.js';
-import _wrapped from '@onephrase/util/str/wrapped.js';
-import _unwrap from '@onephrase/util/str/unwrap.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import _copy from '@webqit/util/obj/copy.js';
+import _each from '@webqit/util/obj/each.js';
+import _flatten from '@webqit/util/arr/flatten.js';
+import _wrapped from '@webqit/util/str/wrapped.js';
+import _unwrap from '@webqit/util/str/unwrap.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import FuncInterface from './FuncInterface.js';
 import Block from './Block.js';
 import Scope from '../Scope.js';
@@ -64,6 +64,8 @@ const Func = class extends FuncInterface {
 	 */
 	eval(context = null, params = {}) {
 		var instance = this;
+		params = {...params};
+		delete params.returnCallback;
 		return function(...args) {
 			var newMainContext = {};
 			_each(Object.keys(instance.paramters), (i, name) => {

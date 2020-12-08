@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import _last from '@onephrase/util/arr/last.js';
-import _isUndefined from '@onephrase/util/js/isUndefined.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import _last from '@webqit/util/arr/last.js';
+import _isUndefined from '@webqit/util/js/isUndefined.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import PresenceInterface from './PresenceInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
 import SyntaxError from '../SyntaxError.js';

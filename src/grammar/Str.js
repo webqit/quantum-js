@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import _wrapped from '@onephrase/util/str/wrapped.js';
-import _unwrap from '@onephrase/util/str/unwrap.js';
+import _wrapped from '@webqit/util/str/wrapped.js';
+import _unwrap from '@webqit/util/str/unwrap.js';
 import StrInterface from './StrInterface.js';
-import Lexer from '@onephrase/util/str/Lexer.js';
+import Lexer from '@webqit/util/str/Lexer.js';
 import Bool from './Bool.js';
 
 /**
