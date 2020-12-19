@@ -56,7 +56,7 @@ export default class Parser {
 
 	static parseOne(expr, Expr, params = {}) {
 		// From this point forward, all vars is within current scope
-		var vars = [], deepVars = [], varsUnlodged = [], deepVarsUnlodged = [];
+		var meta = createMeta();
 		var parsed = Expr.parse(expr, (_expr, _grammar, _params = {}) => {
 			var subStmt = this.parse(_expr, _grammar, _params ? _merge({}, params, _params) : params);
 			if (subStmt instanceof ReferenceInterface) {
@@ -66,19 +66,26 @@ export default class Parser {
 						hasCallHead = true;
 					}
 				}
-				if (!hasCallHead && subStmt.role !== 'CONTEXT') {
-					if (_params.lodge) {
-						varsUnlodged.push(subStmt);
-					} else {
-						vars.push(subStmt);
-					}
+				subStmt.role = _params.role;
+				if (!hasCallHead && _params.role !== 'CONTEXT') {
+					var type = _params.role === 'ASSIGNMENT_SPECIFIER' ? 'writes' 
+						: (_params.role === 'DELETION_SPECIFIER' ? 'deletes' 
+							: (_params.role === 'CALL_SPECIFIER' ? 'calls' : 'reads'));
+					meta[type].push(subStmt);
 				}
 			} else if (subStmt instanceof CallInterface) {
-				varsUnlodged.push(subStmt);
+				meta.others.push(subStmt);
 			}
 			if (subStmt) {
-				subStmt.meta.vars.forEach(_var => vars.push(_var));
-				subStmt.meta.deepVars.forEach(_var => deepVars.push(_var));
+				Object.keys(subStmt.meta).forEach(type => {
+					subStmt.meta[type].forEach(_var => meta[type].push(_var));
+				});
+				Object.keys(subStmt.meta.deep).forEach(type => {
+					if (!meta.deep[type]) {
+						meta.deep[type] = [];
+					}
+					subStmt.meta.deep[type].forEach(_var => meta.deep[type].push(_var));
+				});
 			}
 			return subStmt;
 		}, params);
@@ -86,39 +93,30 @@ export default class Parser {
 		// Add/remove vars to scope
 		if (parsed) {
 			if (parsed instanceof IndependentExprInterface) {
-				parsed.meta = {
-					vars: [], deepVars: [], varsUnlodged: [], deepVarsUnlodged: [], 
-				}
+				parsed.meta = createMeta();
 			} else {
-				parsed.meta = {
-					vars, deepVars, varsUnlodged, deepVarsUnlodged,
-				};
+				parsed.meta = meta;
 			}
 			if ((parsed instanceof CallInterface)) {
 				if (parsed.reference.context && !(parsed.reference.context instanceof CallInterface)) {
-					parsed.meta.vars.push(parsed.reference.context);
+					parsed.meta.reads.push(parsed.reference.context);
 				}
 			} else if ((parsed instanceof IfInterface)) {
-				if (parsed.onTrue) {
-					parsed.onTrue.meta.vars.concat(parsed.onTrue.meta.deepVars).forEach(_var => {
-						_remove(parsed.meta.vars, _var);
-						parsed.meta.deepVars.push(_var);
-					});
-					parsed.onTrue.meta.varsUnlodged.concat(parsed.onTrue.meta.deepVarsUnlodged).forEach(_var => {
-						_remove(parsed.meta.varsUnlodged, _var);
-						parsed.meta.deepVarsUnlodged.push(_var);
-					});
-				}
-				if (parsed.onFalse) {
-					parsed.onFalse.meta.vars.concat(parsed.onFalse.meta.deepVars).forEach(_var => {
-						_remove(parsed.meta.vars, _var);
-						parsed.meta.deepVars.push(_var);
-					});
-					parsed.onFalse.meta.varsUnlodged.concat(parsed.onFalse.meta.deepVarsUnlodged).forEach(_var => {
-						_remove(parsed.meta.varsUnlodged, _var);
-						parsed.meta.deepVarsUnlodged.push(_var);
-					});
-				}
+				['onTrue', 'onFalse'].forEach(branch => {
+					if (parsed[branch]) {
+						Object.keys(createMeta()).forEach(type => {
+							if (type === 'deep') return;
+							var variables = parsed.onTrue.meta[type].concat(parsed.onTrue.meta.deep[type] || []);
+							variables.forEach(_var => {
+								_remove(parsed.meta[type], _var);
+								if (!parsed.meta.deep[type]) {
+									parsed.meta.deep[type] = [];
+								}
+								parsed.meta.deep[type].push(_var);
+							});
+						});
+					}
+				});
 			}
 			if (_isArray(params.explain)) {
 				params.explain.push(expr + ' >>------------->> ' + parsed.jsenType);
@@ -126,4 +124,8 @@ export default class Parser {
 		}
 		return parsed;
 	}
+};
+
+function createMeta() {
+	return {reads: [], writes: [], deletes: [], calls: [], others: [], deep: [],};
 };

@@ -59,7 +59,7 @@ export default class Scope {
 			}, params);
 		}
 		var _params  = {...params};
-		_params.subtree = true;
+		_params.subtree = 'auto';
 		_params.tags = [this, 'jsen-context',];
 		trap.observe(this.stack, changes => {
 			// Changes firing directly from super and local should be ignored
@@ -97,8 +97,8 @@ export default class Scope {
 			this.stack.super.unobserve(trap, callback);
 		}
 		trap.unobserve(this.stack, callback, {
-			subtree:true,
-			tags:[this, 'jsen-context',],
+			subtree: 'auto',
+			tags: [this, 'jsen-context',],
 		});
 	}
 	

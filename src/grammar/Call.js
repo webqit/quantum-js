@@ -64,11 +64,10 @@ const Call = class extends CallInterface {
 		if (!expr.startsWith('(') && expr.endsWith(')') && !Lexer.match(expr, [' ']).length) {
 			var tokens = Lexer.split(expr, []);
 			var reference, args = tokens.pop();
-			if (!((reference = parseCallback(tokens.join(''))) instanceof ReferenceInterface) 
+			if (!((reference = parseCallback(tokens.join(''), null, {role: 'CALL_SPECIFIER'})) instanceof ReferenceInterface) 
 			|| !(args = parseCallback(args, [Arguments]))) {
 				throw new SyntaxError(expr);
 			}
-			reference.role = 'CALL_SPECIFIER';
 			return new this(reference, args);
 		}
 	}

@@ -126,8 +126,7 @@ export default class Reference extends ReferenceInterface {
 			// context, second
 			// ------------------------
 			if (splits.length) {
-				context = parseCallback(splits.join(''));
-				context.role = 'CONTEXT';
+				context = parseCallback(splits.join(''), null, {role: 'CONTEXT'});
 			}
 			if (_wrapped(name, '[', ']')) {
 				if (!context) {

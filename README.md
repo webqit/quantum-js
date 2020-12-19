@@ -1,24 +1,33 @@
-# JSEN
+# Subscript
 
 <!-- BADGES/ -->
 
-<span class="badge-npmversion"><a href="https://npmjs.org/package/@web-native-js/observables" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@web-native-js/observables.svg" alt="NPM version" /></a></span>
-<span class="badge-npmdownloads"><a href="https://npmjs.org/package/@web-native-js/observables" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@web-native-js/observables.svg" alt="NPM downloads" /></a></span>
-<span class="badge-patreon"><a href="https://patreon.com/ox_harris" title="Donate to this project using Patreon"><img src="https://img.shields.io/badge/patreon-donate-yellow.svg" alt="Patreon donate button" /></a></span>
+<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/subscript.svg" alt="NPM version" /></a></span>
+<span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/subscript.svg" alt="NPM downloads" /></a></span>
 
 <!-- /BADGES -->
 
+*[Subscript](https://webqit.io/tooling/subscript)* is a pseudo implementation (parser + runtime) of the JavaScript language. It is used for parsing JavaScript code and executing them in user-defined context.
 
-JS.E(N) (JavaScript Expression Notation) - parse JavaScript expressions; execute in custom scopes.
+Subscript is currently at the core of the [Scoped Scripts](https://webqit.io/tooling/oohtml/scoped-scripts) feature of the [OOHTML](https://webqit.io/tooling/oohtml) technology. It is also light enough for simple language tooling.
+
+> [Visit project homepage](https://webqit.io/tooling/subscript).
+
+```js
+// parse() an expression
+var exprObj = Subscript.parse(expr);
+
+// get result with eval()
+console.log(exprObj.eval());
+```
+
+Follow the [installation guide](https://webqit.io/tooling/subscript/installation) to obtain this library.
 
 ## Documentation
-
-+ [JSEN Documentation](https://docs.web-native.dev/jsen/guide)
++ [The Language](https://webqit.io/tooling/subscript/language)
 
 ## Issues
-
-To report bugs or request features, please submit an [issue](https://github.com/web-native/jsen/issues).
+To report bugs or request features, please submit an [issue](https://github.com/webqit/subscript/issues).
 
 ## License
-
 MIT.

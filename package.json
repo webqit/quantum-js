@@ -7,8 +7,8 @@
     "js-parser",
     "DSL"
   ],
-  "homepage": "https://webqit.dev/tooling/subscript",
-  "version": "1.0.1",
+  "homepage": "https://webqit.io/tooling/subscript",
+  "version": "1.0.5",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -23,10 +23,11 @@
     "watch": "webpack --watch",
     "test": "node ./.tests/index.js",
     "build-dev": "webpack --config ./webpack.config.dev.cjs",
-    "build": "webpack --config ./webpack.config.cjs"
+    "build": "webpack --config ./webpack.config.cjs",
+    "prepublish": "npm run build"
   },
   "dependencies": {
-    "@webqit/util": "^0.7.0"
+    "@webqit/util": "^0.7.1"
   },
   "devDependencies": {
     "webpack": "^4.44.2",

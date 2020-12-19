@@ -123,11 +123,10 @@ const Assignment = class extends AssignmentInterface {
 				initKeyword = _before(reference, ' ');
 				reference = _after(reference, ' ').trim();
 			}
-			if (!((reference = parseCallback(reference, null, {lodge: false})) instanceof ReferenceInterface) 
+			if (!((reference = parseCallback(reference, null, {role: 'ASSIGNMENT_SPECIFIER'})) instanceof ReferenceInterface) 
 			|| (!isIncrDecr && !(val = parseCallback(val)))) {
 				throw new SyntaxError(expr);
 			}
-			reference.role = 'ASSIGNMENT_SPECIFIER';
 			return new this(initKeyword, reference, val, operator, postIncrDecr);
 		}
 	}

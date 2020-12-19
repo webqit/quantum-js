@@ -6,6 +6,7 @@ import Lexer from '@webqit/util/str/Lexer.js';
 import _copy from '@webqit/util/obj/copy.js';
 import _flatten from '@webqit/util/arr/flatten.js';
 import BlockInterface from './BlockInterface.js';
+import IfInterface from './IfInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import DeletionInterface from './DeletionInterface.js';
@@ -36,8 +37,8 @@ export default class Block extends BlockInterface {
 
 		var returned, returnCallback = params.returnCallback;
 		params = {...params};
-		params.returnCallback = () => {
-			returned = true;
+		params.returnCallback = flag => {
+			returned = flag;
 		};
 
 		// Current!
@@ -52,14 +53,14 @@ export default class Block extends BlockInterface {
 			};
 		};
 		
-		var results = [];
+		var results = [], skippedAbort;
 		for (var i = 0; i < this.stmts.length; i ++) {
 			var stmt = this.stmts[i];
 			// Lets be called...
-			var vars = referencesToPaths(stmt.meta.vars);
-			var deepVars = referencesToPaths(stmt.meta.deepVars || []);
-			var isDirectEventTarget = (params.references || []).filter(f => vars.filter(v => pathStartsWith(v, f)).length);
-			var isIndirectEventTarget = (params.references || []).filter(f => deepVars.filter(v => pathStartsWith(v, f)).length);
+			var reads = referencesToPaths(stmt.meta.reads);
+			var deepReads = referencesToPaths(stmt.meta.deep.reads || []);
+			var isDirectEventTarget = (params.references || []).filter(f => reads.filter(v => pathStartsWith(v, f)).length);
+			var isIndirectEventTarget = (params.references || []).filter(f => deepReads.filter(v => pathStartsWith(v, f)).length);
 			if (!params.references || !params.references.length 
 			|| (isDirectEventTarget = isDirectEventTarget.length)
 			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {
@@ -71,9 +72,16 @@ export default class Block extends BlockInterface {
 				results[i] = callEval(stmt, context, _params);
 				if (stmt instanceof ReturnInterface || returned) {
 					if (returnCallback) {
-						returnCallback();
+						returnCallback(true);
 					}
 					return results[i];
+				}
+				if (stmt instanceof IfInterface)
+				if (((stmt instanceof IfInterface) && stmt.abortive) || returned === false) {
+					skippedAbort = true;
+					if (returnCallback) {
+						returnCallback(false);
+					}
 				}
 				// Add this change for subsequent statements
 				// This is a local change!
