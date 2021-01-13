@@ -28,16 +28,16 @@ export default class Scope {
 	 * @return Scope
 	 */
 	constructor(stack, params = {}) {
-		if (!('main' in stack)) {
+		this.stack = stack;
+		this.params = params;
+		if (!('main' in this.stack)) {
 			throw new Error('A "main" context must be provided!');
 		}
-		Object.defineProperty(this, 'stack', {value: stack || {}, enumerable: false});
-		Object.defineProperty(this, 'params', {value: params || {}, enumerable: false});
-		if (stack.super) {
-			Object.defineProperty(this.stack, 'super', {value: Scope.create(stack.super, {errorLevel: params.errorLevel}), enumerable: false});
+		if (this.stack.super) {
+			this.stack.super = Scope.create(this.stack.super, {errorLevel: params.errorLevel});
 		}
-		Object.defineProperty(this.stack, 'local', {value: stack.local || {}, enumerable: false});
-		Object.defineProperty(this.stack, '$local', {value: stack.$local || {}, enumerable: false});
+		this.stack.local = this.stack.local || {};
+		this.stack.$local = this.stack.$local || {};
 	}
 
 	/**
@@ -58,33 +58,27 @@ export default class Scope {
 				}
 			}, params);
 		}
-		
 		var _params  = {...params};
 		_params.subtree = 'auto';
 		_params.tags = [this, 'jsen-context',];
 		_params.diff = true;
-
-		trap.observe(this.stack, /*[ ['main'], ['local'] ], */changes => {
-			var references = [];
-			changes.forEach(c => {
-				// Changes firing directly from super and local should be ignored
-				if (c.name === 'main') {
-					if (c.path.length > 1) {
-						references.push(c.path.slice(1));
-					} else {
-						var keysMain = _unique((_isTypeObject(c.value) ? Object.keys(c.value) : []).concat(c.oldValue && _isTypeObject(c.oldValue) ? Object.keys(c.oldValue) : []));
-						references.push(...keysMain.map(k => [k]));
-					}
-				}
-			});
-			references = references.filter(ref => !_has(this.stack.local, ref[0], trap));
-			if (references.length) {
-				var props = references.map(ref => ref[0]);
-				//console.log('>>>>>>>>>>>>>>>>>>>>', references.map(e => e.join('/')).join('     |    '))
+		trap.observe(this.stack, [ ['main'], ['local'] ], changes => {
+			// Changes firing directly from super and local should be ignored
+			changes = changes.filter(delta => delta.name === 'main');
+			var references = changes.map(delta => delta.path.slice(1)).filter(path => path.length);
+			var props = references.map(path => path[0]);
+			if (!references.length && changes.length && changes[0].value) {
+				props = _unique((
+						_isTypeObject(changes[0].value) ? Object.keys(changes[0].value) : []
+					).concat(changes[0].oldValue && _isTypeObject(changes[0].oldValue) ? Object.keys(changes[0].oldValue) : [])
+				);
+				references = props.map(prop => [prop]);
+			}
+			if (props.filter(prop => !_has(this.stack.local, prop, trap)).length) {
 				return callback({
 					props,
 					references,
-					scope: 'local',
+					scope:'local',
 				});
 			}
 		}, _params);
@@ -173,11 +167,10 @@ export default class Scope {
 	 * @param mixed			val
 	 * @param object		trap
 	 * @param bool			initKeyword
-	 * @param bool			isRootVar
 	 *
 	 * @return bool
 	 */
-	set(prop, val, trap = {}, initKeyword = false, isRootVar = true) {
+	set(prop, val, trap = {}, initKeyword = false) {
 		if (this.params.type === 2 && initKeyword === 'var' && this.stack.super) {
 			return this.stack.super.set(prop, val, trap, initKeyword);
 		}
@@ -209,7 +202,7 @@ export default class Scope {
 			try {
 				return advance();
 			} catch(e) {
-				if ((e instanceof ReferenceError) && contxtObj && !localContxtMeta && level === 0 && this.params.strictMode === false) {
+				if ((e instanceof ReferenceError) && !localContxtMeta && level === 0 && this.params.strictMode === false) {
 					// Assign to undeclared variables
 					return _set(contxtObj, prop, val, trap);
 				}

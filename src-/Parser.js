@@ -97,7 +97,7 @@ export default class Parser {
 			} else {
 				parsed.meta = meta;
 			}
-			if (parsed instanceof CallInterface) {
+			if ((parsed instanceof CallInterface)) {
 				if (parsed.reference.context && !(parsed.reference.context instanceof CallInterface)) {
 					parsed.meta.reads.push(parsed.reference.context);
 				}

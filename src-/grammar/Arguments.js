@@ -5,29 +5,29 @@
 import _wrapped from '@webqit/util/str/wrapped.js';
 import _unwrap from '@webqit/util/str/unwrap.js';
 import Lexer from '@webqit/util/str/Lexer.js';
-import AbstractionInterface from './AbstractionInterface.js';
+import ArgumentsInterface from './ArgumentsInterface.js';
 
 /**
  * ---------------------------
- * Abstraction class
+ * Arguments class
  * ---------------------------
  */				
 
-const Abstraction = class extends AbstractionInterface {
+const Arguments = class extends ArgumentsInterface {
 	 
 	/**
 	 * @inheritdoc
 	 */
-	constructor(expr) {
+	constructor(list = []) {
 		super();
-		this.expr = expr;
+		this.list = list;
 	}
 	 
 	/**
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		return this.expr.eval(context, params);
+		return this.list.map(arg => arg.eval(context, params));
 	}
 	
 	/**
@@ -41,16 +41,17 @@ const Abstraction = class extends AbstractionInterface {
 	 * @inheritdoc
 	 */
 	stringify(params = {}) {
-		return '(' + this.expr.stringify(params) + ')';
+		return '(' + this.list.map(arg => arg.stringify(params)).join(', ') + ')';
 	}
 	
 	/**
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length && Lexer.split(expr, []).length === 2/* recognizing the first empty slot */) {
+		var args; expr = expr.trim();
+		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
 			return new this(
-				parseCallback(_unwrap(expr, '(', ')'))
+				Lexer.split(_unwrap(expr, '(', ')'), [',']).map(arg => parseCallback(arg.trim()))
 			);
 		}
 	}
@@ -59,4 +60,4 @@ const Abstraction = class extends AbstractionInterface {
 /**
  * @exports
  */
-export default Abstraction;
+export default Arguments;

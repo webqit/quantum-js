@@ -2,19 +2,17 @@
 /**
  * @imports
  */
-import _wrapped from '@webqit/util/str/wrapped.js';
-import _unwrap from '@webqit/util/str/unwrap.js';
 import Lexer from '@webqit/util/str/Lexer.js';
-import AbstractionInterface from './AbstractionInterface.js';
+import ReturnInterface from './ReturnInterface.js';
 
 /**
  * ---------------------------
- * Abstraction class
+ * Ret (return) class
  * ---------------------------
  */				
 
-const Abstraction = class extends AbstractionInterface {
-	 
+const Return = class extends ReturnInterface {
+	
 	/**
 	 * @inheritdoc
 	 */
@@ -27,7 +25,7 @@ const Abstraction = class extends AbstractionInterface {
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		return this.expr.eval(context, params);
+		return this.expr ? this.expr.eval(context, params) : undefined;
 	}
 	
 	/**
@@ -41,16 +39,21 @@ const Abstraction = class extends AbstractionInterface {
 	 * @inheritdoc
 	 */
 	stringify(params = {}) {
-		return '(' + this.expr.stringify(params) + ')';
+		return this.expr ? 'return ' + this.expr.stringify(params) : 'return';
 	}
 	
+	/**
+	 * -------------------------------------------------------
+	 */
+	 
 	/**
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length && Lexer.split(expr, []).length === 2/* recognizing the first empty slot */) {
+		var exprLc = expr.toLowerCase();
+		if (exprLc.startsWith('return ') || exprLc === 'return') {
 			return new this(
-				parseCallback(_unwrap(expr, '(', ')'))
+				parseCallback(expr.substr(6).trim())
 			);
 		}
 	}
@@ -59,4 +62,4 @@ const Abstraction = class extends AbstractionInterface {
 /**
  * @exports
  */
-export default Abstraction;
+export default Return;

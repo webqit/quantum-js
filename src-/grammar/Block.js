@@ -36,8 +36,8 @@ export default class Block extends BlockInterface {
 	 */
 	eval(context = null, params = {}) {
 
-		params = {...params};
 		var returned, returnCallback = params.returnCallback;
+		params = {...params};
 		params.returnCallback = flag => {
 			returned = flag;
 		};
@@ -77,6 +77,7 @@ export default class Block extends BlockInterface {
 					}
 					return results[i];
 				}
+				if (stmt instanceof IfInterface)
 				if (((stmt instanceof IfInterface) && stmt.abortive) || returned === false) {
 					skippedAbort = true;
 					if (returnCallback) {
@@ -88,7 +89,7 @@ export default class Block extends BlockInterface {
 				if (params.references && ((stmt instanceof AssignmentInterface) || (stmt instanceof DeletionInterface))) {
 					params.references = params.references.concat(referencesToPaths([stmt.reference]));
 				}
-			} else if ((params.references && stmt instanceof AssignmentInterface) && (stmt.val instanceof ReferenceInterface)) {
+			} else if (params.references && stmt instanceof AssignmentInterface && stmt.val instanceof ReferenceInterface) {
 				params.references = params.references.slice(0);
 				let basePath = referencesToPaths([stmt.reference])[0],
 					leafPath = referencesToPaths([stmt.val])[0];

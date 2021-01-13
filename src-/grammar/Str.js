@@ -4,30 +4,32 @@
  */
 import _wrapped from '@webqit/util/str/wrapped.js';
 import _unwrap from '@webqit/util/str/unwrap.js';
+import StrInterface from './StrInterface.js';
 import Lexer from '@webqit/util/str/Lexer.js';
-import AbstractionInterface from './AbstractionInterface.js';
+import Bool from './Bool.js';
 
 /**
  * ---------------------------
- * Abstraction class
+ * String utils
  * ---------------------------
- */				
+ */
 
-const Abstraction = class extends AbstractionInterface {
-	 
+const Str = class extends StrInterface {
+	
 	/**
 	 * @inheritdoc
 	 */
-	constructor(expr) {
+	constructor(expr, quote) {
 		super();
 		this.expr = expr;
+		this.quote = quote;
 	}
 	 
 	/**
 	 * @inheritdoc
 	 */
-	eval(context = null, params = {}) {
-		return this.expr.eval(context, params);
+	eval() {
+		return this.expr;
 	}
 	
 	/**
@@ -41,16 +43,20 @@ const Abstraction = class extends AbstractionInterface {
 	 * @inheritdoc
 	 */
 	stringify(params = {}) {
-		return '(' + this.expr.stringify(params) + ')';
+		return this.quote + this.expr + this.quote;
 	}
-	
+	 
 	/**
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length && Lexer.split(expr, []).length === 2/* recognizing the first empty slot */) {
+		expr = expr.trim();
+		if ((_wrapped(expr, '"', '"') || _wrapped(expr, "'", "'")) 
+		&& !Lexer.match(expr, [' ']).length) {
+			var quote = _wrapped(expr, '"', '"') ? '"' : "'";
 			return new this(
-				parseCallback(_unwrap(expr, '(', ')'))
+				_unwrap(expr, quote, quote),
+				quote
 			);
 		}
 	}
@@ -59,4 +65,4 @@ const Abstraction = class extends AbstractionInterface {
 /**
  * @exports
  */
-export default Abstraction;
+export default Str;

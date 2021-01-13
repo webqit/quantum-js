@@ -5,8 +5,7 @@
 import _wrapped from '@webqit/util/str/wrapped.js';
 import _unwrap from '@webqit/util/str/unwrap.js';
 import Lexer from '@webqit/util/str/Lexer.js';
-import IfInterface from './IfInterface.js';
-import ReturnInterface from './ReturnInterface.js';
+import SwitchInterface from './SwitchInterface.js';
 import Block from './Block.js';
 import Scope from '../Scope.js';
 
@@ -16,7 +15,7 @@ import Scope from '../Scope.js';
  * ---------------------------
  */				
 
-const If = class extends IfInterface {
+const Switch = class extends SwitchInterface {
 	
 	/**
 	 * @inheritdoc
@@ -69,11 +68,10 @@ const If = class extends IfInterface {
 	static parse(expr, parseCallback, params = {}) {
         expr = expr.trim();
         var splits;
-        if (expr.startsWith('if') 
+        if (expr.startsWith('switch') 
 		&& (splits = Lexer.split(expr, [], {limit:2}/*IMPORTANT*/).slice(1).filter(b => b.trim())) && splits.length === 2) {
             var assertion = parseCallback(_unwrap(splits.shift().trim(), '(', ')').trim());
             var rest = Lexer.split(splits.shift().trim(), ['else'], {limit:1}/*IMPORTANT*/);
-            var abortive;
             var onTrue = rest.shift().trim(), onTrueIsBlock, onFalse = (rest.shift() || '').trim(), onFalseIsBlock;
             if (_wrapped(onTrue, '{', '}')) {
                 // The braces gives us the onTrue block
@@ -88,16 +86,12 @@ const If = class extends IfInterface {
                     onFalse = _unwrap(onFalse, '{', '}').trim();
                 }
                 onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
-            } else if (onTrue) {
-                abortive = onTrue.stmts.filter(stmt => stmt instanceof ReturnInterface).length;
             }
-			const instance = new this(assertion, onTrue, onFalse, {
+			return new this(assertion, onTrue, onFalse, {
                     onTrueIsBlock,
-                    onFalseIsBlock
+                    onFalseIsBlock,
                 }
             );
-            instance.abortive = abortive;
-            return instance;
          }
 	}
 };
