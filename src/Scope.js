@@ -61,10 +61,11 @@ export default class Scope {
 		
 		var _params  = {...params};
 		_params.subtree = 'auto';
-		_params.tags = [this, 'jsen-context',];
+		_params.tags = (_params.tags || []).slice(0);
+		_params.tags.push(this, 'jsen-context',);
 		_params.diff = true;
 
-		trap.observe(this.stack, /*[ ['main'], ['local'] ], */changes => {
+		trap.observe(this.stack, changes => {
 			var references = [];
 			changes.forEach(c => {
 				// Changes firing directly from super and local should be ignored
@@ -80,7 +81,6 @@ export default class Scope {
 			references = references.filter(ref => !_has(this.stack.local, ref[0], trap));
 			if (references.length) {
 				var props = references.map(ref => ref[0]);
-				//console.log('>>>>>>>>>>>>>>>>>>>>', references.map(e => e.join('/')).join('     |    '))
 				return callback({
 					props,
 					references,
@@ -95,18 +95,18 @@ export default class Scope {
 	 * with observe()
 	 *
 	 * @param object		 	trap
-	 * @param function		 	callback
+	 * @param object		 	params
 	 *
 	 * @return Scope
 	 */
-	unobserve(trap, callback) {
+	unobserve(trap, params = {}) {
 		if (this.stack.super) {
-			this.stack.super.unobserve(trap, callback);
+			this.stack.super.unobserve(trap, params);
 		}
-		trap.unobserve(this.stack, callback, {
-			subtree: 'auto',
-			tags: [this, 'jsen-context',],
-		});
+		var _params  = {...params};
+		_params.tags = (_params.tags || []).slice(0);
+		_params.tags.push(this, 'jsen-context',);
+		trap.unobserve(this.stack, null, null, _params);
 	}
 	
 	/**
