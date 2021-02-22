@@ -88,12 +88,14 @@ export default class Block extends BlockInterface {
 				if (params.references && ((stmt instanceof AssignmentInterface) || (stmt instanceof DeletionInterface))) {
 					params.references = params.references.concat(referencesToPaths([stmt.reference]));
 				}
-			} else if ((params.references && stmt instanceof AssignmentInterface) && (stmt.val instanceof ReferenceInterface)) {
+			} else if (params.references && (stmt instanceof AssignmentInterface) && (stmt.val instanceof ReferenceInterface)) {
+				// E.g: app = document.state; (This statement won't evaluate above if reference was "document.state.something")
 				params.references = params.references.slice(0);
-				let basePath = referencesToPaths([stmt.reference])[0],
-					leafPath = referencesToPaths([stmt.val])[0];
-				params.references.forEach(ref => {
+				let basePath = referencesToPaths([stmt.reference])[0], // app
+					leafPath = referencesToPaths([stmt.val])[0]; // document.state
+				params.references.forEach(ref/** document.state.something */ => {
 					if (pathStartsWith(ref, leafPath)) {
+						// app.something
 						params.references.push(basePath.concat(pathAfter(ref, leafPath)));
 					}
 				});
