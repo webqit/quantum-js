@@ -99,7 +99,7 @@ const Assignment = class extends AssignmentInterface {
 				: this.operator + this.reference.stringify(params);
 		}
 		return (this.initKeyword ? this.initKeyword + ' ' : '')
-			+ [this.reference.stringify(params), this.operator, this.val.stringify(params)].join(' ');
+			+ [this.reference.stringify(params), this.operator.trim(), this.val.stringify(params)].join(' ');
 	}
 	
 	/**

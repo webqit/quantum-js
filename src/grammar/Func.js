@@ -27,7 +27,6 @@ const Func = class extends FuncInterface {
 		super();
 		this.paramters = paramters || {};
 		this.statements = statements;
-		this.statements.isIndependent = true;
 		this.arrowFunctionFormatting = arrowFunctionFormatting;
 	}
 	

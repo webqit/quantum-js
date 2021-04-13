@@ -70,14 +70,15 @@ export default class Parser {
 				if (!hasCallHead && _params.role !== 'CONTEXT') {
 					var type = _params.role === 'ASSIGNMENT_SPECIFIER' ? 'writes' 
 						: (_params.role === 'DELETION_SPECIFIER' ? 'deletes' 
-							: (_params.role === 'CALL_SPECIFIER' ? 'calls' : 'reads'));
+							: (_params.role === 'CALL_SPECIFIER' ? '_calls' : 'reads'));
 					meta[type].push(subStmt);
 				}
 			} else if (subStmt instanceof CallInterface) {
-				meta.others.push(subStmt);
+				meta.calls.push(subStmt);
 			}
 			if (subStmt) {
 				Object.keys(subStmt.meta).forEach(type => {
+					if (type === 'deep') return;
 					subStmt.meta[type].forEach(_var => meta[type].push(_var));
 				});
 				Object.keys(subStmt.meta.deep).forEach(type => {
@@ -97,7 +98,7 @@ export default class Parser {
 			} else {
 				parsed.meta = meta;
 			}
-			if (parsed instanceof CallInterface) {
+			if ((parsed instanceof CallInterface)) {
 				if (parsed.reference.context && !(parsed.reference.context instanceof CallInterface)) {
 					parsed.meta.reads.push(parsed.reference.context);
 				}
@@ -127,5 +128,5 @@ export default class Parser {
 };
 
 function createMeta() {
-	return {reads: [], writes: [], deletes: [], calls: [], others: [], deep: [],};
+	return {reads: [], writes: [], deletes: [], calls: [], _calls: [], deep: {},};
 };

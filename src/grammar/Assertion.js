@@ -83,7 +83,7 @@ const Assertion = class extends AssertionInterface {
 		if (this.logic.toLowerCase() === Assertion.negation.toLowerCase()) {
 			return this.logic + _first(this.exprs).stringify(params);
 		}
-		return this.exprs.map(expr => expr.stringify(params)).join(' ' + this.logic + ' ');
+		return this.exprs.map(expr => expr.stringify(params)).join(' ' + this.logic.trim() + ' ');
 	}
 	
 	/**

@@ -26,8 +26,7 @@ const If = class extends IfInterface {
 		this.assertion = assertion;
 		this.onTrue = onTrue;
 		this.onFalse = onFalse;
-        this.params = params;
-        this.supers = new Map();
+		this.params = params;
 	}
 	 
 	/**
@@ -35,13 +34,10 @@ const If = class extends IfInterface {
 	 */
 	eval(context = null, params = {}) {
         var errorLevel = context instanceof Scope ? context.params.errorLevel : undefined;
-        if (!this.supers.has(context)) {
-            this.supers.set(context, new Scope({
-                main:{}, 
-                super:context,
-            }, {type: 2, errorLevel}));
-        }
-        var _context = this.supers.get(context);
+        var _context = new Scope({
+            main:{}, 
+            super:context,
+        }, {type: 2, errorLevel});
 		return  this.assertion.eval(context/** original context */, params)
 			? (this.onTrue ? this.onTrue.eval(_context, params) : undefined)
             : (this.onFalse ? this.onFalse.eval(_context, params) : undefined);
@@ -92,7 +88,7 @@ const If = class extends IfInterface {
                     onFalse = _unwrap(onFalse, '{', '}').trim();
                 }
                 onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
-            } else if (onTrue) {
+            } else {
                 abortive = onTrue.stmts.filter(stmt => stmt instanceof ReturnInterface).length;
             }
 			const instance = new this(assertion, onTrue, onFalse, {
