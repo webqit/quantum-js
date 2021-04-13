@@ -88,11 +88,7 @@ const If = class extends IfInterface {
                     onFalse = _unwrap(onFalse, '{', '}').trim();
                 }
                 onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
-<<<<<<< HEAD
-            } else {
-=======
             } else if (onTrue) {
->>>>>>> 2480a9295ac63951c268b9eeeeed48ee6b806cb6
                 abortive = onTrue.stmts.filter(stmt => stmt instanceof ReturnInterface).length;
             }
 			const instance = new this(assertion, onTrue, onFalse, {
