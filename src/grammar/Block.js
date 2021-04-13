@@ -62,9 +62,9 @@ export default class Block extends BlockInterface {
 			var deepReads = referencesToPaths(stmt.meta.deep.reads || []);
 			var isDirectEventTarget = (params.references || []).filter(ref => reads.filter(v => pathStartsWith(v, ref)).length);
 			var isIndirectEventTarget = (params.references || []).filter(ref => deepReads.filter(v => pathStartsWith(v, ref)).length);
-			if (!params.references || !params.references.length 
-			|| (isDirectEventTarget = isDirectEventTarget.length)
-			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {
+			var isFirstRunOrDirectOrIndirectReference = !params.references || !params.references.length || (isDirectEventTarget = isDirectEventTarget.length) || (isIndirectEventTarget = isIndirectEventTarget.length);
+			var isLocalAssignmentInEventbasedRuntime = params.references/** On the event-based runtime for... */ && context.params.type === 2/** ...onTrue/onFalse blocks */ && (stmt instanceof AssignmentInterface) && stmt.initKeyword/** Local assignments within it ... might be needed by selected references */;
+			if (isFirstRunOrDirectOrIndirectReference/** || (isLocalAssignmentInEventbasedRuntime Experimental and currently disabled */) {
 				var _params = params;
 				if (isDirectEventTarget) {
 					_params = {...params};
@@ -90,6 +90,7 @@ export default class Block extends BlockInterface {
 				}
 			} else if (params.references && (stmt instanceof AssignmentInterface) && (stmt.val instanceof ReferenceInterface)) {
 				// E.g: app = document.state; (This statement won't evaluate above if reference was "document.state.something")
+				// So we need to record that app.something has changed
 				params.references = params.references.slice(0);
 				let basePath = referencesToPaths([stmt.reference])[0], // app
 					leafPath = referencesToPaths([stmt.val])[0]; // document.state
