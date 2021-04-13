@@ -41,6 +41,7 @@ export default class Reference extends ReferenceInterface {
 			}
 			sourceContext = this.context.eval(context, params);
 		}
+		var isRootVar = !this.context;
 		return {
 			get() {
 				return Scope.create(sourceContext, params).get(name, params.trap);
@@ -52,7 +53,7 @@ export default class Reference extends ReferenceInterface {
 				return Scope.create(sourceContext, params).has(name, prop, params.trap);
 			},
 			set(val, initKeyword = null) {
-				return Scope.create(sourceContext, params).set(name, val, params.trap, initKeyword);
+				return Scope.create(sourceContext, params).set(name, val, params.trap, initKeyword, isRootVar);
 			},
 			exec(args) {
 				return Scope.create(sourceContext, params).exec(name, args, params.trap);

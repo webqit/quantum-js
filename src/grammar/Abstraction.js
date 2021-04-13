@@ -48,7 +48,7 @@ const Abstraction = class extends AbstractionInterface {
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
+		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length && Lexer.split(expr, []).length === 2/* recognizing the first empty slot */) {
 			return new this(
 				parseCallback(_unwrap(expr, '(', ')'))
 			);

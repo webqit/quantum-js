@@ -10,7 +10,8 @@ import IfInterface from './IfInterface.js';
 import ReturnInterface from './ReturnInterface.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import DeletionInterface from './DeletionInterface.js';
-import { referencesToPaths, pathStartsWith } from '../util.js';
+import ReferenceInterface from './ReferenceInterface.js';
+import { referencesToPaths, pathStartsWith, pathAfter } from '../util.js';
 import Scope from '../Scope.js';
 
 /**
@@ -35,8 +36,8 @@ export default class Block extends BlockInterface {
 	 */
 	eval(context = null, params = {}) {
 
-		var returned, returnCallback = params.returnCallback;
 		params = {...params};
+		var returned, returnCallback = params.returnCallback;
 		params.returnCallback = flag => {
 			returned = flag;
 		};
@@ -59,11 +60,11 @@ export default class Block extends BlockInterface {
 			// Lets be called...
 			var reads = referencesToPaths(stmt.meta.reads);
 			var deepReads = referencesToPaths(stmt.meta.deep.reads || []);
-			var isDirectEventTarget = (params.references || []).filter(f => reads.filter(v => pathStartsWith(v, f)).length);
-			var isIndirectEventTarget = (params.references || []).filter(f => deepReads.filter(v => pathStartsWith(v, f)).length);
-			if (!params.references || !params.references.length 
-			|| (isDirectEventTarget = isDirectEventTarget.length)
-			|| (isIndirectEventTarget = isIndirectEventTarget.length)) {
+			var isDirectEventTarget = (params.references || []).filter(ref => reads.filter(v => pathStartsWith(v, ref)).length);
+			var isIndirectEventTarget = (params.references || []).filter(ref => deepReads.filter(v => pathStartsWith(v, ref)).length);
+			var isFirstRunOrDirectOrIndirectReference = !params.references || !params.references.length || (isDirectEventTarget = isDirectEventTarget.length) || (isIndirectEventTarget = isIndirectEventTarget.length);
+			var isLocalAssignmentInEventbasedRuntime = params.references/** On the event-based runtime for... */ && context.params.type === 2/** ...onTrue/onFalse blocks */ && (stmt instanceof AssignmentInterface) && stmt.initKeyword/** Local assignments within it ... might be needed by selected references */;
+			if (isFirstRunOrDirectOrIndirectReference/** || (isLocalAssignmentInEventbasedRuntime Experimental and currently disabled */) {
 				var _params = params;
 				if (isDirectEventTarget) {
 					_params = {...params};
@@ -76,7 +77,6 @@ export default class Block extends BlockInterface {
 					}
 					return results[i];
 				}
-				if (stmt instanceof IfInterface)
 				if (((stmt instanceof IfInterface) && stmt.abortive) || returned === false) {
 					skippedAbort = true;
 					if (returnCallback) {
@@ -88,6 +88,18 @@ export default class Block extends BlockInterface {
 				if (params.references && ((stmt instanceof AssignmentInterface) || (stmt instanceof DeletionInterface))) {
 					params.references = params.references.concat(referencesToPaths([stmt.reference]));
 				}
+			} else if (params.references && (stmt instanceof AssignmentInterface) && (stmt.val instanceof ReferenceInterface)) {
+				// E.g: app = document.state; (This statement won't evaluate above if reference was "document.state.something")
+				// So we need to record that app.something has changed
+				params.references = params.references.slice(0);
+				let basePath = referencesToPaths([stmt.reference])[0], // app
+					leafPath = referencesToPaths([stmt.val])[0]; // document.state
+				params.references.forEach(ref/** document.state.something */ => {
+					if (pathStartsWith(ref, leafPath)) {
+						// app.something
+						params.references.push(basePath.concat(pathAfter(ref, leafPath)));
+					}
+				});
 			}
 		}
 
