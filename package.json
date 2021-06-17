@@ -18,18 +18,20 @@
     "url": "https://github.com/webqit/subscript/issues"
   },
   "type": "module",
-  "main": "src/index.js",
+  "sideEffects": false,
+  "main": "./src/index.js",
   "scripts": {
-    "watch": "webpack --watch",
-    "test": "node ./.tests/index.js",
-    "build-dev": "webpack --config ./webpack.config.dev.cjs",
+    "test": "mocha --extension .test.js",
     "build": "webpack --config ./webpack.config.cjs",
-    "prepublish": "npm run build"
+    "preversion": "npm run build && git add -A dist",
+    "postversion": "npm publish",
+    "postpublish": "git push && git push --tags"
   },
   "dependencies": {
     "@webqit/util": "^0.7.1"
   },
   "devDependencies": {
+    "chai": "^4.3.4",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   },

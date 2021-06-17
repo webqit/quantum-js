@@ -2,14 +2,10 @@
 /**
  * @imports
  */
-import Jsen from './index.js';
+import Subscript from './index.js';
 
 // As globals
-if (!window.WN) {
-	window.WN = {};
+if (!window.WebQit) {
+	window.WebQit = {};
 }
-window.WN.Jsen = Jsen;
-if (!window.WebNative) {
-	window.WebNative = {};
-}
-window.WebNative.Jsen = Jsen;
+window.WebQit.Subscript = Subscript;
