@@ -13,6 +13,7 @@ import _after from '@webqit/util/str/after.js';
 import _before from '@webqit/util/str/before.js';
 import _unique from '@webqit/util/arr/unique.js';
 import ReferenceError from './ReferenceError.js';
+import { DotSafePath } from './util.js';
 
 /**
  * @exports
@@ -50,6 +51,7 @@ export default class Scope {
 	 * @return Scope
 	 */
 	observe(trap, callback, params = {}) {
+
 		if (this.stack.super) {
 			this.stack.super.observe(trap, (e) => {
 				if (e.props.filter(prop => !_has(this.stack.local, prop, trap) && !_has(this.stack.main, prop, trap)).length) {
@@ -60,7 +62,7 @@ export default class Scope {
 		}
 		
 		var _params  = {...params};
-		_params.subtree = 'auto';
+		_params.subtree = _params.subtree || true;
 		_params.tags = (_params.tags || []).slice(0);
 		_params.tags.push(this, 'jsen-context',);
 		_params.diff = true;
@@ -71,10 +73,10 @@ export default class Scope {
 				// Changes firing directly from super and local should be ignored
 				if (c.name === 'main') {
 					if (c.path.length > 1) {
-						references.push(c.path.slice(1));
+						references.push(DotSafePath.resolve(c.path.slice(1)));
 					} else {
 						var keysMain = _unique((_isTypeObject(c.value) ? Object.keys(c.value) : []).concat(c.oldValue && _isTypeObject(c.oldValue) ? Object.keys(c.oldValue) : []));
-						references.push(...keysMain.map(k => [k]));
+						references.push(...keysMain.map(k => DotSafePath.resolve([k])));
 					}
 				}
 			});
@@ -88,6 +90,7 @@ export default class Scope {
 				});
 			}
 		}, _params);
+
 	}
 	
 	/**

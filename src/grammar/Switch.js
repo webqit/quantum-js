@@ -99,4 +99,4 @@ const Switch = class extends SwitchInterface {
 /**
  * @exports
  */
-export default If;
+export default Switch;
