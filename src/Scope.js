@@ -32,13 +32,13 @@ export default class Scope {
 		if (!('main' in stack)) {
 			throw new Error('A "main" context must be provided!');
 		}
-		Object.defineProperty(this, 'stack', {value: stack || {}, enumerable: false});
-		Object.defineProperty(this, 'params', {value: params || {}, enumerable: false});
+		Object.defineProperty(this, 'stack', { value: stack || {}, enumerable: false });
+		Object.defineProperty(this, 'params', { value: params || {}, enumerable: false });
 		if (stack.super) {
-			Object.defineProperty(this.stack, 'super', {value: Scope.create(stack.super, {errorLevel: params.errorLevel}), enumerable: false});
+			Object.defineProperty(this.stack, 'super', { value: Scope.create(stack.super, { errorLevel: params.errorLevel }), enumerable: false });
 		}
-		Object.defineProperty(this.stack, 'local', {value: stack.local || {}, enumerable: false});
-		Object.defineProperty(this.stack, '$local', {value: stack.$local || {}, enumerable: false});
+		Object.defineProperty(this.stack, 'local', { value: stack.local || {}, enumerable: false });
+		Object.defineProperty(this.stack, '$local', { value: stack.$local || {}, enumerable: false });
 	}
 
 	/**
@@ -181,7 +181,7 @@ export default class Scope {
 	 * @return bool
 	 */
 	set(prop, val, trap = {}, initKeyword = false, isRootVar = true) {
-		if (this.params.type === 2 && initKeyword === 'var' && this.stack.super) {
+		if (this.params.scopeType === 2 && initKeyword === 'var' && this.stack.super) {
 			return this.stack.super.set(prop, val, trap, initKeyword);
 		}
 		if (prop instanceof String) {
@@ -212,7 +212,7 @@ export default class Scope {
 			try {
 				return advance();
 			} catch(e) {
-				if ((e instanceof ReferenceError) && contxtObj && !localContxtMeta && level === 0 && this.params.strictMode === false) {
+				if ((e instanceof ReferenceError) && contxtObj && (!isRootVar || this.params.strictMode === false) && !localContxtMeta/* when on main */ && level === 0) {
 					// Assign to undeclared variables
 					return _set(contxtObj, prop, val, trap);
 				}
@@ -326,7 +326,7 @@ export default class Scope {
 		if (cntxt instanceof Scope) {
 			return cntxt;
 		}
-		var scopeObj = {};
+		var scopeObj = params.scopeObj || {};
 		if (trap.set) {
 			trap.set(scopeObj, 'main', cntxt);
 		} else {

@@ -60,7 +60,7 @@ export default class Reference extends ReferenceInterface {
 			},
 		};
 	}
-	 
+	
 	/**
 	 * @inheritdoc
 	 */
@@ -127,13 +127,13 @@ export default class Reference extends ReferenceInterface {
 			// context, second
 			// ------------------------
 			if (splits.length) {
-				context = parseCallback(splits.join(''), null, {role: 'CONTEXT'});
+				context = parseCallback(splits.join(''), null, { ...params, role: 'CONTEXT' });
 			}
 			if (_wrapped(name, '[', ']')) {
 				if (!context) {
 					throw new SyntaxError(expr);
 				}
-				name = parseCallback(_unwrap(name, '[', ']'));
+				name = parseCallback(_unwrap(name, '[', ']'), null, params);
 			}
 			return new this(context, name, backticks);
 		}

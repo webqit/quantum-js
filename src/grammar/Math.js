@@ -76,10 +76,10 @@ const Math = class extends MathInterface {
 				throw new Error('"Addition/subtraction" and "multiplication/division" operators cannot be used in the same expression: ' + expr + '!');
 			}
 			return new this(
-				parseCallback(parse.tokens.shift().trim()),
+				parseCallback(parse.tokens.shift().trim(), null, params),
 				parse.tokens.map((expr, i) => {return {
 					operator: parse.matches[i],
-					val: parseCallback(expr.trim())
+					val: parseCallback(expr.trim(), null, params)
 				};})
 			);
 		}

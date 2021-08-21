@@ -36,7 +36,7 @@ const Switch = class extends SwitchInterface {
         var _context = new Scope({
             main:{}, 
             super:context,
-        }, {type: 2, errorLevel});
+        }, { scopeType: 2, errorLevel });
 		return  this.assertion.eval(context/** original context */, params)
 			? (this.onTrue ? this.onTrue.eval(_context, params) : undefined)
             : (this.onFalse ? this.onFalse.eval(_context, params) : undefined);
@@ -70,7 +70,7 @@ const Switch = class extends SwitchInterface {
         var splits;
         if (expr.startsWith('switch') 
 		&& (splits = Lexer.split(expr, [], {limit:2}/*IMPORTANT*/).slice(1).filter(b => b.trim())) && splits.length === 2) {
-            var assertion = parseCallback(_unwrap(splits.shift().trim(), '(', ')').trim());
+            var assertion = parseCallback(_unwrap(splits.shift().trim(), '(', ')').trim(), null, params);
             var rest = Lexer.split(splits.shift().trim(), ['else'], {limit:1}/*IMPORTANT*/);
             var onTrue = rest.shift().trim(), onTrueIsBlock, onFalse = (rest.shift() || '').trim(), onFalseIsBlock;
             if (_wrapped(onTrue, '{', '}')) {
@@ -78,14 +78,14 @@ const Switch = class extends SwitchInterface {
                 onTrueIsBlock = true;
                 onTrue = _unwrap(onTrue, '{', '}').trim();
             }
-            onTrue = parseCallback(onTrue, [Block], {assert:false, meta:null}) || parseCallback(onTrue, null, {meta:null});
+            onTrue = parseCallback(onTrue, [ Block ], { ...params, assert:false, meta:null }) || parseCallback(onTrue, null, { ...params, meta:null });
             if (onFalse) {
                 if (_wrapped(onFalse, '{', '}')) {
                     // The braces gives us the onTrue block
                     onFalseIsBlock = true;
                     onFalse = _unwrap(onFalse, '{', '}').trim();
                 }
-                onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
+                onFalse = parseCallback(onFalse, [ Block ], { ...params, assert:false, meta:null }) || parseCallback(onFalse, null, { ...params, meta:null });
             }
 			return new this(assertion, onTrue, onFalse, {
                     onTrueIsBlock,

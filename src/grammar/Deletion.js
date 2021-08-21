@@ -63,7 +63,7 @@ const Deletion = class extends DeletionInterface {
 		var parse = Lexer.lex(expr, Object.values(this.operators));
 		if (parse.matches.length === 1 && expr.startsWith(parse.matches[0] + ' ')) {
 			var reference;
-			if (!((reference = parseCallback(parse.tokens.pop().trim(), null, {role: 'DELETION_SPECIFIER'})) instanceof ReferenceInterface)) {
+			if (!((reference = parseCallback(parse.tokens.pop().trim(), null, { ...params, role: 'DELETION_SPECIFIER' })) instanceof ReferenceInterface)) {
 				throw new SyntaxError(expr);
 			}
 			return new this(reference, parse.matches[0].trim());

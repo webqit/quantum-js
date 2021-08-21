@@ -85,7 +85,19 @@ const Func = class extends FuncInterface {
 			}
 			// But this newer context should come first
 			var errorLevel = context instanceof Scope ? context.params.errorLevel : undefined;
-			var nestedContext = new Scope({main:newMainContext, super:context}, {errorLevel});
+			var subscope = {
+				main: newMainContext,
+				super: context,
+				local: {},
+				$local: {},
+			};
+			if (params.scopeObj) {
+				if (!params.scopeObj.subscopes) {
+					params.scopeObj.subscopes = [];
+				}
+				params.scopeObj.subscopes.push(subscope);
+			}
+			var nestedContext = new Scope(subscope, { errorLevel });
 			var retrn = instance.statements.eval(nestedContext, params);
 			if (instance.arrowFunctionFormatting.body === false) {
 				return retrn[0];
@@ -152,6 +164,7 @@ const Func = class extends FuncInterface {
 			var paramSplit = param.split('=');
 			if (paramSplit[1]) {
 				paramters[paramSplit[0].trim()] = parseCallback(paramSplit[1].trim(), null, {
+					...params,
 					// Any varaibles should be added to public vars
 					meta: null,
 				});
@@ -160,6 +173,7 @@ const Func = class extends FuncInterface {
 			}
 		});
 		var block = parseCallback(funcBody, [Block], {assert:false}) || parseCallback(funcBody, null, {
+			...params,
 			// Any varaibles should be added to public vars
 			meta: null,
 		});

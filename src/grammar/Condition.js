@@ -62,9 +62,9 @@ export default class Condition extends ConditionInterface {
 				throw new Error('Malformed ternary expression: ' + expr + '!');
 			}
 			return new this(
-				parseCallback(splits[0].trim()),
-				parseCallback(splits[1].trim()),
-				parseCallback(splits[2].trim())
+				parseCallback(splits[0].trim(), null, params),
+				parseCallback(splits[1].trim(), null, params),
+				parseCallback(splits[2].trim(), null, params)
 			);
 		}
 	}

@@ -51,7 +51,7 @@ const Arguments = class extends ArgumentsInterface {
 		var args; expr = expr.trim();
 		if (_wrapped(expr, '(', ')') && !Lexer.match(expr, [' ']).length) {
 			return new this(
-				Lexer.split(_unwrap(expr, '(', ')'), [',']).map(arg => parseCallback(arg.trim()))
+				Lexer.split(_unwrap(expr, '(', ')'), [',']).map(arg => parseCallback(arg.trim(), null, params))
 			);
 		}
 	}

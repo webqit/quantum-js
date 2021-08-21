@@ -2,12 +2,8 @@
 /**
  * @imports
  */
-import _last from '@webqit/util/arr/last.js';
-import _before from '@webqit/util/str/before.js';
-import _after from '@webqit/util/str/after.js';
 import _isNumber from '@webqit/util/js/isNumber.js';
 import _isArray from '@webqit/util/js/isArray.js';
-import _isUndefined from '@webqit/util/js/isUndefined.js';
 import Lexer from '@webqit/util/str/Lexer.js';
 import AssignmentInterface from './AssignmentInterface.js';
 import ReferenceInterface from './ReferenceInterface.js';
@@ -25,20 +21,19 @@ const Assignment = class extends AssignmentInterface {
 	/**
 	 * @inheritdoc
 	 */
-	constructor(initKeyword, reference, val, operator = '=', postIncrDecr = false) {
+	constructor(reference, val, operator = '=', incrDecrIsPost = false) {
 		super();
-		this.initKeyword = initKeyword;
 		this.reference = reference;
 		this.val = val;
 		this.operator = operator;
-		this.postIncrDecr = postIncrDecr;
+		this.incrDecrIsPost = incrDecrIsPost;
 	}
 	 
 	/**
 	 * @inheritdoc
 	 */
 	eval(context = null, params = {}) {
-		var val, initialVal, reference = this.reference.getEval(context, params);
+		var val, initKeyword, initialVal, reference = this.reference.getEval(context, params);
 		if (['++', '--'].includes(this.operator)) {
 			initialVal = this.reference.eval(context, params);
 			if (!_isNumber(initialVal)) {
@@ -65,14 +60,15 @@ const Assignment = class extends AssignmentInterface {
 				val = operandA + operandB;
 			}
 		} else {
-			val = this.val.eval(context, params);
+			initKeyword = params.initKeyword;
+			val = this.val ? this.val.eval(context, params) : undefined;
 		}
 		try {
-			reference.set(val, this.initKeyword);
+			reference.set(val, initKeyword);
 			if (params && _isArray(params.references)) {
 				_pushUnique(params.references, this.reference.toString());
 			}
-			return this.postIncrDecr ? initialVal : val;
+			return this.incrDecrIsPost ? initialVal : val;
 		} catch(e) {
 			if (e instanceof ReferenceError) {
 				throw new ReferenceError('[' + this + ']: ' + e.message);
@@ -94,40 +90,42 @@ const Assignment = class extends AssignmentInterface {
 	 */
 	stringify(params = {}) {
 		if (['++', '--'].includes(this.operator)) {
-			return this.postIncrDecr 
+			return this.incrDecrIsPost 
 				? this.reference.stringify(params) + this.operator
 				: this.operator + this.reference.stringify(params);
 		}
-		return (this.initKeyword ? this.initKeyword + ' ' : '')
-			+ [this.reference.stringify(params), this.operator.trim(), this.val.stringify(params)].join(' ');
+		return [this.reference.stringify(params), this.operator.trim(), this.val ? this.val.stringify(params) : ''].filter(a => a).join(' ');
 	}
 	
 	/**
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		var parse = Lexer.lex(expr, this.operators.concat([testBlockEnd]));
-		if (parse.matches.length) {
-			var initKeyword, reference, val, operator = parse.matches[0].trim(), isIncrDecr = ['++', '--'].includes(operator), postIncrDecr;
+		expr = expr.trim();
+		var isDeclaration, parse = Lexer.lex(expr, this.operators.concat([testBlockEnd]));
+		if (params.isDeclaration) {
+			params = { ...params };
+			delete params.isDeclaration;
+			isDeclaration = true;
+		}
+		if (parse.matches.length || isDeclaration) {
+			var reference,
+				val,
+				operator = (parse.matches[0] || '').trim(),
+				isIncrDecr = ['++', '--'].includes(operator),
+				incrDecrIsPost;
 			if (isIncrDecr) {
-				postIncrDecr = (expr.trim().endsWith('++') || expr.trim().endsWith('--'));
-				reference = parse.tokens[postIncrDecr ? 'shift' : 'pop']().trim();
+				incrDecrIsPost = (expr.trim().endsWith('++') || expr.trim().endsWith('--'));
+				reference = parse.tokens[incrDecrIsPost ? 'shift' : 'pop']().trim();
 			} else {
 				reference = parse.tokens.shift().trim();
-				val = parse.tokens.shift().trim();
+				val = (parse.tokens.shift() || '').trim();
 			}
-			if (['var', 'let', 'const'].includes(_before(reference, ' '))) {
-				if (operator !== '=') {
-					throw new SyntaxError('Invalid declaration: ' + expr);
-				}
-				initKeyword = _before(reference, ' ');
-				reference = _after(reference, ' ').trim();
-			}
-			if (!((reference = parseCallback(reference, null, {role: 'ASSIGNMENT_SPECIFIER'})) instanceof ReferenceInterface) 
-			|| (!isIncrDecr && !(val = parseCallback(val)))) {
+			if (!((reference = parseCallback(reference, null, { ...params, role: 'ASSIGNMENT_SPECIFIER' })) instanceof ReferenceInterface) 
+			|| (!isIncrDecr && (val && !(val = parseCallback(val, null, params)) && !isDeclaration))) {
 				throw new SyntaxError(expr);
 			}
-			return new this(initKeyword, reference, val, operator, postIncrDecr);
+			return new this(reference, val, operator, incrDecrIsPost);
 		}
 	}
 };	

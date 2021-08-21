@@ -4,10 +4,10 @@
  */
 import _wrapped from '@webqit/util/str/wrapped.js';
 import _unwrap from '@webqit/util/str/unwrap.js';
-import _first from '@webqit/util/arr/first.js';
-import _last from '@webqit/util/arr/last.js';
 import _each from '@webqit/util/obj/each.js';
+import { _isString } from '@webqit/util/js/index.js';
 import ObjInterface from './ObjInterface.js';
+import StrInterface from './StrInterface.js';
 import Lexer from '@webqit/util/str/Lexer.js';
 
 /**
@@ -23,7 +23,7 @@ const Obj = class extends ObjInterface {
 	 */
 	constructor(entries) {
 		super();
-		this.entries = entries || {};
+		this.entries = entries || new Map;
 	}
 	
 	/**
@@ -31,9 +31,9 @@ const Obj = class extends ObjInterface {
 	 */
 	inherit(Super) {
 		if (Super instanceof ObjInterface) {
-			_each(Super.entries, (name, val) => {
-				if (!(name in this.entries)) {
-					this.entries[name] = val;
+			Array.from(Super.entries.keys()).forEach(key => {
+				if (!this.entries.has(key)) {
+					this.entries.set(key, Super.entries.get(key));
 				}
 			});
 		}
@@ -45,8 +45,15 @@ const Obj = class extends ObjInterface {
 	 */
 	eval(context = null, params = {}) {
 		var items = {};
-		_each(this.entries, (key, expr) => {
-			items[key] = expr.eval(context, params);
+		Array.from(this.entries.keys()).forEach(key => {
+			var name = _isString(key) ? key : key.eval(context, params);
+			var val = this.entries.get(key);
+			if (val) {
+				val = val.eval(context, params);
+			} else {
+				val = name;
+			}
+			items[name] = val;
 		});
 		return items;
 	}
@@ -63,10 +70,21 @@ const Obj = class extends ObjInterface {
 	 */
 	stringify(params = {}) {
 		var str = [];
-		_each(this.entries, (key, expr) => {
-			str.push(key + Obj.operators.sub + expr.stringify(params));
+		Array.from(this.entries.keys()).forEach(key => {
+			var name = key, value = this.entries.get(key);
+			if (!_isString(name)) {
+				name = key.stringify(params);
+				if (!(key instanceof StrInterface)) {
+					name = `[${name}]`;
+				}
+			}
+			if (value && !value.byShorthand) {
+				str.push(name + Obj.operators.sub + ' ' + value.stringify(params));
+			} else {
+				str.push(name);
+			}
 		});
-		return '{' + str.join(Obj.operators.sup) + '}';
+		return '{ ' + str.join(Obj.operators.sup + ' ') + ' }';
 	}
 	
 	/**
@@ -74,12 +92,32 @@ const Obj = class extends ObjInterface {
 	 */
 	static parse(expr, parseCallback, params = {}) {
 		if (_wrapped(expr, '{', '}') && !Lexer.match(expr.trim(), [' ']).length) {
-			var entries = {};
+			var entries = new Map;
 			var _entriesSplit = Lexer.split(_unwrap(expr, '{', '}'), [Obj.operators.sup])
 				.map(n => n.trim()).filter(n => n);
 			_each(_entriesSplit, (key, expr) => {
 				var entry = Lexer.split(expr, [Obj.operators.sub], {limit:1}/*IMPORTANT*/);
-				entries[_first(entry).trim()] = parseCallback(_last(entry).trim());
+				var name = entry.shift().trim(), value;
+				if (_wrapped(name, '"', '"') || _wrapped(name, "'", "'") || _wrapped(name, '[', ']')) {
+					if (_wrapped(name, '[', ']')) {
+						name = name.slice(1, -1);
+					} else if (!entry.length) {
+						// Syntax error
+						return;
+					}
+					name = parseCallback(name, null, params);
+				}
+				if (entry.length) {
+					if (!entry[0]) {
+						// Syntax error
+						return;
+					}
+					value = parseCallback(entry[0].trim(), null, params);
+				} else if (_isString(name)) {
+					value = parseCallback(name, null, params);
+					value.byShorthand = true;
+				}
+				entries.set(name, value);
 			});
 			return new this(entries);
 		}

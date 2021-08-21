@@ -44,6 +44,8 @@ import Return from './grammar/Return.js';
 import ReturnInterface from './grammar/ReturnInterface.js';
 import Str from './grammar/Str.js';
 import StrInterface from './grammar/StrInterface.js';
+import VariableDec from './grammar/VariableDec.js';
+import VariableDecInterface from './grammar/VariableDecInterface.js';
 import Void from './grammar/Void.js';
 import VoidInterface from './grammar/VoidInterface.js';
 
@@ -55,6 +57,7 @@ export default {
 	//Block: Block,				// field1 = 3; field2 = val2
 	Return: Return,				// return field1
 	Deletion: Deletion,			// delete field1
+	VariableDec: VariableDec,	// var field1 = {}, field2 = 3, field4
 	Assignment: Assignment,		// field1[key1].key2 = k
 	Presence: Presence,			// key1 in field1
 	Func: Func,					// (field1, field2) => {}
@@ -101,6 +104,7 @@ export {
 	Reference,
 	Return,
 	Str,
+	VariableDec,
 	Void,
 };
 export {
@@ -124,5 +128,6 @@ export {
 	ReferenceInterface,
 	ReturnInterface,
 	StrInterface,
+	VariableDecInterface,
 	VoidInterface,
 };

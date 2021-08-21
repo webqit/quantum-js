@@ -2,7 +2,6 @@
 /**
  * @imports
  */
-import Lexer from '@webqit/util/str/Lexer.js';
 import ReturnInterface from './ReturnInterface.js';
 
 /**
@@ -52,9 +51,7 @@ const Return = class extends ReturnInterface {
 	static parse(expr, parseCallback, params = {}) {
 		var exprLc = expr.toLowerCase();
 		if (exprLc.startsWith('return ') || exprLc === 'return') {
-			return new this(
-				parseCallback(expr.substr(6).trim())
-			);
+			return new this(Block.parseSingleOrMultiple(expr.substr(6).trim(), parseCallback, params));
 		}
 	}
 };

@@ -71,8 +71,8 @@ export default class Comparison extends ComparisonInterface {
 				throw new Error('Malformed "Comparison" expression: ' + expr + '!');
 			}
 			return new this(
-				parseCallback(_first(parse.tokens).trim()),
-				parseCallback(_last(parse.tokens).trim()),
+				parseCallback(_first(parse.tokens).trim(), null, params),
+				parseCallback(_last(parse.tokens).trim(), null, params),
 				parse.matches[0].trim()
 			);
 		}

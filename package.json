@@ -29,7 +29,7 @@
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
-    "@webqit/util": "^0.8.7"
+    "@webqit/util": "^0.8.8"
   },
   "devDependencies": {
     "chai": "^4.3.4",

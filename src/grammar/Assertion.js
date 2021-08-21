@@ -92,7 +92,7 @@ const Assertion = class extends AssertionInterface {
 	static parse(expr, parseCallback, params = {}) {
 		if (expr.toUpperCase().startsWith(this.negation.toUpperCase())) {
 			return new this(
-				[parseCallback(expr.substr(this.negation.length))],
+				[parseCallback(expr.substr(this.negation.length), null, params)],
 				this.negation
 			);
 		}
@@ -103,7 +103,7 @@ const Assertion = class extends AssertionInterface {
 				throw new Error('"AND" and "OR" logic cannot be asserted in the same expression: ' + expr + '!');
 			}
 			return new this(
-				parse.tokens.map(expr => parseCallback(expr.trim())),
+				parse.tokens.map(expr => parseCallback(expr.trim(), null, params)),
 				_first(logic)
 			);
 		}

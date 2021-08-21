@@ -65,8 +65,8 @@ const Presence = class extends PresenceInterface {
 		var parse = Lexer.lex(expr, this.operators);
 		if (parse.tokens.length === 2) {
 			var prop, reference;
-			if (!(prop = parseCallback(parse.tokens.shift().trim()))
-			|| !((reference = parseCallback(parse.tokens.shift().trim())) instanceof ReferenceInterface)) {
+			if (!(prop = parseCallback(parse.tokens.shift().trim(), null, params))
+			|| !((reference = parseCallback(parse.tokens.shift().trim(), null, params)) instanceof ReferenceInterface)) {
 				throw new SyntaxError(expr);
 			}
 			return new this(prop, reference, parse.matches[0].trim());

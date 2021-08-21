@@ -34,10 +34,19 @@ const If = class extends IfInterface {
 	 */
 	eval(context = null, params = {}) {
         var errorLevel = context instanceof Scope ? context.params.errorLevel : undefined;
-        var _context = new Scope({
-            main:{}, 
-            super:context,
-        }, {type: 2, errorLevel});
+        var subscope = {
+            main: {},
+            super: context,
+            local: {},
+            $local: {},
+        };
+        if (params.scopeObj) {
+            if (!params.scopeObj.subscopes) {
+                params.scopeObj.subscopes = [];
+            }
+            params.scopeObj.subscopes.push(subscope);
+        }
+        var _context = new Scope(subscope, { scopeType: 2, errorLevel });
 		return  this.assertion.eval(context/** original context */, params)
 			? (this.onTrue ? this.onTrue.eval(_context, params) : undefined)
             : (this.onFalse ? this.onFalse.eval(_context, params) : undefined);
@@ -71,7 +80,7 @@ const If = class extends IfInterface {
         var splits;
         if (expr.startsWith('if') 
 		&& (splits = Lexer.split(expr, [], {limit:2}/*IMPORTANT*/).slice(1).filter(b => b.trim())) && splits.length === 2) {
-            var assertion = parseCallback(_unwrap(splits.shift().trim(), '(', ')').trim());
+            var assertion = parseCallback(_unwrap(splits.shift().trim(), '(', ')').trim(), null, params);
             var rest = Lexer.split(splits.shift().trim(), ['else'], {limit:1}/*IMPORTANT*/);
             var abortive;
             var onTrue = rest.shift().trim(), onTrueIsBlock, onFalse = (rest.shift() || '').trim(), onFalseIsBlock;
@@ -80,14 +89,14 @@ const If = class extends IfInterface {
                 onTrueIsBlock = true;
                 onTrue = _unwrap(onTrue, '{', '}').trim();
             }
-            onTrue = parseCallback(onTrue, [Block], {assert:false, meta:null}) || parseCallback(onTrue, null, {meta:null});
+            onTrue = parseCallback(onTrue, [ Block ], { ...params, assert: false, meta: null }) || parseCallback(onTrue, null, { ...params, meta:null });
             if (onFalse) {
                 if (_wrapped(onFalse, '{', '}')) {
                     // The braces gives us the onTrue block
                     onFalseIsBlock = true;
                     onFalse = _unwrap(onFalse, '{', '}').trim();
                 }
-                onFalse = parseCallback(onFalse, [Block], {assert:false, meta:null}) || parseCallback(onFalse, null, {meta:null});
+                onFalse = parseCallback(onFalse, [ Block ], { ...params, assert:false, meta:null }) || parseCallback(onFalse, null, { ...params, meta:null });
             } else if (onTrue) {
                 abortive = onTrue.stmts.filter(stmt => stmt instanceof ReturnInterface).length;
             }

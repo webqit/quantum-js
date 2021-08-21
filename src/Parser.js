@@ -57,8 +57,8 @@ export default class Parser {
 	static parseOne(expr, Expr, params = {}) {
 		// From this point forward, all vars is within current scope
 		var meta = createMeta();
-		var parsed = Expr.parse(expr, (_expr, _grammar, _params = {}) => {
-			var subStmt = this.parse(_expr, _grammar, _params ? _merge({}, params, _params) : params);
+		var parsed = Expr.parse(expr, (_expr, _grammar, _params = null) => {
+			var subStmt = this.parse(_expr, _grammar, _params ? _params : params);
 			if (subStmt instanceof ReferenceInterface) {
 				var hasCallHead, _context = subStmt;
 				while(_context = _context.context) {
@@ -125,6 +125,7 @@ export default class Parser {
 		}
 		return parsed;
 	}
+
 };
 
 function createMeta() {

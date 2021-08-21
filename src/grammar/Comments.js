@@ -80,7 +80,7 @@ const Comments = class extends CommentsInterface {
 			_comments = new this(_comments, type);
 		}
 		if (_expr) {
-			_expr = parseCallback(_expr);
+			_expr = parseCallback(_expr, null, params);
 			_expr.meta.commenta = _comments;
 			return _expr;
 		}
