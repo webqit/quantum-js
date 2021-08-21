@@ -143,7 +143,7 @@ export default class Block extends BlockInterface {
 			delete params.delim;
 			_parse = Lexer.lex(expr, [',']);
 		} else {
-			_parse = Lexer.lex(expr, [ Block.testBlockEnd ]);
+			_parse = Lexer.lex(expr + ';', [ Block.testBlockEnd ]);
 		}
 		if (_parse.matches.length) {
 			var statements = [];

@@ -3,6 +3,7 @@
  * @imports
  */
 import ReturnInterface from './ReturnInterface.js';
+import Block from './Block.js';
 
 /**
  * ---------------------------
