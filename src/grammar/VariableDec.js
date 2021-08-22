@@ -51,7 +51,7 @@ const VariableDec = class extends VariableDecInterface {
 	 */
 	static parse(expr, parseCallback, params = {}) {
 		expr = expr.trim();
-		var initKeyword = expr.match(/(var|let|const)/);
+		var initKeyword = expr.match(/^(var|let|const)/);
 		if (initKeyword && (initKeyword = initKeyword[0])) {
 			var exprs = [], _exprs = Lexer.split(_after(expr, initKeyword), [',']).map(_expr => _expr.trim());
 			for (var i = 0; i < _exprs.length; i ++) {
