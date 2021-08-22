@@ -64,7 +64,7 @@ export default class Comparison extends ComparisonInterface {
 	 * @inheritdoc
 	 */
 	static parse(expr, parseCallback, params = {}) {
-		var operators = _flatten(this.operators).map(oper => ' ' + oper + ' ');
+		var operators = _flatten(this.operators);
 		var parse = Lexer.lex(expr, operators);
 		if (parse.tokens.length > 1) {
 			if (parse.tokens.length > 2) {
