@@ -15,7 +15,6 @@ export default class Player extends Base( HTMLElement ) {
         this.consoleElement = document.createElement( 'subscript-console' );
         this.controlsElement = document.createElement( 'div' );
         this.controlsElement.classList.add( 'controls-element' );
-        
         this.buttons = {};
         [ 'edit', 'play' ].forEach( type => {
             let title = type.substring( 0, 1 ).toUpperCase() + type.substring( 1 );
