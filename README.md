@@ -8,12 +8,22 @@
 
 Subscript is a reactivity runtime for JavaScript. It takes any valid JavaScript code, reads its dependency graph, and gives you the mechanism to run it both in whole and in selected parts, called dependency threads.
 
+\> Install via npm
+
 ```cmd
 npm i @webqit/subscript
 ```
+```js
+import SubscriptFunction from '@webqit/subscript';
+```
+
+\> Include from a CDN
 
 ```html
 <script src="https://unpkg.com/@webqit/subscript/dist/main.js"></script>
+```
+```js
+const SubscriptFunction = WebQit.Subscript;
 ```
 
 ## What's A Dependency Thread?
@@ -104,7 +114,7 @@ count ++;
 render.signal( [ 'count' ] );
 ```
 
-This time, only statements 2, 3, 5, 6, and 8 were run - *the count dependency thread*; and the previously selected UI elements in those local variables are updated.
+This time, only statements 2, 3, 5, 6, and 8 are run - *the count dependency thread*; and the previously selected UI elements in those local variables are updated.
 
 ```js
 console.log( count, doubleCount, quadCount );
