@@ -12,6 +12,10 @@ Subscript is a reactivity runtime for JavaScript. It takes any valid JavaScript 
 npm i @webqit/subscript
 ```
 
+```html
+<script src="https://unpkg.com/@webqit/subscript/dist/main.js"></script>
+```
+
 ## What's A Dependency Thread?
 
 That's simply the line of dependencies involving two or more expressions.
