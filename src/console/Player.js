@@ -4,7 +4,6 @@
  */
 import Subscript from '../Subscript.js';
 import Base from './Base.js';
-import './index.js';
 
 /**
  * @Console2

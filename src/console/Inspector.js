@@ -3,7 +3,6 @@
  * @imports
  */
 import Base from './Base.js';
-import './index.js';
 
 /**
  * @Console2
