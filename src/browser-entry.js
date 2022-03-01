@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Subscript from './index.js';
+import Subscript from './Subscript.js';
 
 // As globals
 if (!window.WebQit) {

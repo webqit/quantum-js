@@ -2,21 +2,12 @@
 /**
  * @imports
  */
-import Parser from './Parser.js';
-import grammar from './grammar.js';
-import Runtime from './Runtime.js';
-import Scope from './Scope.js';
+import Compiler from './compiler/Compiler.js';
+import Runtime from './runtime/Runtime.js';
+import Subscript from './Subscript.js';
 
-/**
- * @var object
- */
-Parser.grammar = grammar;
-
-/**
- * @exports
- */
 export {
-	Parser,
-	Runtime,
-	Scope,
+    Subscript as default,
+    Compiler,
+    Runtime,
 }

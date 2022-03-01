@@ -1,116 +1,115 @@
-  
+
 /**
  * @imports
  */
-import { expect } from 'chai';
-import { Parser } from '../src/index.js';
-import { Block } from '../src/grammar.js';
+import { group, add } from './driver.js';
 
-describe(`Test: AST`, function() {
+/**
+ * Note that the format of the code block in the "expected" argument
+ * is: 4 spaces as indentation. The AST compiler has been configured for same 4 spaces as indentation.
+ * But "startingIndentLevel" can be anything as this is automatically detected and applied accordingly
+ * on the AST compiler. Also, both strings are ".trim()" before comparison.
+ * @see ./driver.js
+ */
 
-    describe(`Object syntax`, function() {
+describe(`Variable declarations`, function() {
 
-        it(`Should parse simple object expression: { prop1: value1, prop2: "String value2", prop3: 3 }`, function() {
-            var expr = `{ prop1: value1, prop2: "String value2", prop3: 3 }`;
-            var AST = Parser.parse(expr);
-            var VAL = AST.eval();
-            expect(AST + '').to.eq(expr);
-            expect(VAL).to.eql({ prop1: undefined, prop2: 'String value2', prop3: 3 });
-        });
+    group(`Maintain the declaration of variables that have "unobservable" initializers.`, function() {
 
-        it(`Should parse dynamic object expression: { [prop1]: value1, "prop 2": "String value2", prop3, [prop4], 'ddd': 'ddd' }`, function() {
-            var expr = `{ [prop1]: value1, "prop 2": "String value2", prop3, [prop4], 'ddd': 'ddd' }`;
-            var AST = Parser.parse(expr);
-            var VAL = AST.eval({ prop4: 'dynamicProp' });
-            expect(AST + '').to.eq(expr);
-            expect(VAL).to.eql({ undefined: undefined, 'prop 2': 'String value2', prop3: undefined, dynamicProp: 'dynamicProp', ddd: 'ddd' });
-        });
+        add(
+            `Ordinary "Identifier" initializers (e.g var a = b;) are not "observable".`,
+            `
+            var a = b;
+            `,
+            `
+            var a = b;
+            `
+        );
 
-    });
-
-    describe(`Abstraction () syntax`, function() {
-
-        it(`Should parse simple abstraction expression: (4 + 10)`, function() {
-            var expr = `(4 + 10)`;
-            var AST = Parser.parse(expr);
-            var VAL = AST.eval();
-            expect(AST + '').to.eq(expr);
-            expect(VAL).to.eql(14);
-        });
-
-        it(`Should parse multiple statement abstraction expression: (4 + 10, 555 + 1)`, function() {
-            var expr = `(4 + 10, 555 + 1)`;
-            var AST = Parser.parse(expr);
-            var VAL = AST.eval();
-            expect(AST + '').to.eq(expr);
-            expect(VAL).to.eql(556);
-        });
-    });
-
-    describe(`Assignment syntax`, function() {
-
-        it(`Should parse simple assignment expression: aa = 4 + 10`, function() {
-            var expr = `aa = 4 + 10`;
-            var AST = Parser.parse(expr);
-            var CONTEXT = { aa: 0 };
-            var VAL = AST.eval(CONTEXT, {strictMode: false});
-            expect(AST + '').to.eq(expr);
-            expect(VAL).to.eq(14);
-            expect(CONTEXT).to.eql({ aa: 14 });
-        });
-
-        it(`Should parse path assignment expression: bb.rr = 4 + 10`, function() {
-            var expr = `bb.rr = 4 + 10`;
-            var AST = Parser.parse(expr);
-            var CONTEXT = { bb: {} };
-            var VAL = AST.eval(CONTEXT);
-            expect(AST + '').to.eq(expr);
-            expect(VAL).to.eq(14);
-            expect(CONTEXT).to.eql({ bb: { rr: 14 } });
-        });
+        add(
+            `"const" kind of declarations (e.g const a = b.c;) are not "observable".`,
+            `
+            const a = b.c;
+            `,
+            `
+            const a = b.c;
+            `
+        );
 
     });
 
-    describe(`Variable decalarations syntax`, function() {
+    group(`Refactor and observe around the declaration of variables that have "observable" initializers.`, function() {
 
-        it(`Should parse simple variable decalaration: var aa = 4 + 10`, function() {
-            var expr = `var aa = 4 + 10`;
-            var AST = Parser.parse(expr);
-            var SCOPEOBJ = {};
-            var CONTEXT = {};
-            var VAL = AST.eval(CONTEXT, { scopeObj: SCOPEOBJ });
-            expect(SCOPEOBJ.local).to.eql({ aa: 14 });
-        });
+        add(
+            `"MemberExpression" initializers (e.g var a = b.c;) are "observable".`,
+            `
+            var a = b.c;
+            `,
+            `
+            var a;
+            $("var#1", [["b", "c"]], () => {
+                a = b.c;
+            });
+            `
+        );
 
-        it(`Should parse multiple variable decalarations: var aa = 4 + 10, bb = 2, cc, dd = 3, ee`, function() {
-            var expr = `var aa = 4 + 10, bb = 2, cc, dd = 3, ee`;
-            var AST = Parser.parse(expr);
-            var SCOPEOBJ = {};
-            var CONTEXT = {};
-            var VAL = AST.eval(CONTEXT, { scopeObj: SCOPEOBJ });
-            expect(SCOPEOBJ.local).to.eql({ aa: 14, bb: 2, cc: undefined, dd: 3, ee: undefined });
-        });
+        add(
+            `In a multi-var declaration (e.g let a = b, c = d.e, f = g;), observable declarations are singled out into a new line for observability.`,
+            `
+            let a = b, c = d.e, f = g;
+            `,
+            `
+            let a = b, c, f = g;
+            $("let#1", [["d", "e"]], () => {
+                c = d.e;
+            });
+            `
+        );
+
     });
 
-    describe(`Statement block syntax`, function() {
+});
 
-        it(`Should parse simple statement block: var aa = 4 + 10; console.log(aa);`, function() {
-            var expr = `var aa = 4 + 10; console.log(aa);`;
-            var AST = Parser.parse(expr, [ Block ]);
-            var SCOPEOBJ = {};
-            var CONTEXT = {};
-            var VAL = AST.eval(CONTEXT, { scopeObj: SCOPEOBJ });
-            expect(SCOPEOBJ.local).to.eql({ aa: 14 });
-        });
+describe(`Assignment expressions`, function() {
 
-        it(`Should parse complex statement block: var aa = 4 + 10, bb = 2, cc, dd = 3, ee = (b, 20); if (w) {} console.log(aa), console.log(bb);`, function() {
-            var expr = `var aa = 4 + 10, bb = 2, cc, dd = 3, ee = (b, 20); if (w) {} console.log(aa)\r\n console.log(bb);`;
-            var AST = Parser.parse(expr, [ Block ]);
-            var SCOPEOBJ = {};
-            var CONTEXT = {};
-            var VAL = AST.eval(CONTEXT, { scopeObj: SCOPEOBJ });
-            expect(SCOPEOBJ.local).to.eql({ aa: 14, bb: 2, cc: undefined, dd: 3, ee: 20 });
-        });
+    group(`Maintain assignment expressions that have "unobservable" right-hand side.`, function() {
+
+        add(
+            `Ordinary "Identifier" right-hand sides (e.g a = b;) are not "observable".`,
+            `
+            a = b;
+            `,
+            `
+            a = b;
+            `
+        );
+
+    });
+
+    group(`Refactor and observe around assignment expressions that have "observable" right-hand side.`, function() {
+
+        add(
+            `"MemberExpression" right-hand sides (e.g a = b.c;) are "observable".`,
+            `
+            a = b.c;
+            `,
+            `
+            $("assign-global#1", [["b", "c"]], () => {
+                a = b.c;
+            });
+            `
+        );
+
+        add(
+            `In a sequence expression (e.g a = b, c = d.e, f = g;), assignment expressions with observable right-hand side are singled out into a new line for observability.`,
+            `
+            a = b, c = d.e, f = g;
+            `,
+            `
+            (a = b, $("assign-global#1", [["d", "e"]], () => c = d.e), f = g);
+            `
+        );
+
     });
 
 });
