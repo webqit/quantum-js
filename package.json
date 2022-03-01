@@ -24,7 +24,8 @@
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
     "build": "webpack --config ./webpack.config.cjs",
-    "preversion": "npm run test && npm run build && git add -A dist",
+    "-preversion": "npm run test && npm run build && git add -A dist",
+    "preversion": "npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
   },
