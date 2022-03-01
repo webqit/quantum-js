@@ -31,7 +31,7 @@ export default class Player extends Base( HTMLElement ) {
                 if ( this.active ) {
                     this.active.classList.remove( 'active' );
                 }
-                this.active = this.buttons[ id ];
+                this.active = this.buttons[ type ];
                 this.active.classList.add( 'active' );
             } );
         } );
