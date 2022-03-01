@@ -8,6 +8,10 @@
 
 Subscript is a reactivity runtime for JavaScript. It takes any valid JavaScript code, reads its dependency graph, and gives you the mechanism to run it both in whole and in selected parts, called dependency threads.
 
+```cmd
+npm i @webqit/subscript
+```
+
 ## What's A Dependency Thread?
 
 That's simply the line of dependencies involving two or more expressions.
@@ -19,7 +23,7 @@ let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
 We just expressed that `doubleCount` should be two times the value of `count`, and that `quadCount` should be two times the value of `doubleCount`.
 
 ```js
-console,log( count, doubleCount, quadCount );
+console.log( count, doubleCount, quadCount );
 < 10, 20, 40
 ```
 
@@ -30,7 +34,7 @@ count ++;
 ```
 
 ```js
-console,log( count, doubleCount, quadCount );
+console.log( count, doubleCount, quadCount );
 < 11, 20, 40
 ```
 
@@ -85,7 +89,7 @@ render();
 The above executes the function body in full as designed… elements are selected and assigned content. And we can see the counters in the console.
 
 ```js
-console,log( count, doubleCount, quadCount );
+console.log( count, doubleCount, quadCount );
 < 10, 20, 40
 ```
 
@@ -99,7 +103,7 @@ render.signal( [ 'count' ] );
 This time, only statements 2, 3, 5, 6, and 8 were run - *the count dependency thread*; and the previously selected UI elements in those local variables are updated.
 
 ```js
-console,log( count, doubleCount, quadCount );
+console.log( count, doubleCount, quadCount );
 < 11, 22, 44
 ```
 
