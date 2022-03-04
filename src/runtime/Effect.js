@@ -39,7 +39,9 @@ export default class Effect {
             }
             // This is normal callback
             let callee = arg1;
-            let childEffect = new Effect( this, effectGraph, callee, { ...this.params }, this.exits );
+            let firstChild = effectGraph.childEffects[ Object.keys( effectGraph.childEffects )[ 0 ] ],
+                isFunctionExpression = firstChild && firstChild.type === 'FunctionExpression';
+            let childEffect = new Effect( this, effectGraph, callee, { ...this.params, isFunctionExpression }, isFunctionExpression ? null : this.exits );
             if ( this.childEffects.has( effectId ) ) {
                 this.childEffects.get( effectId ).dispose();
             }
@@ -63,7 +65,7 @@ export default class Effect {
             throw new Error( `Instance not runable after disposal.` );
         }
         let ret = this.callee.call( $this, this.construct, ...$arguments );
-        if ( !this.parentEffect ) {
+        if ( !this.parentEffect || this.params.isFunctionExpression ) {
             let _ret = this.exits.get( 'return' );
             this.exits.clear();
             ret = ret instanceof Promise ? ret.then( () => _ret ) : _ret;
@@ -77,16 +79,16 @@ export default class Effect {
             throw new Error( `Effect ${ this.graph.lineage } is not an iterator.` );
         }
         let [ [ /* iterationEffectId */, iterationInstances ] ] = this.childEffects;
-        let prev, after = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
+        let prev, _await = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
         if ( !keys.length || ( keys.includes( 'length') && this.graph.type === 'ForOfStatement' ) ) {
             for ( let [ /* iterationId */, iterationInstance ] of iterationInstances ) {
-                prev = after( prev, () => iterationInstance.call() );
+                prev = _await( prev, () => iterationInstance.call() );
             }
         } else {
             for ( let key of keys ) {
                 let instance = iterationInstances.get( key ) || iterationInstances.get( parseInt( key ) );
                 if ( !instance ) continue;
-                prev = after( prev, () => instance.call() );
+                prev = _await( prev, () => instance.call() );
             }
         }
         return prev;
@@ -122,12 +124,12 @@ export default class Effect {
             return entry.call();
         };
         
-        let prev, entry, refs, after = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
+        let prev, entry, refs, _await = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
         while ( ( entry = thread.sequence.shift() ) && ( refs = [ ...thread.entries.get( entry ) ] ) ) {
-            prev = after( prev, () => {
+            prev = _await( prev, () => {
                 if ( entry.disposed || !entry.filterRefs( refs ).length ) return;
                 let maybePromise = execute( entry, refs );
-                after( maybePromise, () => {
+                _await( maybePromise, () => {
                     for ( let ref of refs ) {
                         [].concat( ref.executionPlan.assigneeRef || ref.executionPlan.assigneeRefs || [] ).forEach( assigneeRef => {
                             entry.buildThread( thread, [], assigneeRef, [], 0 );
@@ -138,7 +140,7 @@ export default class Effect {
             } );
         }
 
-        return after( prev, () => {
+        return _await( prev, () => {
             let _ret = this.exits.get( 'return' );
             this.exits.clear();
             return _ret;

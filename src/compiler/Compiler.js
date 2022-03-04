@@ -50,6 +50,17 @@ export default class Compiler {
             // Helpers
             const _transform = ( _nodes, _effect = effect, _scope = scope ) => this._transform( _nodes, _effect, _scope );
             const _returns = ( ...__nodes ) => _nodes.concat( __nodes );
+            const _visit = ( _node, _effect = effect ) => Object.keys( _node ).reduce( ( __node, key ) => {
+                let value = _node[ key ];
+                if ( value && value.type === 'Identifier' ) {
+                    _effect.subscriptIdentifiersNoConflict( value );
+                } else if ( Array.isArray( value ) ) {
+                    value = value.map( v => _visit( v ) );
+                } else if ( typeof value === 'object' && value ) {
+                    value = _visit( value );
+                }
+                return { ...__node, [ key ]: value };
+            }, {} );
             if ( !node ) return _returns( node );
 
             /**
@@ -63,6 +74,25 @@ export default class Compiler {
                     let body = _transform( node.body, null, programScope );
                     return _returns( { ...node, body } );
                 } );
+            }
+
+            /**
+             * ------------
+             * #ArrowFunctionExpression
+             * #FunctionExpression
+             * #FunctionDeclaration
+             * ------------
+             */
+            if ( node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration' ) {
+                let createNode = astNodes[ node.type === 'ArrowFunctionExpression' ? 'arrowFuncExpr' : (
+                    node.type === 'FunctionExpression' ? 'funcExpr' : 'funcDeclaration'
+                ) ].bind( astNodes );
+                if ( node.type === 'FunctionDeclaration' ) {
+                    node = _visit( node, scope.ownerEffect );
+                } else {
+                    node = _visit( node, effect );
+                }
+                return _returns( node );
             }
 
             /**
@@ -329,19 +359,23 @@ export default class Compiler {
              * ------------
              */
             if ( node.type === 'ReturnStatement' ) {
-                let [ argument ] = _transform( [ node.argument ], scope.currentEffect || scope.ownerEffect /* This is a statement that could have had its own effect */ );
-                if ( scope.static() || !scope.currentEffect ) {
+                if ( scope.static() && 0 ) {
+                    let [ argument ] = _transform( [ node.argument ], scope.currentEffect || scope.ownerEffect /* This is a statement that could have had its own effect */ );
                     return _returns( astNodes.returnStmt( argument ) );
                 }
-                let subscript$construct = astNodes.identifier( scope.currentEffect.getSubscriptIdentifier( '$construct', true ) );
-                let keyword = astNodes.literal( 'return' );
-                let arg = argument || astNodes.identifier( 'undefined' );
-                let exitCall = astNodes.exprStmt(
-                    astNodes.callExpr( astNodes.memberExpr( subscript$construct, astNodes.identifier( 'exit' ) ), [ keyword, arg ] ),
-                );
-                // Return statement hoisting
-                scope.currentEffect.hoistExitStatement( keyword, astNodes.identifier( 'true' ) );
-                return _returns( exitCall, astNodes.returnStmt() );
+                let def = { type: node.type };
+                return scope.createEffect( def, effect => {
+                    let [ argument ] = effect.causesProduction( def, () => _transform( [ node.argument ], effect ) );
+                    let subscript$construct = astNodes.identifier( effect.getSubscriptIdentifier( '$construct', true ) );
+                    let keyword = astNodes.literal( 'return' );
+                    let arg = argument || astNodes.identifier( 'undefined' );
+                    let exitCall = astNodes.exprStmt(
+                        astNodes.callExpr( astNodes.memberExpr( subscript$construct, astNodes.identifier( 'exit' ) ), [ keyword, arg ] ),
+                    );
+                    // Return statement hoisting
+                    effect.hoistExitStatement( keyword, astNodes.identifier( 'true' ) );
+                    return _returns( ...effect.compose( [ exitCall, astNodes.returnStmt() ] ) );
+                } );
             }
 
             /**
@@ -552,42 +586,13 @@ export default class Compiler {
                 this.setLocation( $identifier, node );
                 if ( effect ) {
                     let production = effect.currentProduction;
-                    do {
-                        production.addRef().unshift( $identifier );
-                    } while( production = production.contextProduction );
+                    if ( production ) {
+                        do {
+                            production.addRef().unshift( $identifier );
+                        } while( production = production.contextProduction );
+                    }
                 }
                 return _returns( createNode() );
-            }
-
-            /**
-             * ------------
-             * #ArrowFunctionExpression
-             * #FunctionExpression
-             * #FunctionDeclaration
-             * ------------
-             */
-            if ( node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration' ) {
-                let createNode = astNodes[ node.type === 'ArrowFunctionExpression' ? 'arrowFuncExpr' : (
-                    node.type === 'FunctionExpression' ? 'funcExpr' : 'funcDeclaration'
-                ) ].bind( astNodes );
-                let [ id ] = node.type === 'FunctionDeclaration' 
-                    ? effect.noSelect( () => _transform( [ node.id ] ) )
-                    : [ node.id ];
-                let params = node.params.map( param => {
-                    if ( param.type !== 'AssignmentExpression' ) return param;
-                    let [ right ] = effect.noSelect( () => _transform( [ param.right ] ) );
-                    return astNodes.assignmentExpr( param.left, right, param.operator );
-                } );
-                let body, functionScope = ( new Scope( null, { type: 'Function' } ) ).static( true );
-                if ( node.body.type === 'BlockStatement' ) {
-                    let statements = _transform( node.body.body, null, functionScope );
-                    body = astNodes.blockStmt( statements );
-                } else {
-                    [ body ] = _transform( [ node.body ], null, functionScope );
-                }
-                return _returns(
-                    createNode( params, body, node.async, id, node.expression, node.generator )
-                );
             }
 
             /**

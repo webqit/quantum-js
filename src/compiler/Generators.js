@@ -36,6 +36,7 @@ export const astNodes = {
     unaryExpr( operator, argument, prefix = true ) { return { type: 'UnaryExpression', operator, argument, prefix }; },
     updateExpr( operator, argument, prefix = false ) { return { type: 'UpdateExpression', operator, argument, prefix }; },
     assignmentExpr( left, right, operator = '=' ) { return { type: 'AssignmentExpression', operator, left, right }; },
+    assignmentPattern( left, right ) { return { type: 'AssignmentPattern', left, right }; },
     thisExpr() { return { type: 'ThisExpression' }; },
     condExpr( test, consequent, alternate, type = 'ConditionalExpression' ) { return { type, test, consequent, alternate }; },
     arrayExpr( elements ) { return { type: 'ArrayExpression', elements }; },

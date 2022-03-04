@@ -37,7 +37,7 @@ export default class Console extends CodeBlock( Effect ) {
     get css() {
         return super.css.concat([
             `
-            .ref-identifier:is(.path-hover, .path-runtime-active) {
+            .ref-identifier.path-runtime-active {
                 text-decoration: underline;
             }
             .ref-identifier:is(.path-runtime-active) {
@@ -60,6 +60,7 @@ export default class Console extends CodeBlock( Effect ) {
             
             .ref-identifier.affected:is(.path-hover, .path-runtime-active) {
                 color: yellowgreen;
+                text-decoration: underline;
             }
 
             .ref-identifier.cause.affected:is(.path-hover, .path-runtime-active) {
@@ -83,3 +84,10 @@ export default class Console extends CodeBlock( Effect ) {
     }
 
 }
+
+/**
+ * @define
+ */
+customElements.define( 'subscript-codeblock', CodeBlock() );
+customElements.define( 'subscript-effect', Effect );
+customElements.define( 'subscript-console', Console );

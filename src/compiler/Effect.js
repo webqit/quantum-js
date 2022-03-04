@@ -209,12 +209,18 @@ export default class Effect extends Node {
     causesProduction( def, callback, resolveInScope = true ) {
         let causesProduction = new CausesProduction( this, this.causes.length, def );
         this.causes.unshift( causesProduction );
+        if ( def.static ) {
+            resolveInScope = false;
+        }
         return this._runProduction( causesProduction, callback, resolveInScope );
     }
 
     affectedsProduction( def, callback, resolveInScope = true ) {
         let affectedsProduction = new AffectedsProduction( this, this.affecteds.length, def );
         this.affecteds.unshift( affectedsProduction );
+        if ( def.static ) {
+            resolveInScope = false;
+        }
         return this._runProduction( affectedsProduction, callback, resolveInScope );
     }
 
@@ -225,19 +231,17 @@ export default class Effect extends Node {
     }
 
     embeddableCausesProduction( def, callback ) {
-        let result = this.causesProduction( def, ( production, currentProduction ) => {
+        return this.causesProduction( def, ( production, currentProduction ) => {
             production.contextProduction = currentProduction;
             return callback( production, currentProduction );
         } );
-        return result;
     }
 
     embeddableAffectedsProduction( def, callback ) {
-        let result = this.affectedsProduction( def, ( production, currentProduction ) => {
+        return this.affectedsProduction( def, ( production, currentProduction ) => {
             production.contextProduction = currentProduction;
             return callback( production, currentProduction );
         } );
-        return result;
     }
 
     get currentProduction() {
@@ -413,8 +417,9 @@ export default class Effect extends Node {
     }
 
     get isIntermediateInstance() {
-        return this.type === 'BlockStatement' 
-        || ( this.type === 'LabeledStatement' && this.scopes.length );
+        return this.type === 'BlockStatement' || this.type === 'FunctionDeclaration' || (
+            this.type === 'LabeledStatement' && this.scopes.length
+        );
     }
 
 }

@@ -2,13 +2,13 @@
 /**
  * @imports
  */
-import { expect } from 'chai';
+import * as Acorn from 'acorn';
 import Subscript from '../src/index.js';
 import Observer from '../../observer/src/index.js';
 
 // -----------
 let source2 = `
-
+/*
 for ( let propertyName in entries ) {
 	console.log( \`Current property name is: \${ propertyName }, and its alias name is: '\${ entries[ propertyName ].name }'\` );
 	console.log( ':::::::::::', targetEntries[ propertyName ] = entries[ propertyName ] );
@@ -41,7 +41,14 @@ switch( param3 ) {
     default:
         console.log( 'the end!' )
 }
+*/
+let c = 2;
+let t = function( $x, b = c ) {
+    return $x * b;
+}
+return t( 10 );
 `;
+
 
 let subscriptFunction = new Subscript( 'param1', 'param2', 'param3', source2 );
 // -----------
@@ -70,13 +77,13 @@ console.log( JSON.stringify( subscriptFunction.runtime.graph, null, 3 ) );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-console.log( subscriptFunction.toString() );
+console.log( subscriptFunction.subscriptSource );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
 
 let result = subscriptFunction( 'Some param1', 'Some param2', 2 );
-console.log( '+++++', result );
+console.log( '------->', result );
 
 setTimeout(() => {
     entries[ 'one' ] = { name: 'New one' };

@@ -180,7 +180,7 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
             case 'placeholder':
                 this._placeholder = newValue;
                 this._textarea.placeholder = newValue;
-                break
+                break;
             case 'editable':
                 this._editable = newValue;
                 if ( this._textarea ) {
@@ -191,6 +191,7 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
                 if ( newValue === 'true' ) {
                     this._textarea.focus();
                 }
+                break;
         }
     }
 
@@ -216,9 +217,9 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
                 top: 0;
                 left: 0;
                 display: block;
-            
+                
                 /* Normal inline styles */
-            
+                
                 font-size: 0.8rem;
                 font-family: monospace;
                 line-height: 1.2rem;
@@ -258,7 +259,6 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
                 tab-size: inherit !important;
             }
             
-            
             textarea, pre {
                 /* In the same place */
                 position: absolute;
@@ -269,7 +269,6 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
                 pointer-events: none !important;
             }
             
-            
             /* Move the textarea in front of the result */
             
             textarea {
@@ -278,7 +277,6 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
             pre {
                 z-index: 0;
             }
-            
             
             /* Make textarea almost completely transparent */
             

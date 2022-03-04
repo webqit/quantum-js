@@ -38,14 +38,14 @@ export default class Inspector extends Base( HTMLElement ) {
         // ----------------
         this.buttons = {};
         subscriptElement.subscriptConsole.forEach( ( subscriptFunction, id ) => {
-            let title = typeof id === 'number' ? `<${ id }>()` : `${ id }()`;
+            let title = typeof id === 'number' ? `script:${ id }` : `${ id }()`;
             this.buttons[ id ] = this.controlsElement.appendChild( document.createElement( 'button' ) );
             this.buttons[ id ].setAttribute( 'script-id', id );
             this.buttons[ id ].setAttribute( 'title',  title );
             let textElement = this.buttons[ id ].appendChild( document.createElement( 'span' ) );
             textElement.append( ' ',  title );
             let iconElement = this.buttons[ id ].appendChild( document.createElement( 'i' ) );
-            let iconClasses = this.getAttribute( `data-icons` ) || `bi bi-braces`;
+            let iconClasses = this.getAttribute( `data-icons` ) || `bi bi-${ typeof id === 'number' ? 'code' : 'braces' }`;
             iconClasses.split( ' ' ).map( str => str.trim() ).forEach( str => iconElement.classList.add( str ) );
             this.buttons[ id ].addEventListener( 'click', e => {
                 if ( this.active ) {
@@ -120,4 +120,7 @@ export default class Inspector extends Base( HTMLElement ) {
 
 }
 
+/**
+ * @define
+ */
 customElements.define( 'subscript-inspector', Inspector );

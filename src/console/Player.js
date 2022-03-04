@@ -133,4 +133,7 @@ export default class Player extends Base( HTMLElement ) {
 
 }
 
+/**
+ * @define
+ */
 customElements.define( 'subscript-player', Player );
