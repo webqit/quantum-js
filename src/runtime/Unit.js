@@ -182,7 +182,11 @@ export default class Unit {
             return entry.call();
         };
         let prev, entry, refs, _await = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
-        while ( ( entry = this.$thread.sequence.shift() ) && ( refs = [ ...this.$thread.entries.get( entry ) ] ) ) {
+        while ( 
+            ( entry = this.$thread.sequence.shift() ) 
+            && ( refs = [ ...this.$thread.entries.get( entry ) ] ) 
+            && this.$thread.entries.delete( entry ) // Important: to allow re-entry on susequent threads
+        ) {
             prev = _await( prev, () => {
                 if ( entry.disposed || !entry.filterRefs( refs ).length ) return;
                 this.$thread.current = entry;
