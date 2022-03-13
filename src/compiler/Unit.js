@@ -313,7 +313,7 @@ export default class Unit extends Common {
 
     generate( expr, params = {} ) {
         if ( !expr || !this.generatable()  ) return expr;
-        this.expr = expr;
+        this.generated = true;
         let subscript$unit = Node.identifier( this.ownerUnit.getSubscriptIdentifier( '$unit', true ) );
 
         let callee, body;
@@ -389,7 +389,7 @@ export default class Unit extends Common {
 
     get lineage() {
         let lineage = this.ownerUnit && this.ownerUnit.lineage;
-        return this.ownerUnit && !this.expr ? lineage : `${ lineage ? lineage + '/' : '' }${ this.id }`;
+        return this.ownerUnit && !this.generated ? lineage : `${ lineage ? lineage + '/' : '' }${ this.id }`;
     }
 
     // -----------------

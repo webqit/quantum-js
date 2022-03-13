@@ -212,7 +212,12 @@ export default class Compiler {
             let idReference, [ id ] = unit.effectReference( def, reference => ( idReference = reference, this.generateNodes( context, [ declarator.id ] ) ) );
             initReference.setAssignee( idReference );
             this.setLocation( unit, declarator );
-            if ( isForLoopInit || node.kind === 'const' || !declarator.init || !unit.references.filter( reference => reference instanceof SignalReference ).length/* note that we're not asking initReference.refs.size */ ) {
+            if ( isForLoopInit 
+                || node.kind === 'const' 
+                || !declarator.init 
+                // note that we're not asking initReference.refs.size
+                || ( !this.params.devMode && !unit.references.filter( reference => reference instanceof SignalReference ).length )
+            ) {
                 // init might still have effects
                 return Node.varDeclarator( id, init );
             }

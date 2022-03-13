@@ -48,11 +48,8 @@ switch( param3 ) {
 `;
 
 let source3 = `
-var { title: docTitle, body } = document, docHead = document.head;
-console.log( '-----------', docHead && this.nodeName );
-if ( docTitle || document.body ) {
-    console.log( '-----------', docTitle, document.title );
-}
+let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
+//console.log( count, doubleCount, quadCount );
 `;
 
 globalThis.d = undefined;

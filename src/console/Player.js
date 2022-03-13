@@ -50,7 +50,9 @@ export default class Player extends Base( HTMLElement ) {
     }
 
     loadConsole() {
-        this.program = Subscript( this.consoleElement.source /* innerHTML normalized */ );
+        let devMode = { devMode: true };
+        let params = { compiler: devMode, runtime: devMode };
+        this.program = Subscript( this.consoleElement.source /* innerHTML normalized */, params );
         this.consoleElement.bind( this.program, false );
     }
 

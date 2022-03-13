@@ -1,29 +1,21 @@
 /**
  * @imports
  */
-import { Parser, Compiler, Runtime } from './index.js';
 import { normalizeTabs } from './util.js';
+import { Parser, Compiler, Runtime } from './index.js';
 
 /**
  * @Subscript
  */
 export default function Subscript( ...args ) {
-    var source = normalizeTabs( args.pop() || '' );
+    let params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};
+    params.compiler = { ...Subscript.compilerParams, ...( params.compiler || {} ) };
+    params.runtime = { ...Subscript.runtimeParams, ...( params.runtime || {} ) };
+    let source = normalizeTabs( args.pop() || '' );
     let ast = parse( source );
-    let compiler = new Compiler( Subscript.compilerParams );
+    let compiler = new Compiler( params.compiler );
     let compilation = compiler.generate( ast );
-    return create( this, compilation, args, {}, source );
-}
-
-/**
- * @parserParams
- */
-Subscript.parserParams = {
-    ecmaVersion: '2020',
-    allowReturnOutsideFunction: true,
-    allowAwaitOutsideFunction: true,
-    allowSuperOutsideMethod: true,
-    preserveParens: false,
+    return create( this, compilation, args, params.runtime, source );
 }
 
 /**
@@ -111,9 +103,17 @@ const create = function( defaultThis, compilation, parameters = [], _runtimePara
  */
 const parseCache = new Map;
 const parse = function( source, params = {} ) {
+    params = {
+        ecmaVersion: '2020',
+        allowReturnOutsideFunction: true,
+        allowAwaitOutsideFunction: true,
+        allowSuperOutsideMethod: true,
+        preserveParens: false,
+        ...params
+    };
     let ast = parseCache.get( source );
     if ( !ast ) {
-        ast = Parser.parse( source, { ...Subscript.parserParams, ...params } );
+        ast = Parser.parse( source, params );
         parseCache.set( source, ast );
     }
     return ast;

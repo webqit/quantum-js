@@ -20,7 +20,7 @@ export default class Runtime extends Unit {
 
     observe( unitUrl, callback ) {
         if ( !this.params.devMode ) {
-            // TODO: Only allow observers in dev mode
+            // Only allow observers in dev mode
             //throw new Error( `Observers are allowed only in dev mode.` );
         }
         this.observers.push( { unitUrl, callback } );
