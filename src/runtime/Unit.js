@@ -211,9 +211,9 @@ export default class Unit {
         if ( this.ownerUnit ) {
             // IMPORTANT: effectRef at global level are not supposed to be checked for computes and condition
             if ( !this.compute( computes ) ) return;
-            if ( effectRef.conditionId !== undefined && !this.assert( effectRef.conditionId ) ) return;
+            if ( effectRef.condition !== undefined && !this.assert( effectRef.condition ) ) return;
         } else if ( !shouldMatchEventRef ) {
-            shouldMatchEventRef = computes.length || effectRef.conditionId !== undefined;
+            shouldMatchEventRef = computes.length || effectRef.condition !== undefined;
         }
         let subscriptionsObject = isSideEffect ? effectRef.$subscriptions : effectRef.subscriptions;
         // First we assert the conditions for the effectRef before moving on
@@ -315,7 +315,7 @@ export default class Unit {
     filterRefs( refs ) {
         return refs.filter( ref => {
             if ( !this.compute( ref.computes ) ) return;
-            if ( ref.conditionId !== undefined && !this.assert( ref.conditionId ) ) return;
+            if ( ref.condition !== undefined && !this.assert( ref.condition ) ) return;
             return true;
         } );
     }
@@ -386,22 +386,22 @@ export default class Unit {
         return !computes.some( compute => compute( this.unit.memo ) === false );
     }
 
-    assert( conditionId ) {
-        if ( typeof conditionId === 'string' && conditionId.includes( ':' ) ) {
-            let [ unitUrl, _conditionId ] = conditionId.split( ':' );
-            return this.locate( unitUrl ).assert( _conditionId );
+    assert( condition ) {
+        if ( typeof condition === 'string' && condition.includes( ':' ) ) {
+            let [ unitUrl, _condition ] = condition.split( ':' );
+            return this.locate( unitUrl ).assert( _condition );
         }
-        let condition = this.graph.conditions[ conditionId ],
-            memo = this.unit.memo;
-        if ( 'parent' in condition  && !this.assert( condition.parent ) ) return false;
-        if ( 'switch' in condition ) {
-            return condition.cases.some( _case => memo[ _case ] === memo[ condition.switch ] );
+        let conditionDef = this.graph.conditions[ condition ];
+        let memo = this.unit.memo;
+        if ( typeof conditionDef.parent  !== 'undefined'  && !this.assert( conditionDef.parent ) ) return false;
+        if ( typeof conditionDef.switch  !== 'undefined' ) {
+            return conditionDef.cases.some( _case => memo[ _case ] === memo[ conditionDef.switch ] );
         }
-        if ( 'whenNot' in condition ) {
-            return memo[ condition.whenNot ];
+        if ( typeof conditionDef.whenNot  !== 'undefined' ) {
+            return memo[ conditionDef.whenNot ];
         }
-        if ( 'when' in condition ) {
-            return memo[ condition.when ];
+        if ( typeof conditionDef.when  !== 'undefined' ) {
+            return memo[ conditionDef.when ];
         }
         return true;
     }

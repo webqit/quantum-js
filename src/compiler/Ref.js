@@ -56,7 +56,7 @@ export default class Ref extends Common {
             id: this.id,
             path: this.path.map( identifier => identifier instanceof Memo ? { memoId: identifier.id } : identifier ),
             $path: this.isDotSafe ? this.path.map( identifier => identifier.name ).join( '.' ) : undefined,
-            conditionId: ( this.condition || {} ).id,
+            condition: ( this.condition || {} ).lineage,
             referenceId: this.ownerReference.id,
         }
     }

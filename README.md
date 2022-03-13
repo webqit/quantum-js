@@ -53,11 +53,11 @@ let render = function() {
 }
 ```
 
-You'll also notice one additional *dependent* at each level of the chain. That gives us the *dependency thread* for `count` as: statement `2` -> statement `3` -> statement `5` -> statement `6` -> statement `8`; excluding statements `1`, `4`, `7`.
+You'll also notice one additional *dependent* at each level of the chain. That brings the *dependency thread* for `count` to the following sequence: statement `2` -> statement `3` -> statement `5` -> statement `6` -> statement `8`; excluding statements `1`, `4`, `7`.
 
 🤝 Good analysis! But what's the deal?
 
-Programs are generally expected to run **in whole**, **not in dependency threads**! It would take some magic to have the latter, but... now, that's what's for dinner with Subscript! 😁
+Programs are generally expected to run **in whole**, **not in dependency threads**! It would take some magic to have the latter. But... well, that's what's for dinner with Subscript! 😁
 
 Problem is: the mathematical relationship above only holds for as long as nothing changes. Should the value of `count` change, then its dependents are sure out of sync.
 
@@ -108,7 +108,7 @@ console.log( count, doubleCount, quadCount );
 < 10, 20, 40
 ```
 
-\> Run `render` in dependency threads…
+\> Run just the `count` dependency thread…
 
 ```js
 count ++;
@@ -312,7 +312,7 @@ Statements in the body of the branches form a binding to references of their own
 
 > The "state" of all *conditions in context* are determined via *memoization*, and no re-evaluation ever takes place.
 
-#### Logical And Ternary Operators
+#### Logical And Ternary Expressions
 
 Subscript observes the state of logical (`a && b || c`) and ternary (`a ? b : c`) expressions when running dependency threads.
 
@@ -337,7 +337,7 @@ d = a() ? b : c;
 
 *Above, each of the two expressions is bound to the references `a`, `b` and `c`. A thread event for any of `a` and `b` - or `a` and `c`, as determined by the "logical state" of the expressions<sup>*</sup> - gets the expressions re-evaluated; first, the "test" expression (`a()`), then, the expression on the appropriate side of the construct.*
 
-<sup>*</sup>Since expressions in the "consequent" and "alternate" sides of a conditional or logical expression are mutually exclusive (`b` and `c` above), as determined by the "test" expression (`a()` above), only the thread events for the references in the currently active side (`b` above) are honoured by the expression.
+<sup>*</sup>Since expressions in the "consequent" and "alternate" sides of a conditional or logical expression are mutually exclusive (`b` and `c` above), as determined by the "test" expression (`a()` above), only the thread events for the references in the currently active side (`b` above) are honoured by the expression at any given point in time.
 
 ### Loops
 

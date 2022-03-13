@@ -43,7 +43,7 @@ export default class EffectRef extends Ref {
     }
 
     toJson( filter = false ) {
-        let { id, conditionId, referenceId, ...json } = super.toJson( filter );
+        let { id, condition, referenceId, ...json } = super.toJson( filter );
         let subscriptions = {};
         let $subscriptions = {};
         this.subscriptions.forEach( ( refSet, signalReference ) => {
@@ -58,7 +58,7 @@ export default class EffectRef extends Ref {
             depth: this.depth.map( identifier => identifier instanceof Memo ? { memoId: identifier.id } : identifier ),
             subscriptions,
             $subscriptions,
-            conditionId,
+            condition,
             referenceId,
         }
     }

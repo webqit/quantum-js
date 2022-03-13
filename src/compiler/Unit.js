@@ -27,12 +27,6 @@ export default class Unit extends Common {
         // Entries
         this.entries = [];
         this.entryStack = [];
-        if ( this.ownerContext && this.ownerContext.currentCondition ) {
-            let condition = new Condition( this.ownerContext || this, this.nextId( 'condition' ), {} );
-            this.entries.unshift( condition );
-            // Keep in stack while callback runs
-            this.entryStack.unshift( condition );
-        }
         // Memos
         this.memos = [];
         // Hoisting
@@ -53,8 +47,8 @@ export default class Unit extends Common {
     }
 
     nextId( name ) {
-        name = '';
         if ( this.ownerContext ) return this.ownerContext.nextId( name );
+        name = '';
         if ( typeof this._nextIds[ name ] === 'undefined' ) { this._nextIds[ name ] = 0; }
         return this._nextIds[ name ] ++;
     }
@@ -207,7 +201,8 @@ export default class Unit extends Common {
     }
 
     get currentCondition() {
-        return this.entryStack.reduce( ( condition, current ) => condition || ( current instanceof Condition ) && current, null );
+        return this.entryStack.reduce( ( condition, current ) => condition || ( current instanceof Condition ) && current, null )
+        || ( this.closestFunction() !== this && this.ownerContext && this.ownerContext.currentCondition );
     }
 
     get currentContext() {
@@ -426,15 +421,14 @@ export default class Unit extends Common {
         } );
 
         let offset = this.lineage.split( '/' ).length;
+        let find = lineage => lineage.reduce( ( _json, id ) => _json.subUnits[ id ], json );
         this.entries.slice( 0 ).reverse().forEach( entry => {
-            let target;
             if ( entry instanceof Unit ) {
-                target = entry.lineage.split( '/' ).slice( offset, -1 ).reduce( ( subUnits, id ) => subUnits[ id ].subUnits, json.subUnits );
+                let target = find( entry.lineage.split( '/' ).slice( offset, -1 ) );
+                target.subUnits[ entry.id ] = entry.toJson( filter );
             } else if ( entry instanceof Condition ) {
-                target = json.conditions;
-            }
-            if ( target ) {
-                target[ entry.id ] = entry.toJson( filter );
+                let target = find( entry.ownerUnit.lineage.split( '/' ).slice( offset ) );
+                target.conditions[ entry.id ] = entry.toJson( filter );
             }
         } );
 

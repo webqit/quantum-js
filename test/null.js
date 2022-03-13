@@ -46,11 +46,20 @@ switch( param3 ) {
         console.log( 'the end!' )
 }
 `;
+
+let source3 = `
+var { title: docTitle, body } = document, docHead = document.head;
+console.log( '-----------', docHead && this.nodeName );
+if ( docTitle || document.body ) {
+    console.log( '-----------', docTitle, document.title );
+}
+`;
+
 globalThis.d = undefined;
 
 
 Subscript.compilerParams.globalsNoObserve.push( 'console' );
-let subscriptFunction = new Subscript( 'param1', 'param2', 'param3', source2 );
+let subscriptFunction = new Subscript( 'param1', 'param2', 'param3', source3 );
 console.log( '.....................sideEffects', subscriptFunction.sideEffects );
 // -----------
 globalThis.someState = false;
