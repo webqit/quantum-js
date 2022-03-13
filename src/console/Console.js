@@ -3,12 +3,12 @@
  * @imports
  */
 import CodeBlock from './CodeBlock.js';
-import Effect from './Effect.js';
+import Unit from './Unit.js';
 
 /**
  * @Console
  */
-export default class Console extends CodeBlock( Effect ) {
+export default class Console extends CodeBlock( Unit ) {
 
     bind( subscriptFunction, autoRender = true ) {
         if ( autoRender ) {
@@ -47,7 +47,7 @@ export default class Console extends CodeBlock( Effect ) {
                 cursor: default;
             }
 
-            .ref-identifier.affected {
+            .ref-identifier.effect {
                 cursor: pointer;
             }
 
@@ -58,17 +58,17 @@ export default class Console extends CodeBlock( Effect ) {
                 color: mediumturquoise;
             }
             
-            .ref-identifier.affected:is(.path-hover, .path-runtime-active) {
+            .ref-identifier.effect:is(.path-hover, .path-runtime-active) {
                 color: yellowgreen;
                 text-decoration: underline;
             }
 
-            .ref-identifier.cause.affected:is(.path-hover, .path-runtime-active) {
+            .ref-identifier.cause.effect:is(.path-hover, .path-runtime-active) {
                 color: lightgreen;
             }
 
-            subscript-effect.block-hover,
-            subscript-effect.block-runtime-active {
+            subscript-unit.block-hover,
+            subscript-unit.block-runtime-active {
                 outline: 1px dashed gray;
                 outline-offset: 0.1rem;
                 border-radius: 0.1rem;
@@ -76,7 +76,7 @@ export default class Console extends CodeBlock( Effect ) {
                 background-color: darkblue;
                 */
             }
-            subscript-effect.block-runtime-active {
+            subscript-unit.block-runtime-active {
                 background-color: rgba(100, 100, 100, 0.35);
             }
             `
@@ -89,5 +89,5 @@ export default class Console extends CodeBlock( Effect ) {
  * @define
  */
 customElements.define( 'subscript-codeblock', CodeBlock() );
-customElements.define( 'subscript-effect', Effect );
+customElements.define( 'subscript-unit', Unit );
 customElements.define( 'subscript-console', Console );

@@ -2,42 +2,31 @@
 /**
  * @imports
  */
+import Common from './Common.js';
 import Node from './Node.js';
-import { astNodes } from './Generators.js';
 
 /**
  * @extends Node
  * 
  * A Compute state
  */
-export default class Memo extends Node {
+export default class Memo extends Common {
 
-    constructor( ownerEffect, id, def ) {
+    constructor( ownerContext, id, def ) {
         super( id, def );
-        this.ownerEffect = ownerEffect;
+        this.ownerContext = ownerContext;
     }
 
-    compose() {
+    generate() {
         if ( !this.expr ) /* such as case: null / default: */ return [ this.expr, this ];
-        let subscript$construct = astNodes.identifier( this.ownerEffect.getSubscriptIdentifier( '$construct', true ) );
-        let ref = astNodes.memberExpr(
-            astNodes.memberExpr( subscript$construct, astNodes.identifier( 'memo' ) ),
-            astNodes.literal( this.id ),
+        let subscript$unit = Node.identifier( this.ownerContext.getSubscriptIdentifier( '$unit', true ) );
+        let ref = Node.memberExpr(
+            Node.memberExpr( subscript$unit, Node.identifier( 'memo' ) ),
+            Node.literal( this.id ),
             true
         );
-        this.composed = astNodes.assignmentExpr( ref, this.expr );
+        this.composed = Node.assignmentExpr( ref, this.expr );
         return [ this.composed, this ];
-    }
-
-    dispose() {
-        if ( !this.composed ) return;
-        Object.keys( this.composed ).forEach( k => {
-            delete this.composed[ k ];
-        } );
-        Object.keys( this.expr ).forEach( k => {
-            this.composed[ k ] = this.expr[ k ];
-        } );
-        this.composed = null;
     }
 
     toJson( filter = false ) {

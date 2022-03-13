@@ -13,8 +13,8 @@ export default class Ref extends Interactable() {
 
         this.fullPaths = [];
         this.$fullPaths = [];
-        if ( this.ownerProduction.assignee ) {
-            this.ownerProduction.assignee.refs.forEach( ref => {
+        if ( this.ownerReference.assignee ) {
+            this.ownerReference.assignee.refs.forEach( ref => {
                 if ( !ref.depth ) return;
                 this.fullPaths.push( [ ...this.path, ...ref.depth ] );
             } );
@@ -28,11 +28,11 @@ export default class Ref extends Interactable() {
             
             fullPath.forEach( element => {
                 element.anchor.classList.add( 'ref-identifier' );
-                element.anchor.classList.add( this.subscriptions ? 'affected' : 'cause' );
+                element.anchor.classList.add( this.subscriptions ? 'effect' : 'signal' );
                 let existingTitle = element.anchor.getAttribute( `title` );
                 let currentTitle = '> ' 
                     + this.$fullPaths[ pathIndex ] 
-                    + ( this.subscriptions ? ' (Creates a signal)' : ' (Receives a signal)' );
+                    + ( this.subscriptions ? ' (Effect Ref)' : ' (Signal Ref)' );
                 element.anchor.setAttribute( `title`, existingTitle ? existingTitle + "\n" + currentTitle : currentTitle );
             });
 
@@ -44,7 +44,7 @@ export default class Ref extends Interactable() {
 
             if ( this.subscriptions ) {
                 this._on( pathIndex, 'click', () => {
-                    this.ownerProduction.ownerEffect.signal( fullPath );
+                    this.ownerReference.ownerUnit.runThread( fullPath );
                 } );
             }
         } );

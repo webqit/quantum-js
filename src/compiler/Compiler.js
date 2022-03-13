@@ -3,9 +3,10 @@
  * @imports
  */
 import { generate as astringGenerate } from 'astring';
-import { astNodes } from './Generators.js';
-import Effect from './Effect.js';
-import Scope from './Scope.js';
+import EffectReference from './EffectReference.js';
+import SignalReference from './SignalReference.js';
+import Context from './Context.js';
+import Node from './Node.js';
 
 export default class Compiler {
 
@@ -13,6 +14,7 @@ export default class Compiler {
         this.params = params;
         this.locations = [];
         this._locStart = this.params.locStart || 0;
+        this.deferredTasks = [];
     }
 
     setLocation( runtimeObject, node ) {
@@ -26,247 +28,396 @@ export default class Compiler {
         }
     }
 
+    serialize(ast, params = {}) {
+        return astringGenerate( ast, { comments: true, ...params } );
+    }
+
+    /* ------------------------------ */
+    /* ------------------------------ */
+
     generate( nodes ) {
-        let globalEffect = new Effect( null, 'Program', { type: 'Program', params: this.params, } );
-        globalEffect.defineSubscriptIdentifier( '$construct', [ '$x' ] );
-        let [ ast ] = this._transform( [ nodes ], globalEffect );
+        let def = { type: 'Global' };
+        let globalContext = new Context( null, '#', { ...def, params: this.params, } );
+        globalContext.defineSubscriptIdentifier( '$unit', [ '$x' ] );
+        let [ ast ] = globalContext.createScope( def, () => this.generateNodes( globalContext, [ nodes ] ) );
+        this.deferredTasks.forEach( task => task() );
         return {
             source: this.serialize( ast ),
-            graph: globalEffect.toJson( false ),
-            identifier: globalEffect.getSubscriptIdentifier( '$construct' ),
+            graph: globalContext.toJson( false ),
+            identifier: globalContext.getSubscriptIdentifier( '$unit' ),
             locations: this.locations,
             ast,
         };
     }
 
-    serialize(ast, params = {}) {
-        return astringGenerate( ast, { comments: true, ...params } );
+    /**
+     * ------------
+     * @Array of Nodes
+     * ------------
+     */
+    generateNodes( context, nodes ) {
+        const total = nodes.length;
+        if ( total > 1 ) {
+            // Hoist FunctionDeclarations
+            nodes = nodes.reduce( ( _nodes, node ) => {
+                return node.type === 'FunctionDeclaration' ? [ node ].concat( _nodes ) : _nodes.concat( node );
+            }, [] );
+        }
+        const next = index => {
+            if ( index === total ) return [];
+            let nextCalled = false;
+            let _next = () => {
+                nextCalled = true;
+                return next( index + 1 );
+            };
+            let transformed;
+            if ( nodes[ index ] ) {
+                let generate = this.generateNode;
+                if ( this[ `generate${ nodes[ index ].type }` ] ) {
+                    generate = this[ `generate${ nodes[ index ].type }` ];
+                }
+                transformed = generate.call( this, context, nodes[ index ], _next );
+            } else {
+                transformed = [ nodes[ index ] ];
+            }
+            if ( !nextCalled ) {
+                transformed = [].concat( transformed ).concat( _next(1) );
+            }
+            return transformed;
+        };
+        return next( 0 );
     }
 
-    _transform( nodes, effect, scope ) {
-
-        return nodes.reduce( ( _nodes, node ) => {
-
-            // Helpers
-            const _transform = ( _nodes, _effect = effect, _scope = scope ) => this._transform( _nodes, _effect, _scope );
-            const _returns = ( ...__nodes ) => _nodes.concat( __nodes );
-            const _visit = ( _node, _effect = effect ) => Object.keys( _node ).reduce( ( __node, key ) => {
-                let value = _node[ key ];
-                if ( value && value.type === 'Identifier' ) {
-                    _effect.subscriptIdentifiersNoConflict( value );
-                } else if ( Array.isArray( value ) ) {
-                    value = value.map( v => _visit( v ) );
-                } else if ( typeof value === 'object' && value ) {
-                    value = _visit( value );
-                }
-                return { ...__node, [ key ]: value };
-            }, {} );
-            if ( !node ) return _returns( node );
-
-            /**
-             * ------------
-             * #Program
-             * ------------
-             */
-            if ( node.type === 'Program' ) {
-                let def = { type: 'Program' };
-                return effect/* global effect instance */.createScope( def, programScope => {
-                    let body = _transform( node.body, null, programScope );
-                    return _returns( { ...node, body } );
-                } );
+    /**
+     * ------------
+     * @Any Node
+     * ------------
+     */
+    generateNode( context, node ) {
+        return Object.keys( node ).reduce( ( _node, key ) => {
+            let value = node[ key ];
+            if ( Array.isArray( value ) ) {
+                value = this.generateNodes( context, value );
+            } else if ( typeof value === 'object' && value ) {
+                [ value ] = this.generateNodes( context, [ value ] );
             }
+            return { ..._node, [ key ]: value };
+        }, {} );
+    }
 
-            /**
-             * ------------
-             * #ArrowFunctionExpression
-             * #FunctionExpression
-             * #FunctionDeclaration
-             * ------------
-             */
-            if ( node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration' ) {
-                let createNode = astNodes[ node.type === 'ArrowFunctionExpression' ? 'arrowFuncExpr' : (
-                    node.type === 'FunctionExpression' ? 'funcExpr' : 'funcDeclaration'
-                ) ].bind( astNodes );
-                if ( node.type === 'FunctionDeclaration' ) {
-                    node = _visit( node, scope.ownerEffect );
+    /* ------------------------------ */
+    /* ------------------------------ */
+
+    /**
+     * ------------
+     * @Program
+     * ------------
+     */
+    generateProgram( context, node ) {
+        let def = { type: node.type };
+        let body = context.createScope( def, () => this.generateNodes( context, node.body ) );
+        return { ...node, body };
+    }
+    
+    /**
+     * ------------
+     * @FunctionDeclaration
+     * @FunctionExpression
+     * @ArrowFunctionExpression
+     * ------------
+     */
+    generateFunctionDeclaration( context, node, next ) { return this.generateFunction( Node.funcDeclaration, ...arguments ) }
+    generateFunctionExpression( context, node, next ) { return this.generateFunction( Node.funcExpr, ...arguments ) }
+    generateArrowFunctionExpression( context, node, next ) { return this.generateFunction( Node.arrowFuncExpr, ...arguments ) }
+    generateFunction( generate, context, node, next ) {
+        
+        const generateId = ( id, context ) => !id ? [ id ] : context.effectReference( { type: node.type }, () => this.generateNodes( context, [ id ] ), false );
+        const generateFunction = ( id, params, body ) => context.defineContext( { type: node.type, isSubscriptFunction: node.isSubscriptFunction }, functionUnit => {
+            return functionUnit.createScope( { type: node.type }, () => {
+                // FunctionExpressions have their IDs in function scope
+                id = generateId( id, functionUnit )[ 0 ];
+                // Function params go into function scope
+                params = params.map( param => {
+                    if ( param.type === 'AssignmentPattern' ) {
+                        let right = this.generateNode( functionUnit, param.right );
+                        let def = { type: param.left.type };
+                        let [ left ] = functionUnit.effectReference( def, () => this.generateNodes( functionUnit, [ param.left ] ), false );
+                        return Node.assignmentPattern( left, right );
+                    }
+                    let def = { type: param.type };
+                    [ param ] = functionUnit.effectReference( def, () => this.generateNodes( functionUnit, [ param ] ), false );
+                    return param;
+                } );
+                if ( node.type === 'ArrowFunctionExpression' && node.expression ) {
+                    body = this.generateNode( functionUnit, Node.blockStmt( [ Node.returnStmt( body ) ] ) );
                 } else {
-                    node = _visit( node, effect );
+                    body = this.generateNode( functionUnit, body );
                 }
-                return _returns( node );
-            }
+                return [ functionUnit, id, params, body ];
+            } );
+        } );
 
-            /**
-             * ------------
-             * #VariableDeclaration
-             * ------------
-             */
-            if ( node.type === 'VariableDeclaration' ) {
-                let def = { type: node.type, kind: node.kind };
-                let assignmentRefactors = [];
-                let isForLoopInit = effect && [ 'ForStatement', 'ForInStatement', 'ForOfStatement' ].includes( effect.type );
-                let exec = ( effect, declarator ) => {
-                    let initProduction, [ init ] = effect.causesProduction( def, production => ( initProduction = production, _transform( [ declarator.init ], effect ) ) );
-                    let idProduction, [ id ] = effect.affectedsProduction( def, production => ( idProduction = production, _transform( [ declarator.id ], effect ) ) );
-                    initProduction.setAssignee( idProduction );
-                    this.setLocation( effect, declarator );
-                    if ( !isForLoopInit && node.kind !== 'const' && declarator.init && initProduction.refs.size ) {
-                        // Strip out the init, and re-declare only the local identifiers
-                        // ID might be Array or Object pattern, so we're better off taking the resolved bare identifiers
-                        let isPattern = [ 'ObjectPattern', 'ArrayPattern' ].includes( declarator.id.type );
-                        declarator = Array.from( idProduction.refs ).map( ref => astNodes.varDeclarator( astNodes.identifier( ref.path[ 0 ].name ), null ) );
-                        // Now, covert the init part to an assignment expression
-                        let assignmentExpr = astNodes.assignmentExpr( id, init );
-                        if ( isPattern ) {
-                            assignmentExpr = astNodes.sequenceExpr( [ assignmentExpr ] );
-                        }
-                        assignmentRefactors.push( ...effect.compose( astNodes.exprStmt( assignmentExpr ) ) );
-                    } else {
-                        // init might still have effects
-                        declarator = astNodes.varDeclarator( id, init );
-                    }
-                    return declarator;
+        let subscript$unit = Node.identifier( context.getSubscriptIdentifier( '$unit', true ) );
+        let unitCreate = ( generate, functionUnit, funcName, params, body ) => functionUnit.generate(
+            generate.call( Node, funcName, [ subscript$unit ].concat( params ), body, node.async, node.expression, node.generator ), {
+                args: [ Node.literal( node.type ), Node.identifier( node.isSubscriptFunction ? 'true' : 'false' ) ],
+                isFunctionUnit: true,
+                generateForArgument: true
+            }
+        );
+
+        let resultNode, functionUnit, id, params, body;
+        if ( node.type === 'FunctionDeclaration' ) {
+            // FunctionDeclarations have their IDs in current scope
+            [ id ] = generateId( node.id, context );
+            [ functionUnit, , params, body ] = generateFunction( null, node.params, node.body );
+            resultNode = unitCreate( Node.funcExpr, functionUnit, null, params, body );
+            // We'll physically do hoisting
+            let definitionRef = Node.memberExpr( subscript$unit, Node.identifier( 'functions' ) );
+            let definitionCall = ( method, ...args ) => Node.callExpr( Node.memberExpr( definitionRef, Node.identifier( method ) ), [ id, ...args ] );
+            // Generate now
+            resultNode = [
+                Node.exprStmt( definitionCall( 'define', resultNode ) ),
+                generate.call( Node, id, params, Node.blockStmt( [
+                    Node.returnStmt( Node.callExpr( Node.memberExpr( definitionCall( 'get' ), Node.identifier( 'call' ) ), [
+                            Node.thisExpr(), Node.spreadElement( Node.identifier( 'arguments' ) )
+                        ] ) ),
+                ] ) )
+            ];
+        } else {
+            // FunctionExpressions and ArrowFunctionExpressions are quite simpler
+            [ functionUnit, id, params, body ] = generateFunction( node.id, node.params, node.body );
+            resultNode = unitCreate( generate, functionUnit, id, params, body );
+        }
+
+        this.deferredTasks.unshift( () => {
+            functionUnit.sideEffects.forEach( sideEffect => {
+                functionUnit.ownerScope.doSideEffectUpdates( sideEffect.reference, sideEffect.remainderRefs );
+            } );
+        } );
+
+        return resultNode;
+    }
+
+    /**
+     * ------------
+     * @VariableDeclaration
+     * ------------
+     */
+    generateVariableDeclaration( context, node ) {
+        let def = { type: node.type, kind: node.kind };
+        let assignmentRefactors = [];
+        let exec = ( unit, declarator, isForLoopInit ) => {
+            let initReference, [ init ] = unit.signalReference( def, reference => ( initReference = reference, this.generateNodes( context, [ declarator.init ] ) ) );
+            let idReference, [ id ] = unit.effectReference( def, reference => ( idReference = reference, this.generateNodes( context, [ declarator.id ] ) ) );
+            initReference.setAssignee( idReference );
+            this.setLocation( unit, declarator );
+            if ( isForLoopInit || node.kind === 'const' || !declarator.init || !unit.references.filter( reference => reference instanceof SignalReference ).length/* note that we're not asking initReference.refs.size */ ) {
+                // init might still have effects
+                return Node.varDeclarator( id, init );
+            }
+            // Strip out the init, and re-declare only the local identifiers
+            // ID might be Array or Object pattern, so we're better off taking the resolved bare identifiers
+            let isPattern = [ 'ObjectPattern', 'ArrayPattern' ].includes( declarator.id.type );
+            let declarations = Array.from( idReference.refs ).map( ref => Node.varDeclarator( Node.identifier( ref.path[ 0 ].name ), null ) );
+            // Now, covert the init part to an assignment expression
+            let assignmentExpr = Node.assignmentExpr( id, init );
+            if ( isPattern ) {
+                // The below line has been safely removed... astring automatically adds the parens
+                //assignmentExpr = Node.parensExpr( assignmentExpr );
+            }
+            if ( assignmentRefactors.length ) {
+                assignmentRefactors.push( Node.varDeclaration( node.kind, declarations ), ...unit.generate( Node.exprStmt( assignmentExpr ) ) );
+                return [];
+            }
+            assignmentRefactors.push( ...unit.generate( Node.exprStmt( assignmentExpr ) ) );
+            return declarations;
+        }
+        let isForLoopInit = context.currentUnit && [ 'ForStatement', 'ForOfStatement', 'ForInStatement' ].includes( context.currentUnit.type );
+        let declarations = node.declarations.reduce( ( declarators, declarator ) => {
+            if ( isForLoopInit ) return declarators.concat( exec( context.currentUnit, declarator, true ) );
+            return context.defineUnit( def, unit => declarators.concat( exec( unit, declarator ) ) );
+        }, [] );
+        if ( !declarations.length ) return assignmentRefactors;
+        return [ Node.varDeclaration( node.kind, declarations ), ...assignmentRefactors ];
+    }
+
+    /**
+     * ------------
+     * @IfStatement
+     * ------------
+     */
+    generateIfStatement( context, node ) {
+        let def = { type: node.type };
+        return context.defineUnit( def, unit => {
+            let { consequent, alternate } = node;
+            let [ test ] = unit.signalReference( def, () => this.generateNodes( context, [ node.test ] ) ),
+                [ $test, memo ] = context.defineMemo( { expr: test } ).generate();
+            consequent = context.createCondition( { when: memo }, () => this.generateNodes( context, [ node.consequent ] ) );
+            if ( consequent[ 0 ].type !== 'BlockStatement' && consequent.length > 1 ) {
+                consequent = Node.blockStmt( consequent );
+            } else {
+                consequent = consequent[ 0 ];
+            }
+            if ( node.alternate ) {
+                alternate = context.createCondition( { whenNot: memo }, () => this.generateNodes( context, [ node.alternate ] ) );
+                if ( alternate[ 0 ] && alternate[ 0 ].type !== 'BlockStatement' && alternate.length > 1 ) {
+                    alternate = Node.blockStmt( alternate );
+                } else {
+                    alternate = alternate[ 0 ];
                 }
-                let declarations = node.declarations.reduce( ( declarators, declarator ) => {
-                    if ( isForLoopInit ) return declarators.concat( exec( effect, declarator ) );
-                    return declarators.concat( scope.createEffect( def, effect => exec( effect, declarator ) ) );
-                }, [] );
-                return _returns(
-                    astNodes.varDeclaration( node.kind, declarations ), ...assignmentRefactors
-                );
             }
+            this.setLocation( unit, node );
+            this.setLocation( memo, node.test );
+            return unit.generate( Node.ifStmt( $test, consequent, alternate ) );
+        } );
+    }
 
-            /**
-             * ------------
-             * #IfStatement
-             * ------------
-             */
-            if ( node.type === 'IfStatement' ) {
-                let def = { type: node.type };
-                return scope.createEffect( def, effect => {
-                    let { consequent, alternate } = node;
-                    let [ test ] = effect.causesProduction( def, () => _transform( [ node.test ], effect ) ),
-                        [ $test, memo ] = effect.createMemo( { expr: test } ).compose();
-                    consequent = effect.createCondition( { when: memo }, () => _transform( [ node.consequent ], effect ) );
-                    if ( consequent[ 0 ].type !== 'BlockStatement' && consequent.length > 1 ) {
-                        consequent = astNodes.blockStmt( consequent );
-                    } else {
-                        consequent = consequent[ 0 ];
-                    }
-                    if ( node.alternate ) {
-                        alternate = effect.createCondition( { whenNot: memo }, () => _transform( [ node.alternate ], effect ) );
-                        if ( alternate[ 0 ] && alternate[ 0 ].type !== 'BlockStatement' && alternate.length > 1 ) {
-                            alternate = astNodes.blockStmt( alternate );
-                        } else {
-                            alternate = alternate[ 0 ];
-                        }
-                    }
-                    this.setLocation( effect, node );
-                    this.setLocation( memo, node.test );
-                    return _returns(
-                        ...effect.compose( astNodes.ifStmt( $test, consequent, alternate ) )
-                    );
-                } );
-            }
+    /**
+     * ------------
+     * @SwitchStatement
+     * ------------
+     */
+    generateSwitchStatement( context, node ) {
+        let def = { type: node.type };
+        return context.defineUnit( def, unit => {
+            let [ discriminant ] = unit.signalReference( def, () => this.generateNodes( context, [ node.discriminant ] ) );
+            let [ $discriminant, memo ] = context.defineMemo( { expr: discriminant } ).generate();
+            
+            let $cases = context.createScope( def, () => node.cases.reduce( ( casesDef, caseNode ) => {
+                let prevCaseDef = casesDef.slice( -1 )[ 0 ];
+                let hasBreak = caseNode.consequent.some( stmt => stmt.type === 'BreakStatement' );
+                let [ test ] = unit.signalReference( { type: caseNode.type }, () => this.generateNodes( context, [ caseNode.test ] ) );
+                let [ $test, _memo ] = context.defineMemo( { expr: test } ).generate();
+                let condition = { switch: memo, cases: [ _memo ] };
+                if ( prevCaseDef && !prevCaseDef.hasBreak ) {
+                    condition.cases.push( ...prevCaseDef.condition.cases );
+                }
+                this.setLocation( _memo, caseNode.test );
+                return casesDef.concat( { caseNode, $test, condition, hasBreak } );
+            }, [] ).map( ( { caseNode, $test, condition } ) => {
+                let consequent = context.createCondition( condition, () => this.generateNodes( context, caseNode.consequent ) );
+                return Node.switchCase( $test, consequent );
+            } ) );
 
-            /**
-             * ------------
-             * #SwitchStatement
-             * ------------
-             */
-            if ( node.type === 'SwitchStatement' ) {
-                let def = { type: node.type };
-                return scope.createEffect( def, effect => {
-                    let [ discriminant ] = effect.causesProduction( def, () => _transform( [ node.discriminant ], effect ) );
-                    let [ $discriminant, memo ] = effect.createMemo( { expr: discriminant } ).compose();
-                    
-                    let $cases = effect.createScope( def, casesScope => node.cases.reduce( ( casesDef, caseNode ) => {
-                        let prevCaseDef = casesDef.slice( -1 )[ 0 ];
-                        let hasBreak = caseNode.consequent.some( stmt => stmt.type === 'BreakStatement' );
-                        let [ test ] = effect.causesProduction( { type: caseNode.type }, () => _transform( [ caseNode.test ], effect ) );
-                        let [ $test, _memo ] = effect.createMemo( { expr: test } ).compose();
-                        let condition = { switch: memo, cases: [ _memo ] };
-                        if ( prevCaseDef && !prevCaseDef.hasBreak ) {
-                            condition.cases.push( ...prevCaseDef.condition.cases );
-                        }
-                        this.setLocation( _memo, caseNode.test );
-                        return casesDef.concat( { caseNode, $test, condition, hasBreak } );
-                    }, [] ).map( ( { caseNode, $test, condition } ) => {
-                        let consequent = effect.createCondition( condition, () => _transform( caseNode.consequent, null, casesScope ) );
-                        return astNodes.switchCase( $test, consequent );
-                    } ) );
+            this.setLocation( unit, node );
+            this.setLocation( memo, node.discriminant );
+            return unit.generate( Node.switchStmt( $discriminant, $cases ) );
+        } );
+    }
 
-                    this.setLocation( effect, node );
-                    this.setLocation( memo, node.discriminant );
-                    return _returns(
-                        ...effect.compose( astNodes.switchStmt( $discriminant, $cases ) )
-                    );
-                } );
-            }
+    /**
+     * ------------
+     * @WhileStatement
+     * @DoWhileStatement
+     * @ForStatement
+     * ------------
+     */
+    generateWhileStatement( context, node ) { return this.generateLoopStmtA( Node.whileStmt, ...arguments ); }
+    generateDoWhileStatement( context, node ) { return this.generateLoopStmtA( Node.doWhileStmt, ...arguments ); }
+    generateForStatement( context, node ) { return this.generateLoopStmtA( Node.forStmt, ...arguments ); }
+    generateLoopStmtA( generate, context, node ) {
+        let def = { type: node.type };
+        return context.defineUnit( { type: node.type }, iteratorUnit => {
+            this.setLocation( iteratorUnit, node );
+            iteratorUnit.defineSubscriptIdentifier( '$counter', [ '$x_index' ] );
+            // A scope for variables declared in header
+            return context.createScope( { type: 'Iteration' }, () => {
+                let createNodeCallback, init, test, update;
+                
+                if ( node.type === 'ForStatement' ) {
+                    [ init, test, update ] = iteratorUnit.signalReference( def, () => this.generateNodes( context, [ node.init, node.test, node.update ] ) );
+                    createNodeCallback = $body => generate.call( Node, init, test, update, $body );
+                } else {
+                    [ test ] = iteratorUnit.signalReference( def, () => this.generateNodes( context, [ node.test ] ) );
+                    createNodeCallback = $body => generate.call( Node, test, $body );
+                }
 
-            /**
-             * ------------
-             * #ForStatement
-             * #WhileStatement
-             * #DoWhileStatement
-             * ------------
-             */
-            if ( node.type === 'ForStatement' || node.type === 'WhileStatement' || node.type === 'DoWhileStatement' ) {
-                let def = { type: node.type };
-                let createNode = astNodes[ node.type === 'ForStatement' ? 'forStmt' : ( node.type === 'WhileStatement' ? 'whileStmt' : 'doWhileStmt' ) ].bind( astNodes );
-                return initializeIteration( node, scope, ( declarationScope, iteratorEffect, iterationInstanceEffect ) => {
-                    this.setLocation( iteratorEffect, node );
-                    this.setLocation( iterationInstanceEffect, node.body );
-                    let createNodeCallback, init, test, update, body, preIterationDeclarations;
-                    
-                    if ( node.type === 'ForStatement' ) {
-                        [ init, test, update ] = iteratorEffect.causesProduction( def, () => _transform( [ node.init, node.test, node.update ], iteratorEffect, declarationScope ) );
-                        [ body ] = _transform( [ node.body ], iterationInstanceEffect );
-                        createNodeCallback = $body => createNode( init, test, update, $body );
-                    } else {
-                        [ test ] = iteratorEffect.causesProduction( def, () => _transform( [ node.test ], $effect, declarationScope ) );
-                        [ body ] = _transform( [ node.body ], iterationInstanceEffect );
-                        createNodeCallback = $body => createNode( test, $body );
-                    }
-
+                return context.defineContext( { type: 'Iteration', isIteration: true }, iterationContext => {
+                    this.setLocation( iterationContext, node.body );
+                    let preIterationDeclarations;
+                    let [ body ] = this.generateNodes( iterationContext, [ node.body ] );
                     if ( body.body.length ) {
-                        [ preIterationDeclarations, body ] = composeIteration( iterationInstanceEffect, body );
+                        [ preIterationDeclarations, body ] = this.composeLoopStmt( iterationContext, body );
                     }
-
-                    let statements = [].concat( preIterationDeclarations || [] ).concat( createNodeCallback( astNodes.blockStmt( body ) ) );
-                    return _returns(
-                        ...iteratorEffect.composeWith( statements, [], () => iterationInstanceEffect.dispose() )
-                    );
+                    let statements = [].concat( preIterationDeclarations || [] ).concat( createNodeCallback( Node.blockStmt( body ) ) );
+                    return iteratorUnit.generate( statements );
                 } );
-            }
 
-            /**
-             * --------------
-             * #ForInStatement
-             * #ForOfStatement
-             * --------------
-             */
-            if ( node.type === 'ForInStatement' || node.type === 'ForOfStatement' ) {
-                let def = { type: node.type };
-                let createNode = astNodes[ node.type === 'ForInStatement' ? 'forInStmt' : 'forOfStmt'].bind( astNodes );
-                return initializeIteration( node, scope, ( declarationScope, iteratorEffect, iterationInstanceEffect ) => {
-                    this.setLocation( iteratorEffect, node );
-                    this.setLocation( iterationInstanceEffect, node.body );
-
-                    let left, iterationId;
-                    if ( node.left.type === 'VariableDeclaration' ) {
-                        [ left ] = _transform( [ node.left ], iteratorEffect, declarationScope );
-                        iterationId = left.declarations[ 0 ].id;
-                    } else {
-                        [ left ] = iteratorEffect.affectedsProduction( def, () => _transform( [ node.left ], iteratorEffect, declarationScope ) );
-                        iterationId = left;
-                    }
-                    let [ right ] = iteratorEffect.causesProduction( def, () => _transform( [ node.right ], iteratorEffect, declarationScope ) );
-                    let [ body ] = _transform( [ node.body ], iterationInstanceEffect );
-                    let forStatement = createNode( left, right, body ),
+            } );
+        } );
+    }
+    
+    /**
+     * --------------
+     * @composeLoopStmt
+     * --------------
+     */
+    composeLoopStmt( iterationContext, body, params = {} ) {
+        let disposeCallbacks = [ params.disposeCallback ], disposeCallback = () => disposeCallbacks.forEach( callback => callback && callback() );
+        let preIterationDeclarations = [], iterationDeclarations = [];
+        let iterationBody = [], unitBody = body.body.slice( 0 );
+        // Counter?
+        if ( !params.iterationId ) {
+            params.iterationId = Node.identifier( iterationContext.getSubscriptIdentifier( '$counter', true ) );
+            let counterInit = Node.varDeclarator( Node.clone( params.iterationId ), Node.literal( -1 ) );
+            let counterIncr = Node.updateExpr( '++', Node.clone( params.iterationId ), false );
+            preIterationDeclarations.push( counterInit );
+            iterationBody.push( counterIncr );
+            // On dispose
+            disposeCallbacks.push( () => iterationBody.pop() /* counterIncr */ );
+        }
+        // The iterationDeclarations
+        if ( iterationDeclarations.length ) {
+            iterationBody.push( Node.varDeclaration( 'let', iterationDeclarations ) );
+            disposeCallbacks.push( () => iterationBody.splice( -1 ) /* iterationDeclarations */ );
+        }
+        // Main
+        iterationBody.push( ...iterationContext.generate( unitBody, { args: [ params.iterationId ], disposeCallback } ) );
+    
+        // Convert to actual declaration
+        if ( preIterationDeclarations.length ) {
+            preIterationDeclarations = Node.varDeclaration( 'let', preIterationDeclarations );
+        } else {
+            preIterationDeclarations = null;
+        }
+    
+        return [ preIterationDeclarations, iterationBody ];
+    }
+    
+    /**
+     * --------------
+     * @ForOfStatement
+     * @ForInStatement
+     * --------------
+     */
+    generateForOfStatement( context, node ) { return this.generateLoopStmtB( Node.forOfStmt, ...arguments ); }
+    generateForInStatement( context, node ) { return this.generateLoopStmtB( Node.forInStmt, ...arguments ); }
+    generateLoopStmtB( generate, context, node ) {
+        let def = { type: node.type };
+        return context.defineUnit( { type: node.type }, iteratorUnit => {
+            this.setLocation( iteratorUnit, node );
+            iteratorUnit.defineSubscriptIdentifier( '$counter', [ node.type === 'ForInStatement' ? '$x_key' : '$x_index' ] );
+            // A scope for variables declared in header
+            return context.createScope( { type: 'Iteration' }, () => {
+                
+                let left, iterationId;
+                if ( node.left.type === 'VariableDeclaration' ) {
+                    [ left ] = this.generateNodes( context, [ node.left ] );
+                    iterationId = left.declarations[ 0 ].id;
+                } else {
+                    [ left ] = iteratorUnit.affectedsReference( def, () => this.generateNodes( context, [ node.left ] ) );
+                    iterationId = left;
+                }
+                let [ right ] = iteratorUnit.signalReference( def, () => this.generateNodes( context, [ node.right ] ) );
+                
+                return context.defineContext( { type: 'Iteration', isIteration: true }, iterationContext => {
+                    this.setLocation( iterationContext, node.body );
+                    let [ body ] = this.generateNodes( iterationContext, [ node.body ] );
+                    let forStatement = generate.call( Node, left, right, body ),
                         preIterationDeclarations = [];
-
                     if ( body.body.length ) {
-                        let composeIterationWith = params => composeIteration( iterationInstanceEffect, body, {
+                        let composeIterationWith = params => this.composeLoopStmt( iterationContext, body, {
                             disposeCallback: () => { forStatement.left = left; },
                             ...params,
                         } )
@@ -277,442 +428,446 @@ export default class Compiler {
                             [ preIterationDeclarations, newBody ] = composeIterationWith( { iterationId } );
                         } else {
                             // Its a forIn statement with a destructuring left side
-                            let iteration$counter = astNodes.identifier( declarationScope.getSubscriptIdentifier( '$counter' ) );
+                            let iteration$counter = Node.identifier( context.getSubscriptIdentifier( '$counter' ) );
                             [ preIterationDeclarations, newBody ] = composeIterationWith( { iterationId: iteration$counter } );
                             // We'll use a plain Identifier as left
-                            newLeft = astNodes.varDeclaration( 'let', [ astNodes.varDeclarator( astNodes.clone( iteration$counter ), null ) ] );
+                            newLeft = Node.varDeclaration( 'let', [ Node.varDeclarator( Node.clone( iteration$counter ), null ) ] );
                             // While we replicate the original left and send it into the start of body
                             let leftReDeclaration;
                             if ( node.left.type === 'VariableDeclaration' ) {
-                                leftReDeclaration = astNodes.varDeclaration( left.kind, [ astNodes.varDeclarator( iterationId, astNodes.clone( iteration$counter ) ) ] );
+                                leftReDeclaration = Node.varDeclaration( left.kind, [ Node.varDeclarator( iterationId, Node.clone( iteration$counter ) ) ] );
                             } else {
-                                leftReDeclaration = astNodes.exprStmt( astNodes.sequenceExpr( [ astNodes.assignmentExpr( iterationId, astNodes.clone( iteration$counter ), '=' ) ] ) );
+                                leftReDeclaration = Node.exprStmt( Node.sequenceExpr( [ Node.assignmentExpr( iterationId, Node.clone( iteration$counter ), '=' ) ] ) );
                             }
                             newBody = [ leftReDeclaration ].concat( newBody );
                         }
-                        forStatement = createNode( newLeft, right, astNodes.blockStmt( newBody ) );
+                        forStatement = generate.call( Node, newLeft, right, Node.blockStmt( newBody ) );
                     }
 
-                    return _returns(
-                        ...iteratorEffect.composeWith( [].concat( preIterationDeclarations || [] ).concat( forStatement ), [], () => iterationInstanceEffect.dispose() )
-                    );
+                    return iteratorUnit.generate( [].concat( preIterationDeclarations || [] ).concat( forStatement ) );
                 } );
-            }
 
-            /**
-             * ------------
-             * #LabeledStatement
-             * ------------
-             */
-            if ( node.type === 'LabeledStatement' ) {
-                let def = { type: node.type, label: node.label };
-                return scope.createEffect( def, effect => {
-                    effect.subscriptIdentifiersNoConflict( node.label );
-                    if ( !node.body.type.endsWith( 'Statement' ) ) {
-                        this.setLocation( effect, node.body );
-                        let [ body ] = _transform( [ node.body ], effect );
-                        return _returns( astNodes.labeledStmt( node.label, effect.compose( body ) ) );
-                    }
-                    return effect.createScope( { type: node.body.type, label: node.label }, scope => {
-                        if ( node.body.type === 'BlockStatement' ) {
-                            let body = _transform( node.body.body, null, scope );
-                            return _returns( astNodes.labeledStmt( node.label, astNodes.blockStmt( body ) ) );
-                        }
-                        let [ body ] = _transform( [ node.body ], null, scope );
-                        return _returns( astNodes.labeledStmt( node.label, body ) );
-                    } );
-                } );
-            }
-
-            /**
-             * ------------
-             * #BreakStatement
-             * #ContinueStatement
-             * ------------
-             */
-            if ( node.type === 'BreakStatement' || node.type === 'ContinueStatement' ) {
-                let createNode = astNodes[ node.type === 'BreakStatement' ? 'breakStmt' : 'continueStmt'].bind( astNodes );
-                let [ nearestExitTarget, tt ] = [ 'Iteration', 'SwitchStatement', 'LabeledStatement' ].reduce( ( [ prevType, prevLevel ], type ) => {
-                    let level = scope.currentEffect.inContext( type );
-                    if ( !prevType || ( level > -1 && level < prevLevel ) ) return [ type, level ];
-                    return [ prevType, prevLevel ];
-                }, [] );
-                if ( nearestExitTarget === 'SwitchStatement' && node.type === 'BreakStatement' && !node.label ) {
-                    return _returns( createNode( null ) );
-                }
-                let subscript$construct = astNodes.identifier( scope.currentEffect.getSubscriptIdentifier( '$construct', true ) );
-                let keyword = astNodes.literal( node.type === 'BreakStatement' ? 'break' : 'continue' );
-                let label = node.label ? astNodes.literal( node.label.name ) : astNodes.identifier( 'null' );
-                let exitCall = astNodes.exprStmt( 
-                    astNodes.callExpr( astNodes.memberExpr( subscript$construct, astNodes.identifier( 'exit' ) ), [ keyword, label ] ),
-                );
-                // Break / continue statement hoisting
-                scope.currentEffect.hoistExitStatement( keyword, label );
-                // effect.subscriptIdentifiersNoConflict() wont be necessary
-                // as the label definition would have had the same earlier
-                return _returns( exitCall, astNodes.returnStmt() );
-            }
-
-            /**
-             * ------------
-             * #ReturnStatement
-             * ------------
-             */
-            if ( node.type === 'ReturnStatement' ) {
-                if ( scope.static() && 0 ) {
-                    let [ argument ] = _transform( [ node.argument ], scope.currentEffect || scope.ownerEffect /* This is a statement that could have had its own effect */ );
-                    return _returns( astNodes.returnStmt( argument ) );
-                }
-                let def = { type: node.type };
-                return scope.createEffect( def, effect => {
-                    let [ argument ] = effect.causesProduction( def, () => _transform( [ node.argument ], effect ) );
-                    let subscript$construct = astNodes.identifier( effect.getSubscriptIdentifier( '$construct', true ) );
-                    let keyword = astNodes.literal( 'return' );
-                    let arg = argument || astNodes.identifier( 'undefined' );
-                    let exitCall = astNodes.exprStmt(
-                        astNodes.callExpr( astNodes.memberExpr( subscript$construct, astNodes.identifier( 'exit' ) ), [ keyword, arg ] ),
-                    );
-                    // Return statement hoisting
-                    effect.hoistExitStatement( keyword, astNodes.identifier( 'true' ) );
-                    return _returns( ...effect.compose( [ exitCall, astNodes.returnStmt() ] ) );
-                } );
-            }
-
-            /**
-             * ------------
-             * #BlockStatement
-             * ------------
-             */
-            if ( node.type === 'BlockStatement' ) {
-                let __transform = scope => {
-                    let body = _transform( node.body, null, scope );
-                    return _returns( astNodes.blockStmt( body ) );
-                };
-                if ( effect ) {
-                    // This block statement is from an effect
-                    // context, such as an IfStatement
-                    let def = { type: node.type };
-                    return effect.createScope( def, __transform );
-                }
-                // From a scope context
-                return scope.createBlock( blockScope => __transform( blockScope ) );
-            }
-
-            /**
-             * ------------
-             * #ExpressionStatement
-             * ------------
-             */
-            if (node.type === 'ExpressionStatement') {
-                let def = { type: node.type };
-                return scope.createEffect( def, effect => {
-                    let [ expression ] = effect.causesProduction( def, () => _transform( [ node.expression ], effect ) );
-                    this.setLocation( effect, node.expression );
-                    return _returns(
-                        ...effect.compose( astNodes.exprStmt( expression ) )
-                    );
-                } );
-            }
-
-            /**
-             * ------------
-             * #AssignmentExpression
-             * ------------
-             */
-            if ( node.type === 'AssignmentExpression' ) {
-                let def = { type: node.type, kind: node.operator };
-                let rightProduction, [ right ] = effect.causesProduction( def, production => ( rightProduction = production, _transform( [ node.right ] ) ) );
-                let leftProduction, [ left ] = effect.embeddableAffectedsProduction( def, production => ( leftProduction = production, _transform( [ node.left ] ) ) );
-                rightProduction.setAssignee( leftProduction );
-                return _returns(
-                    astNodes.assignmentExpr( left, right, node.operator )
-                );
-            }
-
-            /**
-             * ------------
-             * #UpdateExpression
-             * #UnaryExpression (delete)
-             * ------------
-             */
-            if ( node.type === 'UpdateExpression' || ( node.type === 'UnaryExpression' && node.operator === 'delete' ) ) {
-                let def = { type: node.type, kind: node.operator };
-                let createNode = astNodes[ node.type === 'UpdateExpression' ? 'updateExpr' : 'unaryExpr'].bind( astNodes );
-                let [ argument ] = effect.affectedsProduction( def, () => _transform( [ node.argument ] ) );
-                return _returns(
-                    createNode( node.operator, argument, node.prefix )
-                );
-            }
-
-            /**
-             * ------------
-             * #LogicalExpression
-             * ------------
-             */
-            if ( node.type === 'LogicalExpression' ) {
-                let def = { type: node.type, kind: node.operator };
-                let [ left ] = effect.chainableCausesProduction( def, () => _transform( [ node.left ] ) );
-                let [ $left, memo ] = effect.createMemo( { expr: left } ).compose();
-                let conditionAdjacent = node.operator === '||' ? { whenNot: memo } : { when: memo };
-                let [ right ] = effect.createCondition( conditionAdjacent, () => {
-                    return effect.chainableCausesProduction( def, () => _transform( [ node.right ] ) );
-                } );
-                this.setLocation( memo, node.left );
-                return _returns(
-                    astNodes.logicalExpr( node.operator, $left, right )
-                );
-            }
-
-            /**
-             * ------------
-             * #ConditionalExpression
-             * ------------
-             */
-            if ( node.type === 'ConditionalExpression' ) {
-                let def = { type: node.type };
-                let [ test ] = effect.causesProduction( def, () => _transform( [ node.test ] ) ),
-                    [ $test, memo ] = effect.createMemo( { expr: test } ).compose(),
-                    [ consequent ] = effect.createCondition( { when: memo }, () => effect.chainableCausesProduction( def, () => _transform( [ node.consequent ] ) ) ),
-                    [ alternate ] = effect.createCondition( { whenNot: memo }, () => effect.chainableCausesProduction( def, () => _transform( [ node.alternate ] ) ) );
-                this.setLocation( memo, node.test );
-                return _returns(
-                    astNodes.condExpr( $test, consequent, alternate )
-                );
-            }
-
-            /**
-             * ------------
-             * #SequenceExpression
-             * ------------
-             */
-            if ( node.type === 'SequenceExpression' ) {
-                let expresions = node.expressions.map( ( expr, i ) => {
-                    let def = { type: expr.type };
-                    if ( i === node.expressions.length - 1 ) {
-                        [ expr ] = effect.chainableCausesProduction( def, () => _transform( [ expr ] ) );
-                    } else {
-                        [ expr ] = effect.causesProduction( def, () => _transform( [ expr ] ) );
-                    }
-                    return expr;
-                } );
-                return _returns(
-                    astNodes.sequenceExpr( expresions )
-                );
-            }
-
-            /**
-             * ------------
-             * #ArrayPattern
-             * ------------
-             */
-            if ( node.type === 'ArrayPattern' ) {
-                let elements = node.elements.map( ( element, i ) => {
-                    [ element ] = effect.currentProduction.withDestructure( { name: i }, () => _transform( [ element ] ) );
-                    return element;
-                } );
-                return _returns(
-                    astNodes.arrayPattern( elements )
-                );
-            }
-
-            /**
-             * ------------
-             * #ObjectPattern
-             * ------------
-             */
-            if ( node.type === 'ObjectPattern' ) {
-                let properties = node.properties.map( property => {
-                    let { key, value } = property;
-                    if ( property.computed ) {
-                        [ key ] = effect.causesProduction( { type: key.type }, () => _transform( [ key ] ) );
-                    }
-                    let element = { name: property.key.name };
-                    if ( property.computed ) {
-                        if ( property.key.type === 'Literal' ) {
-                            element = { name: property.key.value };
-                        } else {
-                            [ key, element ] = effect.createMemo( { expr: key } ).compose();
-                        }
-                    }
-                    [ value ] = effect.currentProduction.withDestructure( element, () => _transform( [ value ] ) );
-                    this.setLocation( element, property.key );
-                    return astNodes.property( key, value, property.kind, property.shorthand, property.computed, property.method );
-                } );
-                return _returns(
-                    astNodes.objectPattern( properties )
-                );
-            }
-
-            /**
-             * ------------
-             * #MemberExpression
-             * ------------
-             */
-            if ( node.type === 'MemberExpression' ) {
-                let { property } = node;
-                if ( node.computed ) {
-                    [ property ] = effect.causesProduction( { type: property.type }, () => _transform( [ property ] ) );
-                }
-                let element = { name: node.property.name };
-                if ( node.computed ) {
-                    if ( node.property.type === 'Literal' ) {
-                        element = { name: node.property.value };
-                    } else {
-                        [ property, element ] = effect.createMemo( { expr: property } ).compose();
-                    }
-                }
-                let [ object ] = effect.currentProduction.withProperty( element, () => _transform( [ node.object ] ) );
-                this.setLocation( element, node.property );
-                return _returns(
-                    astNodes.memberExpr( object, property, node.computed, node.optional )
-                );
-            }
-
-            /**
-             * ------------
-             * #Identifier
-             * #ThisExpression
-             * ------------
-             */
-            if ( node.type === 'Identifier' || node.type === 'ThisExpression' ) {
-                let createNode = () => node.type === 'Identifier' ? astNodes.identifier( node.name ) : astNodes.thisExpr();
-                // How we'll know Identifiers within script
-                if ( node.type === 'Identifier' ) {
-                    effect.subscriptIdentifiersNoConflict( node );
-                }
-                let $identifier = {
-                    name: node.type === 'Identifier' ? node.name : 'this',
-                };
-                this.setLocation( $identifier, node );
-                if ( effect ) {
-                    let production = effect.currentProduction;
-                    if ( production ) {
-                        do {
-                            production.addRef().unshift( $identifier );
-                        } while( production = production.contextProduction );
-                    }
-                }
-                return _returns( createNode() );
-            }
-
-            /**
-             * ------------
-             * #Other
-             * ------------
-             */
-            let _node = node;
-            if ( node.type === 'TryStatement' ) {
-                let [ block, handler, finalizer ] = _transform( [ node.block, node.handler, node.finalizer ], scope.currentEffect /* This is a statement that could have had its own effect */ );
-                _node = astNodes.tryStmt( block, handler, finalizer );
-            } else if ( node.type === 'CatchClause' ) {
-                let [ body ] = _transform( [ node.body ], scope.currentEffect /* This is a statement that could have had its own effect */ );
-                _node = astNodes.catchClause( node.param, body );
-            } else if ( [ 'ThrowStatement', 'AwaitExpression', 'SpreadElement', 'UnaryExpression' ].includes( node.type ) ) {
-                let [ argument ] = effect.causesProduction( { type: node.type }, () => _transform( [ node.argument ], scope.currentEffect || scope.ownerEffect /* This is a statement that could have had its own effect */ ) );
-                if ( node.type === 'ThrowStatement' ) {
-                    _node = astNodes.throwStmt( argument );
-                } else if ( node.type === 'AwaitExpression' ) {
-                    _node = astNodes.awaitExpr( argument );
-                    // AsyncAwait hoisting
-                    effect.hoistAwaitKeyword();
-                } else if ( node.type === 'SpreadElement' ) {
-                    _node = astNodes.spreadElem( argument );
-                } else {
-                    _node = astNodes.unaryExpr( node.operator, argument, node.prefix );
-                }
-            } else if ( node.type === 'BinaryExpression' ) {
-                let [ left ] = effect.causesProduction( { type: node.type }, () => _transform( [ node.left ] ) );
-                let [ right ] = effect.causesProduction( { type: node.type }, () => _transform( [ node.right ] ) );
-                _node = astNodes.binaryExpr( node.operator, left, right );
-            } else if ( [ 'CallExpression', 'NewExpression' ].includes( node.type ) ) {
-                // The ongoing production must be used for callee
-                let [ callee ] = effect.currentProduction.with( { isCallee: true, callType: node.type }, () => _transform( [ node.callee ] ) );
-                let args = node.arguments.map( argument => effect.causesProduction( { type: argument.type }, () => _transform( [ argument ] )[ 0 ] ) );
-                if ( node.type === 'CallExpression' ) {
-                    _node = astNodes.callExpr( callee, args, node.optional );
-                } else {
-                    _node = astNodes.newExpr( callee, args );
-                }
-            } else if ( [ 'ParenthesizedExpression', 'ChainExpression' ].includes( node.type ) ) {
-                // The ongoing production must be used for these
-                let [ expresion ] = _transform( [ node.expression ] );
-                if ( node.type === 'ParenthesizedExpression' ) {
-                    _node = astNodes.parensExpr( expresion );
-                } else {
-                    _node = astNodes.chainExpr( expresion );
-                }
-            } else if ( node.type === 'ArrayExpression' ) {
-                let elements = node.elements.map( element => effect.causesProduction( { type: element.type }, () => _transform( [ element ] )[ 0 ] ) );
-                _node = astNodes.arrayExpr( elements );
-            } else if ( node.type === 'ObjectExpression' ) {
-                let properties = _transform( node.properties );
-                _node = astNodes.objectExpr( properties );
-            } else if ( node.type === 'Property' ) {
-                let { key, value } = node;
-                if ( node.computed ) {
-                    [ key ] = effect.causesProduction( { type: key.type }, () => _transform( [ key ] ) );
-                }
-                [ value ] = effect.causesProduction( { type: value.type }, () => _transform( [ value ] ) );
-                _node = astNodes.property( key, value, node.kind, node.shorthand, node.computed, node.method );
-            } else if ( node.type === 'TaggedTemplateExpression' ) {
-                let [ tag, quasi ] = effect.causesProduction( { type: node.type }, () => _transform( [ node.tag, node.quasi ] ) );
-                _node = astNodes.taggedTemplateExpr( tag, quasi );
-            } else if ( node.type === 'TemplateLiteral' ) {
-                let expressions = node.expressions.map( expression => effect.causesProduction( { type: node.type }, () => _transform( [ expression ] )[ 0 ] ) );
-                _node = astNodes.templateLiteral( node.quasis, expressions );
-            } else if ( node.type === 'Literal' ) {
-                _node = astNodes.clone( node );
-            }
-
-            return _returns( _node );
-
-        }, [] );
-    }
-
-}
-
-export function initializeIteration( node, scope, callback ) {
-    return scope.createEffect( { type: node.type }, iteratorEffect => {
-        iteratorEffect.defineSubscriptIdentifier( '$counter', [ node.type === 'ForInStatement' ? '$x_key' : '$x_index' ] );
-        // A scope for variables declared in header
-        return iteratorEffect.createScope( { type: 'Iteration' }, declarationScope => {
-            // The iteration instance closure
-            return declarationScope.createEffect( { type: 'Iteration' }, iterationInstanceEffect => {
-                iterationInstanceEffect.inUse( true );
-                return callback( declarationScope, iteratorEffect, iterationInstanceEffect );
             } );
         } );
-    } );
-}
-
-export function composeIteration( iterationInstanceEffect, body, params = {} ) {
-    let disposeCallbacks = [ params.disposeCallback ], disposeCallback = () => disposeCallbacks.forEach( callback => callback && callback() );
-    let preIterationDeclarations = [], iterationDeclarations = [];
-    let iterationBody = [], effectBody = body.body.slice( 0 );
-    // Counter?
-    if ( !params.iterationId ) {
-        params.iterationId = astNodes.identifier( iterationInstanceEffect.getSubscriptIdentifier( '$counter', true ) );
-        let counterInit = astNodes.varDeclarator( astNodes.clone( params.iterationId ), astNodes.literal( -1 ) );
-        let counterIncr = astNodes.updateExpr( '++', astNodes.clone( params.iterationId ), false );
-        preIterationDeclarations.push( counterInit );
-        iterationBody.push( counterIncr );
-        // On dispose
-        disposeCallbacks.push( () => iterationBody.pop() /* counterIncr */ );
-    }
-    // The iterationDeclarations
-    if ( iterationDeclarations.length ) {
-        iterationBody.push( astNodes.varDeclaration( 'let', iterationDeclarations ) );
-        disposeCallbacks.push( () => iterationBody.splice( -1 ) /* iterationDeclarations */ );
-    }
-    // Main
-    iterationBody.push( ...iterationInstanceEffect.composeWith( effectBody, [ params.iterationId ], disposeCallback ) );
-
-    // Convert to actual declaration
-    if ( preIterationDeclarations.length ) {
-        preIterationDeclarations = astNodes.varDeclaration( 'let', preIterationDeclarations );
-    } else {
-        preIterationDeclarations = null;
     }
 
-    return [ preIterationDeclarations, iterationBody ];
+    /**
+     * ------------
+     * @LabeledStatement
+     * ------------
+     */
+    generateLabeledStatement( context, node ) {
+        context.subscriptIdentifiersNoConflict( node.label );
+        let def = { type: node.type, label: node.label };
+        if ( !node.body.type.endsWith( 'Statement' ) ) {
+            return context.defineUnit( def, unit => {
+                this.setLocation( unit, node.body );
+                let [ body ] = this.generateNodes( context, [ node.body ] );
+                return Node.labeledStmt( node.label, unit.generate( body ) );
+            } );
+        }
+        return context.createScope( { type: node.body.type, label: node.label }, scope => {
+            if ( node.body.type === 'BlockStatement' ) {
+                let body = this.generateNodes( context, node.body.body );
+                return Node.labeledStmt( node.label, Node.blockStmt( body ) );
+            }
+            scope.singleStatementScope = true;
+            let [ body ] = this.generateNodes( context, [ node.body ] );
+            return Node.labeledStmt( node.label, body );
+        } );
+    }
+
+    /**
+     * ------------
+     * @BreakStatement
+     * @ContinueStatement
+     * ------------
+     */
+    generateBreakStatement( context, node ) { return this.generateExitStmt( Node.breakStmt, ...arguments ); }
+    generateContinueStatement( context, node ) { return this.generateExitStmt( Node.continueStmt, ...arguments ); }
+    generateExitStmt( generate, context, node ) {
+        let nearestExitTarget = context.currentUnit.closest( [ 'Iteration', 'SwitchStatement', 'LabeledStatement' ] );
+        if ( nearestExitTarget && nearestExitTarget.type === 'SwitchStatement' && node.type === 'BreakStatement' && !node.label ) {
+            return generate.call( Node, null );
+        }
+        let subscript$unit = Node.identifier( context.getSubscriptIdentifier( '$unit', true ) );
+        let keyword = Node.literal( node.type === 'BreakStatement' ? 'break' : 'continue' );
+        let label = node.label ? Node.literal( node.label.name ) : Node.identifier( 'null' );
+        let exitCall = Node.exprStmt( 
+            Node.callExpr( Node.memberExpr( subscript$unit, Node.identifier( 'exit' ) ), [ keyword, label ] ),
+        );
+        // Break / continue statement hoisting
+        context.currentUnit.hoistExitStatement( keyword, label );
+        // unit.subscriptIdentifiersNoConflict() wont be necessary
+        // as the label definition would have had the same earlier
+        return [ exitCall, Node.returnStmt() ];
+    }
+
+    /**
+     * ------------
+     * @ReturnStatement
+     * ------------
+     */
+    generateReturnStatement( context, node ) {
+        let def = { type: node.type };
+        return context.defineUnit( def, unit => {
+            let [ argument ] = unit.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
+            let subscript$unit = Node.identifier( context.getSubscriptIdentifier( '$unit', true ) );
+            let keyword = Node.literal( 'return' );
+            let arg = argument || Node.identifier( 'undefined' );
+            let exitCall = Node.exprStmt(
+                Node.callExpr( Node.memberExpr( subscript$unit, Node.identifier( 'exit' ) ), [ keyword, arg ] ),
+            );
+            // Return statement hoisting
+            unit.hoistExitStatement( keyword, Node.identifier( 'true' ) );
+            return unit.generate( [ exitCall, Node.returnStmt() ] );
+        } );
+    }
+
+    /**
+     * ------------
+     * @BlockStatement
+     * ------------
+     */
+    generateBlockStatement( context, node ) {
+        // From a scope context
+        return context.createScope( { type: node.type }, () => {
+            let body = this.generateNodes( context, node.body );
+            return Node.blockStmt( body );
+        } );
+    }
+
+    /**
+     * ------------
+     * @ExpressionStatement
+     * ------------
+     */
+    generateExpressionStatement( context, node ) {
+        if ( node.expression.type === 'SequenceExpression' ) {
+            return Node.exprStmt( this.generateSequenceExpression( context, node.expression ) );
+        }
+        let def = { type: node.type };
+        return context.defineUnit( def, unit => {
+            this.setLocation( unit, node.expression );
+            let [ expression ] = unit.signalReference( def, () => this.generateNodes( context, [ node.expression ] ) );
+            return unit.generate( Node.exprStmt( expression ) );
+        } );
+    }
+
+    /* ------------------------------ */
+    /* ------------------------------ */
+
+    /**
+     * ------------
+     * @SequenceExpression
+     * ------------
+     */
+    generateSequenceExpression( context, node ) {
+        let expresions = node.expressions.map( ( expr, i ) => {
+            let def = { type: expr.type, inSequence: true };
+            return context.defineUnit( def, unit => {
+                this.setLocation( unit, expr );
+                if ( i === node.expressions.length - 1 ) {
+                    [ expr ] = unit.chainableReference( def, () => this.generateNodes( context, [ expr ] ) );
+                } else {
+                    [ expr ] = unit.signalReference( def, () => this.generateNodes( context, [ expr ] ) );
+                }
+                return expr.type === 'Identifier' ? expr : unit.generate( expr );
+            } );
+        } );
+        return Node.sequenceExpr( expresions );
+    }
+
+    /**
+     * ------------
+     * @AssignmentExpression
+     * ------------
+     */
+    generateAssignmentExpression( context, node ) {
+        let def = { type: node.type, kind: node.operator };
+        let rightReference, [ right ] = context.currentUnit.signalReference( def, reference => ( rightReference = reference, this.generateNodes( context, [ node.right ] ) ) );
+        let leftReference, [ left ] = context.currentUnit.embeddableEffectReference( def, reference => ( leftReference = reference, this.generateNodes( context, [ node.left ] ) ) );
+        rightReference.setAssignee( leftReference );
+        return Node.assignmentExpr( left, right, node.operator );
+    }
+
+    /**
+     * ------------
+     * @UpdateExpression
+     * @UnaryExpression (delete)
+     * ------------
+     */
+    generateUpdateExpression( context, node ) { return this.generateMutationExpr( Node.updateExpr, ...arguments ); }
+    generateUnaryExpression( context, node ) {
+        if ( node.operator === 'delete' ) return this.generateMutationExpr( Node.unaryExpr, ...arguments );
+        let def = { type: node.type, kind: node.operator };
+        let [ argument ] = context.currentUnit.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
+        return Node.unaryExpr( node.operator, argument, node.prefix );
+    }
+    generateMutationExpr( generate, context, node ) {
+        let def = { type: node.type, kind: node.operator };
+        let [ argument ] = context.currentUnit.effectReference( def, () => this.generateNodes( context, [ node.argument ] ) );
+        return generate.call( Node, node.operator, argument, node.prefix );
+    }
+
+    /**
+     * ------------
+     * @BinaryExpression
+     * ------------
+     */
+    generateBinaryExpression( context, node ) {
+        let [ left ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.left ] ) );
+        let [ right ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.right ] ) );
+        return Node.binaryExpr( node.operator, left, right );
+    }
+
+    /**
+     * ------------
+     * @LogicalExpression
+     * ------------
+     */
+    generateLogicalExpression( context, node ) {
+        let def = { type: node.type, kind: node.operator };
+        let [ left ] = context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.left ] ) );
+        let [ $left, memo ] = context.defineMemo( { expr: left } ).generate();
+        let conditionAdjacent = node.operator === '||' ? { whenNot: memo } : { when: memo };
+        let [ right ] = context.createCondition( conditionAdjacent, () => {
+            return context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.right ] ) )
+        } );
+        this.setLocation( memo, node.left );
+        return Node.logicalExpr( node.operator, $left, right );
+    }
+
+    /**
+     * ------------
+     * @ConditionalExpression
+     * ------------
+     */
+    generateConditionalExpression( context, node ) {
+        let def = { type: node.type };
+        let [ test ] = context.currentUnit.signalReference( def, () => this.generateNodes( context, [ node.test ] ) ),
+            [ $test, memo ] = context.defineMemo( { expr: test } ).generate(),
+            [ consequent ] = context.createCondition( { when: memo }, () => context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.consequent ] ) ) ),
+            [ alternate ] = context.createCondition( { whenNot: memo }, () => context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.alternate ] ) ) );
+        this.setLocation( memo, node.test );
+        return Node.condExpr( $test, consequent, alternate );
+    }
+
+    /**
+     * ------------
+     * @ArrayPattern
+     * ------------
+     */
+    generateArrayPattern( context, node ) {
+        let elements = node.elements.map( ( element, i ) => {
+            [ element ] = context.currentUnit.currentReference.withDestructure( { name: i }, () => this.generateNodes( context, [ element ] ) );
+            return element;
+        } );
+        return Node.arrayPattern( elements );
+    }
+
+    /**
+     * ------------
+     * @ObjectPattern
+     * ------------
+     */
+    generateObjectPattern( context, node ) {
+        let properties = node.properties.map( property => {
+            let { key, value } = property;
+            if ( property.computed ) {
+                [ key ] = context.currentUnit.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
+            }
+            let element = { name: property.key.name };
+            if ( property.computed ) {
+                if ( property.key.type === 'Literal' ) {
+                    element = { name: property.key.value };
+                } else {
+                    [ key, element ] = context.defineMemo( { expr: key } ).generate();
+                }
+            }
+            [ value ] = context.currentUnit.currentReference.withDestructure( element, () => this.generateNodes( context, [ value ] ) );
+            this.setLocation( element, property.key );
+            return Node.property( key, value, property.kind, property.shorthand, property.computed, property.method );
+        } );
+        return Node.objectPattern( properties );
+    }
+
+    /**
+     * ------------
+     * @MemberExpression
+     * ------------
+     */
+    generateMemberExpression( context, node ) {
+        let { property } = node;
+        if ( node.computed ) {
+            [ property ] = context.currentUnit.signalReference( { type: property.type }, () => this.generateNodes( context, [ property ] ) );
+        }
+        let element = { name: node.property.name };
+        if ( node.computed ) {
+            if ( node.property.type === 'Literal' ) {
+                element = { name: node.property.value };
+            } else {
+                [ property, element ] = context.defineMemo( { expr: property } ).generate();
+            }
+        }
+        let [ object ] = context.currentUnit.currentReference.withProperty( element, () => this.generateNodes( context, [ node.object ] ) );
+        this.setLocation( element, node.property );
+        return Node.memberExpr( object, property, node.computed, node.optional );
+    }
+
+    /**
+     * ------------
+     * @Identifier
+     * @ThisExpression
+     * ------------
+     */
+    generateThisExpression( context, node ) { return this.generateIdentifier( ...arguments ); }
+    generateIdentifier( context, node ) {
+        let createNode = () => node.type === 'Identifier' ? Node.identifier( node.name ) : Node.thisExpr();
+        // How we'll know Identifiers within script
+        if ( node.type === 'Identifier' ) {
+            context.subscriptIdentifiersNoConflict( node );
+        }
+        let $identifier = {
+            name: node.type === 'Identifier' ? node.name : 'this',
+        };
+        this.setLocation( $identifier, node );
+        const closestFunction = context.closestFunction();
+        let reference = ( context.currentUnit || context ).currentReference;
+        if ( reference ) {
+            do {
+                if ( !closestFunction || closestFunction.isSubscriptFunction || ( reference instanceof EffectReference ) ) {
+                    reference.addRef().unshift( $identifier );
+                }
+            } while( reference = reference.contextReference );
+        }
+        return createNode();
+    }
+
+    /**
+     * ------------
+     * @SpreadElement
+     * @AwaitExpression
+     * ------------
+     */
+    generateSpreadElement( context, node ) { return this.generateArgumentExpr( Node.spreadElement, ...arguments ); }
+    generateAwaitExpression( context, node ) {
+        context.currentUnit.hoistAwaitKeyword();
+        return this.generateArgumentExpr( Node.awaitExpr, ...arguments );
+    }
+    generateArgumentExpr( generate, context, node ) {
+        let [ argument ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.argument ] ) );
+        return generate.call( Node, argument );
+    }
+
+    /**
+     * ------------
+     * @CallExpression
+     * @NewExpression
+     * ------------
+     */
+    generateCallExpression( context, node ) { return this.generateCallExpr( Node.callExpr, ...arguments ); }
+    generateNewExpression( context, node ) { return this.generateCallExpr( Node.newExpr, ...arguments ); }
+    generateCallExpr( generate, context, node ) {
+        // The ongoing reference must be used for callee
+        let [ callee ] = context.currentUnit.currentReference.with( { isCallee: true, callType: node.type }, () => this.generateNodes( context, [ node.callee ] ) );
+        let args = node.arguments.map( argument => context.currentUnit.signalReference( { type: argument.type }, () => this.generateNodes( context, [ argument ] )[ 0 ] ) );
+        return generate.call( Node, callee, args, node.optional );
+    }
+    
+    /**
+     * ------------
+     * @ParenthesizedExpressio
+     * @ChainExpression
+     * ------------
+     */
+    generateParenthesizedExpression( context, node ) { return this.generateExprExpr( Node.parensExpr, ...arguments ); }
+    generateChainExpression( context, node ) { return this.generateExprExpr( Node.chainExpr, ...arguments ); }
+    generateExprExpr( generate, context, node ) {
+        // The ongoing reference must be used for these
+        let [ expresion ] = this.generateNodes( context, [ node.expression ] );
+        return generate.call( Node, expresion );
+    }
+
+    /**
+     * ------------
+     * @ArrayExpression
+     * ------------
+     */
+    generateArrayExpression( context, node ) {
+        let elements = node.elements.map( element => context.currentUnit.signalReference( { type: element.type }, () => this.generateNodes( context, [ element ] )[ 0 ] ) );
+        return Node.arrayExpr( elements );
+    }
+    
+    /**
+     * ------------
+     * @ObjectExpression
+     * ------------
+     */
+    generateObjectExpression( context, node ) {
+        let properties = this.generateNodes( context, node.properties );
+        return Node.objectExpr( properties );
+    }
+    
+    /**
+     * ------------
+     * @Property
+     * ------------
+     */
+    generateProperty( context, node ) {
+        let { key, value } = node;
+        if ( node.computed ) {
+            [ key ] = context.currentUnit.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
+        }
+        [ value ] = context.currentUnit.signalReference( { type: value.type }, () => this.generateNodes( context, [ value ] ) );
+        return Node.property( key, value, node.kind, node.shorthand, node.computed, node.method );
+    }
+    
+    /**
+     * ------------
+     * @TaggedTemplateExpression
+     * ------------
+     */
+    generateTaggedTemplateExpression( context, node ) {
+        let [ tag, quasi ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.tag, node.quasi ] ) );
+        return Node.taggedTemplateExpr( tag, quasi );
+    }
+    
+    /**
+     * ------------
+     * @TemplateLiteral
+     * ------------
+     */
+    generateTemplateLiteral( context, node ) {
+        let expressions = node.expressions.map( expression => context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ expression ] )[ 0 ] ) );
+        return Node.templateLiteral( node.quasis, expressions );
+    }
+
+    /**
+     * ------------
+     * @TryStatement
+     * ------------
+     */
+    generateTryStatement( context, node ) {
+        let [ block, handler, finalizer ] = this.generateNodes( context, [ node.block, node.handler, node.finalizer ] );
+        return Node.tryStmt( block, handler, finalizer );
+    }
+
+    /**
+     * ------------
+     * @CatchClause
+     * ------------
+     */
+    generateCatchClause( context, node ) {
+        let [ body ] = this.generateNodes( context, [ node.body ] );
+        return Node.catchClause( node.param, body );
+    }
+
+    /**
+     * ------------
+     * @ThrowStatement
+     * ------------
+     */
+    generateThrowStatement( context, node ) { return this.generateArgumentExpr( Node.throwStmt, ...arguments ); }
+
 }

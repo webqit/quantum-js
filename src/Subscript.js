@@ -1,9 +1,8 @@
 /**
  * @imports
  */
-import { Compiler, Runtime } from './index.js';
+import { Parser, Compiler, Runtime } from './index.js';
 import { normalizeTabs } from './util.js';
-import * as Acorn from 'acorn';
 
 /**
  * @Subscript
@@ -92,11 +91,12 @@ Subscript.clone = function( _function, defaultThis = null, _compilerParams = {},
 const create = function( defaultThis, compilation, parameters = [], _runtimeParams = {}, originalSource = null, sourceName = null ) {
     let runtime = Runtime.create( compilation, parameters, { ..._runtimeParams, ...Subscript.runtimeParams } );
     let _function = function( ...args ) {
-        return runtime.call( this || defaultThis, ...args );
+        return runtime.call( this === undefined ? defaultThis : this, ...args );
     };
-    _function.signal = runtime.signal.bind( runtime );
+    _function.thread = runtime.thread.bind( runtime );
     _function.dispose = runtime.dispose.bind( runtime );
     Object.defineProperty( _function, 'runtime', { value: runtime } );
+    Object.defineProperty( _function, 'sideEffects', { configurable: true, value: runtime.graph.sideEffects } );
     Object.defineProperty( _function, 'subscriptSource', { configurable: true, value: compilation.source } );
     Object.defineProperty( _function, 'originalSource', { configurable: true, value: originalSource } );
     Object.defineProperty( _function, 'length', { configurable: true, value: parameters.length } );
@@ -113,7 +113,7 @@ const parseCache = new Map;
 const parse = function( source, params = {} ) {
     let ast = parseCache.get( source );
     if ( !ast ) {
-        ast = Acorn.parse( source, { ...Subscript.parserParams, ...params } );
+        ast = Parser.parse( source, { ...Subscript.parserParams, ...params } );
         parseCache.set( source, ast );
     }
     return ast;

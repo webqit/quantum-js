@@ -7,27 +7,27 @@ import Ref from './Ref.js';
 /**
  * @Path
  */
-export default class Effect extends Interactable( HTMLElement ) {
+export default class Unit extends Interactable( HTMLElement ) {
 
     bind( binding ) {
         Object.assign( this, binding );
         if ( !this.graph ) return;
         
-        if ( this.childEffects ) {
-            this.childEffects.forEach( childEffect => {
-                childEffect.replaceWith( ...childEffect.childNodes );
+        if ( this.subUnits ) {
+            this.subUnits.forEach( subUnit => {
+                subUnit.replaceWith( ...subUnit.childNodes );
             } );
         }
-        this.childEffects = new Map;
+        this.subUnits = new Map;
         this._textNodes = this.getTextNodes();
-        for ( let effectId in this.graph.childEffects ) {
-            let graph = this.graph.childEffects[ effectId ];
-            let childInstance = this.createChildEffect( { parentEffect: this, graph } );
-            this.childEffects.set( graph.id, childInstance );
+        for ( let unitId in this.graph.subUnits ) {
+            let graph = this.graph.subUnits[ unitId ];
+            let childInstance = this.createSubUnit( { ownerUnit: this, graph } );
+            this.subUnits.set( graph.id, childInstance );
         }
 
-        this.affecteds = new Map;
-        this.causes = new Map;
+        this.effects = new Map;
+        this.signals = new Map;
         if ( this.refAnchors ) {
             for ( let anchorId in this.refAnchors ) {
                 let anchor = this.refAnchors[ anchorId ];
@@ -37,14 +37,15 @@ export default class Effect extends Interactable( HTMLElement ) {
         this.refAnchors = {};
         this._textNodes = this.getTextNodes();
         const renderRefs = type => {
-            for ( let productionId in this.graph[ type ] ) {
-                let productionInstance = this.createProduction( { ownerEffect: this, ...this.graph[ type ][ productionId ] } );
-                this[ type ].set( productionId, productionInstance );
+            for ( let referenceId in this.graph[ type ] ) {
+                let referenceInstance = this.createReference( { ownerUnit: this, ...this.graph[ type ][ referenceId ] } );
+                this[ type ].set( referenceId, referenceInstance );
             }
         };
-        renderRefs( 'affecteds' );
-        renderRefs( 'causes' );
+        renderRefs( 'effects' );
+        renderRefs( 'signals' );
 
+        this.setAttribute( 'title', this.graph.type );
         this.on( 'mouseenter', () => {
             this.setState( 'block', 'hover', true, 0 );
         } ).on( 'mouseleave', () => {
@@ -53,45 +54,45 @@ export default class Effect extends Interactable( HTMLElement ) {
         this.observe( ( event, refs ) => {
             this.setState( 'block', 'runtime-active', true, 100 );
             refs.forEach( ref => {
-                let productionInstance = this.causes.get( ref.productionId + '' );
-                if ( !productionInstance ) return;
-                productionInstance.refs.get( ref.id ).setState( 'path', 'runtime-active', true, 100 );
+                let referenceInstance = this.signals.get( ref.referenceId + '' );
+                if ( !referenceInstance ) return;
+                referenceInstance.refs.get( ref.id ).setState( 'path', 'runtime-active', true, 100 );
             } );
         } );
     }
 
     get program() {
-        if ( this.parentEffect ) return this.parentEffect.program;
+        if ( this.ownerUnit ) return this.ownerUnit.program;
         return this.runtime;
     }
 
-    signal( ...refs ) {
-        let runtimeEffect = this.program.locate( this.graph.lineage );
-        if ( !runtimeEffect ) return;
-        return runtimeEffect.signal( ...refs );
+    runThread( ...refs ) {
+        let runtimeUnit = this.program.locate( this.graph.lineage );
+        if ( !runtimeUnit ) return;
+        return runtimeUnit.thread( ...refs );
     }
 
     observe( callback ) {
         return this.program.observe( this.graph.lineage, callback );
     }
 
-    createChildEffect( childBinding ) {
-        let childInstance = document.createElement( 'subscript-effect' );
-        this.insertNode( childInstance, childBinding.graph.loc, 'effect' );
+    createSubUnit( childBinding ) {
+        let childInstance = document.createElement( 'subscript-unit' );
+        this.insertNode( childInstance, childBinding.graph.loc, 'unit' );
         childInstance.bind( childBinding );
         return childInstance;
     }
 
-    createProduction( productionBinding ) {
-        let productionInstance = { ...productionBinding, refs: new Map };
-        if ( 'assignee' in productionBinding ) {
-            productionInstance.assignee = this.affecteds.get( productionBinding.assignee + '' );
+    createReference( referenceBinding ) {
+        let referenceInstance = { ...referenceBinding, refs: new Map };
+        if ( 'assignee' in referenceBinding ) {
+            referenceInstance.assignee = this.effects.get( referenceBinding.assignee + '' );
         }
-        for ( let refDef of productionBinding.refs ) {
-            let refInstance = this.createRef( { ownerProduction: productionInstance, ...refDef } );
-            productionInstance.refs.set( refDef.id, refInstance );
+        for ( let refDef of referenceBinding.refs ) {
+            let refInstance = this.createRef( { ownerReference: referenceInstance, ...refDef } );
+            referenceInstance.refs.set( refDef.id, refInstance );
         }
-        return productionInstance;
+        return referenceInstance;
     }
 
     createRef( refBinding ) {
@@ -126,7 +127,7 @@ export default class Effect extends Interactable( HTMLElement ) {
         let [ startOffsetNode, startOffset ] = this.resolveOffset( start - ownLocStart ),
             [ endOffsetNode, endOffset ] = this.resolveOffset( end - ownLocStart, false );
         let range = new Range;
-        if ( type === 'effect' ) {
+        if ( type === 'unit' ) {
             if ( startOffset === 0 
             && startOffsetNode.parentNode.nodeName === 'SPAN'  ) {
                 range.setStartBefore( startOffsetNode.parentNode );
@@ -185,8 +186,8 @@ export default class Effect extends Interactable( HTMLElement ) {
     }
 
     setState( type, state, value, duration = 100 ) {
-        if ( value && this.parentEffect ) {
-            this.parentEffect.setState( type, state, false );
+        if ( value && this.ownerUnit ) {
+            this.ownerUnit.setState( type, state, false );
         }
         this.setStateCallback( type, state, value, duration, () => {
             if ( value ) {

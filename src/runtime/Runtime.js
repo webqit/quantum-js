@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import Effect from './Effect.js';
+import Unit from './Unit.js';
 
-export default class Runtime extends Effect {
+export default class Runtime extends Unit {
 
     static create( compilation, parameters = [], params = {} ) {
         const _Function = compilation.graph.hoistedAwaitKeyword ? Object.getPrototypeOf( async function() {} ).constructor : Function;
@@ -13,22 +13,22 @@ export default class Runtime extends Effect {
         return runtime;
     }
 
-    constructor( parentEffect, graph, callee, params = {}, exits = null ) {
-        super( parentEffect, graph, callee, params = {}, exits );
+    constructor( ownerUnit, graph, callee, params = {}, exits = null ) {
+        super( ownerUnit, graph, callee, params = {}, exits );
         this.observers = [];
     }
 
-    observe( effectUrl, callback ) {
+    observe( unitUrl, callback ) {
         if ( !this.params.devMode ) {
             // TODO: Only allow observers in dev mode
             //throw new Error( `Observers are allowed only in dev mode.` );
         }
-        this.observers.push( { effectUrl, callback } );
+        this.observers.push( { unitUrl, callback } );
     }
 
-    fire( effectUrl, event, refs ) {
+    fire( unitUrl, event, refs ) {
         ( this.observers || [] ).forEach( observer => {
-            if ( observer.effectUrl !== effectUrl ) return;
+            if ( observer.unitUrl !== unitUrl ) return;
             observer.callback( event, refs );
         } );
     }

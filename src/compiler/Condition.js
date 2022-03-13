@@ -2,19 +2,19 @@
 /**
  * @imports
  */
-import Node from './Node.js';
+import Common from './Common.js';
 
 /**
- * @extends Node
+ * @extends Common
  * 
  * A Condition state
  */
-export default class Condition extends Node {
+export default class Condition extends Common {
 
-    constructor( ownerEffect, parent, id, def ) {
+    constructor( ownerContext, id, def ) {
         super( id, def );
-        this.ownerEffect = ownerEffect;
-        this.parent = parent;
+        this.ownerContext = ownerContext;
+        this.parent = ownerContext.currentCondition;
     }
 
     inUse( inUse ) {
@@ -39,10 +39,10 @@ export default class Condition extends Node {
             json.when = this.when.id;
         }
         if ( this.parent ) {
-            if ( this.parent.ownerEffect.id === this.ownerEffect.id ) {
+            if ( this.parent.ownerContext.id === this.ownerContext.id ) {
                 json.parent = this.parent.id;
             } else {
-                json.parent = `${ this.parent.ownerEffect.lineage }:${ this.parent.id }`;
+                json.parent = `${ this.parent.ownerContext.lineage }:${ this.parent.id }`;
             }
         }
         return json;

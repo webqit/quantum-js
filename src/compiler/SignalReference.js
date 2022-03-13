@@ -2,23 +2,23 @@
 /**
  * @imports
  */
-import Production from './Production.js';
-import CauseRef from './CauseRef.js';
+import Reference from './Reference.js';
+import SignalRef from './SignalRef.js';
 
-export default class CausesProduction extends Production {
+export default class SignalReference extends Reference {
 
     addRef( def ) {
-        let ref = new CauseRef( this, this.refs.size, {
+        let ref = new SignalRef( this, this.refs.size, {
             ...def,
-            test: this.test,
+            condition: this.condition,
         } );
         ref.push( ...this.propertyStack );
         this.refs.add( ref );
         return ref;
     }
 
-    setAssignee( mutation ) {
-        this.assignee = mutation;
+    setAssignee( effectReference ) {
+        this.assignee = effectReference;
     }
 
     toJson( filter = false ) {

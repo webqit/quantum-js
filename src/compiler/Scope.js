@@ -2,117 +2,93 @@
 /**
  * @imports
  */
-import Node from './Node.js';
-import Effect from './Effect.js';
+import Common from './Common.js';
+import EffectReference from './EffectReference.js';
 
 /**
  * @Scope
  */
-export default class Scope extends Node {
+export default class Scope extends Common {
 
-    constructor( ownerEffect, id, def = {} ) {
+    constructor( ownerContext, id, def = {} ) {
         super( id, def );
-        this.ownerEffect = ownerEffect;
-        // Effects
-        this.effects = [];
-        this.effectsStack = [];
-    }
-
-    // -----------------
-    
-    get parentScope() {
-        return this.ownerEffect && this.ownerEffect.ownerScope;
-    }
-
-    get $params() {
-        return this.params || (
-            this.ownerEffect && this.ownerEffect.$params
-        );
-    }
-
-    get url() {
-        let lineage = this.ownerEffect && this.ownerEffect.url;
-        return `${ lineage ? lineage + '/' : '' }${ this.id }`;
-    }
-
-    // -----------------
-
-    createEffect( def, callback ) {
-        let effect = new Effect( this, this.ownerEffect.nextId, def );
-        this.effects.unshift( effect );
-        // Keep in stack while callback runs
-        this.effectsStack.unshift( effect );
-        let result = callback( effect );
-        this.effectsStack.shift();
-        // Return callback result
-        return result;
-    }
-
-    get currentEffect() {
-        return this.effectsStack[ 0 ] || ( this.parentScope || {} ).currentEffect;
-    }
-
-    createBlock( callback ) {
-        let def = { type: 'BlockStatement' };
-        return this.createEffect( def, effect => effect.createScope( def, callback ) );
+        this.ownerContext = ownerContext;
+        this.ownerScope = ownerContext && ( ownerContext.currentScope || ownerContext.ownerScope );
+        // signals
+        this.effectReferences = [];
     }
 
     // ---------------
-    
-    static( val ) {
-        if ( arguments.length ) {
-            this._static = val;
-            return this;
-        }
-        return this._static || (
-            this.parentScope && this.parentScope.static()
-        );
+
+    pushEffectReference( effectReference ) {
+        this.effectReferences.push( effectReference );
     }
 
     // -----------------
 
-    doSubscribe( subscriber, meta = null ) {
-        let success = this.effects.some( effect => effect.affecteds.some( affected => {
-            return affected.doSubscribe( subscriber, meta );
-        } ) );
-        if ( this.parentScope ) {
-            success = success || this.parentScope.doSubscribe( subscriber, meta );
-        } else if ( !success && this.ownerEffect ) {
-            return this.ownerEffect.affectedsProduction( {}, production => {
-                subscriber.refs.forEach( ref => {
-                    this.canObserveGlobal( ref ) && production.addRef().push( ...ref.path );
+    doSubscribe( signalReference, remainderRefs = null ) {
+        remainderRefs = this.effectReferences.reduce( ( _remainderRefs, effectReference ) => {
+            return effectReference.doSubscribe( signalReference, _remainderRefs );
+        }, remainderRefs || [ ...signalReference.refs ] );
+        if ( !remainderRefs.length ) return true;
+        // Statements within functions can not subscribe to outside variables
+        if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
+            remainderRefs = this.ownerContext.references.reduce( ( _remainderRefs, reference ) => {
+                if ( !( reference instanceof EffectReference ) ) return _remainderRefs;
+                return reference.doSubscribe( signalReference, _remainderRefs );
+            }, remainderRefs );
+            if ( !remainderRefs.length ) return true;
+            return this.ownerContext.effectReference( {}, effectReference => {
+                remainderRefs.forEach( signalRef => {
+                    this.canObserveGlobal( signalRef ) && effectReference.addRef().push( ...signalRef.path );
                 } );
-                subscriber.inUse( true );
-                subscriber.ownerEffect.inUse( true );
-                return production.doSubscribe( subscriber, meta );
+                signalReference.inUse( true );
+                return effectReference.doSubscribe( signalReference, remainderRefs ), true;
             }, false/* resolveInScope; a false prevents calling this.doUpdate() */ );
         }
-        return success;
+        if ( this.ownerScope ) {
+            return this.ownerScope.doSubscribe( signalReference, remainderRefs );
+        }
     }
 
-    doUpdate( updater, meta = null ) {
-        let success = this.effects.some( effect => effect.affecteds.some( affected => {
-            let update = affected.doUpdate( updater, meta );
-            if ( update && affected.type === 'VariableDeclaration' && Array.isArray( meta ) ) {
-                meta.push( 'lexical-update' );
-            }
-            return update;
-        } ) );
-        if ( this.parentScope ) {
-            success = success || this.parentScope.doUpdate( updater, meta );
-        } else if ( !success && this.ownerEffect ) {
-            this.ownerEffect.affecteds.push( updater );
-            if ( Array.isArray( meta ) ) {
-                meta.push( 'globalization' );
-            }
-            return true;
+    doUpdate( _effectReference, remainderRefs = null ) {
+        // Not forEach()... but reduce() - only first one must be updated
+        remainderRefs = this.effectReferences.reduce( ( _remainderRefs, effectReference ) => {
+            return effectReference.doUpdate( _effectReference, _remainderRefs );
+        }, remainderRefs || [ ..._effectReference.refs ] );
+        if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
+            if ( _effectReference.type === 'VariableDeclaration' /* and ofcourse, kind: var */ ) return;
+            _effectReference.ownerUnit.$sideEffects = true;
+            let sideEffects = remainderRefs.length && remainderRefs || [ ..._effectReference.refs ];
+            return this.ownerContext.sideEffects.push( { reference: _effectReference, remainderRefs: sideEffects } ), true;
         }
-        return success;
+        if ( !remainderRefs.length ) return true;
+        if ( this.ownerScope ) {
+            return this.ownerScope.doUpdate( _effectReference, remainderRefs );
+        }
+    }
+
+    doSideEffectUpdates( _effectReference, remainderRefs ) {
+        // Not reduce()... but forEach() - all must be updated
+        this.effectReferences.forEach( effectReference => {
+            let _remainderRefs = effectReference.doUpdate( _effectReference, remainderRefs, true /*isSideEffects*/ );
+            if ( effectReference.type === 'VariableDeclaration' ) {
+                // It is only here remainderRefs gets to reduce
+                remainderRefs = _remainderRefs;
+            }
+        } );
+        if ( !remainderRefs.length ) return true;
+        if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
+            return this.ownerContext.sideEffects.push( { reference: _effectReference, remainderRefs, isSideEffects: true } ), true;
+        }
+        if ( this.ownerScope ) {
+            return this.ownerScope.doSideEffectUpdates( _effectReference, remainderRefs );
+        }
     }
 
     canObserveGlobal( ref ) {
-        return ( !this.$params.globalsOnlyPaths || ref.path.length > 1 )
-        && !( this.$params.globalsNoObserve || [] ).includes( ref.path[ 0 ].name );
+        return ( !this.ownerContext.$params.globalsOnlyPaths || ref.path.length > 1 )
+        && !( this.ownerContext.$params.globalsNoObserve || [] ).includes( ref.path[ 0 ].name );
     }
 
 }

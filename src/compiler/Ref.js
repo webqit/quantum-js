@@ -2,21 +2,21 @@
 /**
  * @imports
  */
-import Node from './Node.js';
+import Common from './Common.js';
 import Memo from './Memo.js';
 
-export default class Ref extends Node {
+export default class Ref extends Common {
 
-    constructor( ownerProduction, id, def ) {
+    constructor( ownerReference, id, def ) {
         super( id, def );
-        this.ownerProduction = ownerProduction;
-        this.test = this.ownerEffect.currentCondition;
+        this.ownerReference = ownerReference;
+        this.condition = this.ownerUnit.currentCondition;
         this.path = [];
         this.isDotSafe = true;
     }
 
-    get ownerEffect() {
-        return this.ownerProduction.ownerEffect;
+    get ownerUnit() {
+        return this.ownerReference.ownerUnit;
     }
 
     push( ...identifiers ) {
@@ -32,7 +32,7 @@ export default class Ref extends Node {
     }
 
     doIsDotSafe( identifiers ) {
-        if ( identifiers.some( identifier => ( identifier instanceof Memo ) || identifier.name.includes( '.' ) ) ) {
+        if ( identifiers.some( identifier => ( identifier instanceof Memo ) || ( identifier.name + '' ).includes( '.' ) ) ) {
             this.isDotSafe = false;
         }
     }
@@ -56,8 +56,8 @@ export default class Ref extends Node {
             id: this.id,
             path: this.path.map( identifier => identifier instanceof Memo ? { memoId: identifier.id } : identifier ),
             $path: this.isDotSafe ? this.path.map( identifier => identifier.name ).join( '.' ) : undefined,
-            conditionId: ( this.test || {} ).id,
-            productionId: this.ownerProduction.id,
+            conditionId: ( this.condition || {} ).id,
+            referenceId: this.ownerReference.id,
         }
     }
 

@@ -4,4 +4,4 @@
  */
 import Ref from './Ref.js';
 
-export default class CauseRef extends Ref {}
+export default class SignalRef extends Ref {}
