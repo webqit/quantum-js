@@ -186,7 +186,7 @@ describe( `IF statements`, function() {
             `,
             `
             if ($x.memo[4] = 2) {
-            } else if ($x.memo[11] = 3) {
+            } else if ($x.memo[10] = 3) {
             }
             `
         );
@@ -222,7 +222,7 @@ describe( `IF statements`, function() {
             $x(2, $x => {
                 if ($x.memo[5] = b) {
                 } else $x(9, $x => {
-                    if ($x.memo[13] = c) {
+                    if ($x.memo[12] = c) {
                     }
                 });
             });
@@ -239,7 +239,7 @@ describe( `IF statements`, function() {
             `
             if ($x.memo[4] = 1) {
             } else $x(8, $x => {
-                if ($x.memo[12] = c) {
+                if ($x.memo[11] = c) {
                 }
             });
             `
