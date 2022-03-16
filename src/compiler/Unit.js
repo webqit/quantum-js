@@ -175,9 +175,9 @@ export default class Unit extends Common {
     }
 
     chainableReference( def, callback ) {
-        return this.currentReference && this.currentReference.refs.size && !this.currentReference.propertyStack.length
-            ? this.signalReference( def, callback )
-            : callback();
+        return this.currentReference && this.currentReference.propertyStack.length
+            ? callback()
+            : this.signalReference( def, callback );
     }
 
     embeddableSignalReference( def, callback ) {
@@ -225,7 +225,7 @@ export default class Unit extends Common {
         this.entryStack.unshift( entry );
         let result = callback( entry );
         this.entryStack.shift();
-        if ( ( entry instanceof Unit ) && !entry.references.length && !entry.isIteration ) {
+        if ( ( entry instanceof Unit ) && !entry.generatable() ) {
             this.entries = this.entries.filter( _entry => _entry !== entry );
         }
         // Return callback result
@@ -308,7 +308,7 @@ export default class Unit extends Common {
     // ---------------
 
     generatable() {
-        return this.references.length || ( this instanceof Context ) || this.isIteration;
+        return this.references.length || ( this instanceof Context );
     }
 
     generate( expr, params = {} ) {
@@ -423,7 +423,7 @@ export default class Unit extends Common {
         let offset = this.lineage.split( '/' ).length;
         let find = lineage => lineage.reduce( ( _json, id ) => _json.subUnits[ id ], json );
         this.entries.slice( 0 ).reverse().forEach( entry => {
-            if ( entry instanceof Unit ) {
+            if ( ( entry instanceof Unit ) && entry.generated ) {
                 let target = find( entry.lineage.split( '/' ).slice( offset, -1 ) );
                 target.subUnits[ entry.id ] = entry.toJson( filter );
             } else if ( entry instanceof Condition ) {

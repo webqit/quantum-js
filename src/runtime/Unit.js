@@ -11,7 +11,7 @@ export default class Unit {
         this.callee = callee;
         this.params = params;
         this.exits = exits || new Map;
-        this.$thread = $thread || { entries: new Map, sequence: [], ownerUnit: this.graph.lineage };
+        this.$thread = $thread || { entries: new Map, sequence: [], ownerUnit: this };
         this.subUnits = new Map;
         this.unit = function( unitId, arg1, arg2 = null, arg3 = null ) {
             if ( !this.graph.subUnits[ unitId ] ) {
@@ -113,7 +113,7 @@ export default class Unit {
 
     call( $this, ...$arguments ) {
         if ( this.disposed ) {
-            throw new Error( `Instance not runable after disposal.` );
+            throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Instance not runable after having been disposed.` );
         }
         let returnValue = this.callee.call( $this, this.unit, ...$arguments );
         if ( this.graph.$sideEffects ) {
@@ -377,7 +377,9 @@ export default class Unit {
                         return subUnits.concat( _subUnit.locate( unitUrl ) );
                     }, [] );
                 }
-                return subUnit.locate( unitUrl );
+                if ( subUnit ) {
+                    return subUnit.locate( unitUrl );
+                }
             }
             return subUnit;
         }
@@ -397,20 +399,21 @@ export default class Unit {
         }
         let conditionDef = this.graph.conditions[ condition ];
         let memo = this.unit.memo;
-        if ( typeof conditionDef.parent  !== 'undefined'  && !this.assert( conditionDef.parent ) ) return false;
-        if ( typeof conditionDef.switch  !== 'undefined' ) {
+        if ( typeof conditionDef.parent !== 'undefined'  && !this.assert( conditionDef.parent ) ) return false;
+        if ( typeof conditionDef.switch !== 'undefined' ) {
             return conditionDef.cases.some( _case => memo[ _case ] === memo[ conditionDef.switch ] );
         }
-        if ( typeof conditionDef.whenNot  !== 'undefined' ) {
-            return memo[ conditionDef.whenNot ];
+        if ( typeof conditionDef.whenNot !== 'undefined' ) {
+            return !memo[ conditionDef.whenNot ];
         }
-        if ( typeof conditionDef.when  !== 'undefined' ) {
+        if ( typeof conditionDef.when !== 'undefined' ) {
             return memo[ conditionDef.when ];
         }
         return true;
     }
 
     dispose() {
+        if ( this.params.isFunctionUnit ) return;
         this.subUnits.forEach( ( subUnit, unitId ) => {
             if ( subUnit instanceof Map ) {
                 subUnit.forEach( subUnit => subUnit.dispose() );
@@ -421,7 +424,6 @@ export default class Unit {
         } );
         this.subUnits.clear();
         delete this.ownerUnit;
-        delete this.graph;
         delete this.callee;
         delete this.params;
         delete this.unit.memo;

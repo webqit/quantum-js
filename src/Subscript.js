@@ -12,11 +12,22 @@ export default function Subscript( ...args ) {
     params.compiler = { ...Subscript.compilerParams, ...( params.compiler || {} ) };
     params.runtime = { ...Subscript.runtimeParams, ...( params.runtime || {} ) };
     let source = normalizeTabs( args.pop() || '' );
-    let ast = parse( source );
-    let compiler = new Compiler( params.compiler );
-    let compilation = compiler.generate( ast );
+    let compilation, parameters = args;
+    if ( Subscript.cache[ source ] && !params.compiler.devMode && compare( parameters, Subscript.cache[ source ][ 1 ] ) && deepEql( params.compiler, Subscript.cache[ source ][ 2 ] ) ) {
+        // ----------------
+        [ compilation, parameters ] = Subscript.cache[ source ];
+        // ----------------
+    } else {
+        let ast = parse( source );
+        let compiler = new Compiler( params.compiler );
+        compilation = compiler.generate( ast );
+        // ----------------
+        Subscript.cache[ source ] = [ compilation, parameters, params.compiler ];
+        // ----------------
+    }
     return create( this, compilation, args, params.runtime, source );
 }
+Subscript.cache = {};
 
 /**
  * @compilerParams
@@ -35,6 +46,7 @@ Subscript.runtimeParams = {}
 /**
  * @clone
  */
+Subscript.cloneCache = {};
 Subscript.clone = function( _function, defaultThis = null, _compilerParams = {}, _runtimeParams = {} ) {
     if ( typeof _function !== 'function' ) {
         throw new Error( `Expected argument 1 to be of type 'function' but got ${ typeof _function }.` );
@@ -61,19 +73,29 @@ Subscript.clone = function( _function, defaultThis = null, _compilerParams = {},
             }, '' );
         }
         source = 'function ' + source;
-    }    
-    let ast = parse( source ).body[ 0 ];
-    let bodyStart = ast.body.start + 1/* the opening brace */;
-    if ( source.substr( bodyStart, 1 ) === "\n" ) {
-        bodyStart += 1;
     }
-    let compiler = new Compiler( { ..._compilerParams, ...Subscript.compilerParams, locStart: - bodyStart } );
-    let parameters = ast.params.map( paramExpr => compiler.serialize( paramExpr ) );
-    let compilation = compiler.generate( { type: 'Program', body: ast.body.body } );
-    if ( !compilation.graph.hoistedAwaitKeyword && isAsync ) {
-        compilation.graph.hoistedAwaitKeyword = true;
+    let compilation, parameters, originalSource;
+    if ( Subscript.cloneCache[ source ] && !_compilerParams.devMode && deepEql( _compilerParams, Subscript.cloneCache[ source ][ 3 ] ) ) {
+        // ----------------
+        [ compilation, parameters, originalSource ] = Subscript.cloneCache[ source ];
+        // ----------------
+    } else {
+        let ast = parse( source ).body[ 0 ];
+        let bodyStart = ast.body.start + 1/* the opening brace */;
+        if ( source.substr( bodyStart, 1 ) === "\n" ) {
+            bodyStart += 1;
+        }
+        let compiler = new Compiler( { ..._compilerParams, ...Subscript.compilerParams, locStart: - bodyStart } );
+        parameters = ast.params.map( paramExpr => compiler.serialize( paramExpr ) );
+        compilation = compiler.generate( { type: 'Program', body: ast.body.body } );
+        if ( !compilation.graph.hoistedAwaitKeyword && isAsync ) {
+            compilation.graph.hoistedAwaitKeyword = true;
+        }
+        originalSource = source.substring( bodyStart, ast.body.end - 1 );
+        // ----------------
+        Subscript.cloneCache[ source ] = [ compilation, parameters, originalSource, _compilerParams ];
+        // ----------------
     }
-    let originalSource = source.substring( bodyStart, ast.body.end - 1 );
     return create( defaultThis, compilation, parameters, _runtimeParams, originalSource, _function.name );
 }
 
@@ -117,4 +139,19 @@ const parse = function( source, params = {} ) {
         parseCache.set( source, ast );
     }
     return ast;
+};
+
+/**
+ * @deepEql
+ */
+const compare = ( a, b ) => {
+    if ( typeof a === 'object' && a && typeof b === 'object' && b ) return deepEql( a, b );
+    if ( Array.isArray( a ) && Array.isArray( b ) && a.length === b.length ) return a.every( valueA => b.some( valueB => compare( valueA, valueB ) ) );
+    return a === b;
 }
+const deepEql = function( a, b ) {
+    for ( let key in a ) {
+        if ( !compare( a[ key ], b[ key ] ) ) return false;
+    }
+    return true;
+};

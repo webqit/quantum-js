@@ -52,11 +52,21 @@ let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
 //console.log( count, doubleCount, quadCount );
 `;
 
+globalThis.a = '';
+let source4 = `
+let scrollSpyActive = this.state.scrollSpy?.active;
+let documentUrl = document.state.url?.href;
+let match = this._matchQueryHash(scrollSpyActive) || this._matchQueryParams(documentUrl) || this._matchQueryPath(documentUrl) || {};
+this.state.active = match.active;
+this.state.hasActive = match.hasActive;
+this.state.expanded = match.expanded;
+`;
+
 globalThis.d = undefined;
 
 
 Subscript.compilerParams.globalsNoObserve.push( 'console' );
-let subscriptFunction = new Subscript( 'param1', 'param2', 'param3', source3 );
+let subscriptFunction = new Subscript( 'param1', 'param2', 'param3', source4 );
 console.log( '.....................sideEffects', subscriptFunction.sideEffects );
 // -----------
 globalThis.someState = false;
@@ -95,7 +105,7 @@ console.log('');
 
 //process.exit();
 
-let result = subscriptFunction( '55', '55', 'sum' );
+let result;// = subscriptFunction( '55', '55', 'sum' );
 console.log( '------->', result );
 
 setTimeout(() => {

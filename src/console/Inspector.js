@@ -17,7 +17,7 @@ export default class Inspector extends Base( HTMLElement ) {
         super.connectedCallback();
         this._contentSlot.addEventListener( 'slotchange', () => {
             setTimeout( () => { // Allow embedded script in slotted elements to manifest
-                let subscriptElement = this._contentSlot.assignedNodes().reduce( ( _subscriptElement, node ) => _subscriptElement || ( node.subscriptConsole instanceof Map ? node : null), null );
+                let subscriptElement = this._contentSlot.assignedNodes().reduce( ( _subscriptElement, node ) => _subscriptElement || ( node.subscripts instanceof Map ? node : null), null );
                 if ( subscriptElement ) {
                     this.inspectElement( subscriptElement );
                 }

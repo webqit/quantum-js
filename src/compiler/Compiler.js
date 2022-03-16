@@ -274,7 +274,7 @@ export default class Compiler {
             }
             this.setLocation( unit, node );
             this.setLocation( memo, node.test );
-            return unit.generate( Node.ifStmt( $test, consequent, alternate ) );
+            return unit.generate(  Node.ifStmt( $test, consequent, alternate ) );
         } );
     }
 
@@ -548,9 +548,6 @@ export default class Compiler {
      * ------------
      */
     generateExpressionStatement( context, node ) {
-        if ( node.expression.type === 'SequenceExpression' ) {
-            return Node.exprStmt( this.generateSequenceExpression( context, node.expression ) );
-        }
         let def = { type: node.type };
         return context.defineUnit( def, unit => {
             this.setLocation( unit, node.expression );
@@ -570,13 +567,13 @@ export default class Compiler {
     generateSequenceExpression( context, node ) {
         let expresions = node.expressions.map( ( expr, i ) => {
             let def = { type: expr.type, inSequence: true };
+            if ( i === node.expressions.length - 1 ) {
+                [ expr ] = context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ expr ] ) );
+                return expr;
+            }
             return context.defineUnit( def, unit => {
                 this.setLocation( unit, expr );
-                if ( i === node.expressions.length - 1 ) {
-                    [ expr ] = unit.chainableReference( def, () => this.generateNodes( context, [ expr ] ) );
-                } else {
-                    [ expr ] = unit.signalReference( def, () => this.generateNodes( context, [ expr ] ) );
-                }
+                [ expr ] = unit.signalReference( def, () => this.generateNodes( context, [ expr ] ) );
                 return expr.type === 'Identifier' ? expr : unit.generate( expr );
             } );
         } );
@@ -775,7 +772,7 @@ export default class Compiler {
     generateNewExpression( context, node ) { return this.generateCallExpr( Node.newExpr, ...arguments ); }
     generateCallExpr( generate, context, node ) {
         // The ongoing reference must be used for callee
-        let [ callee ] = context.currentUnit.currentReference.with( { isCallee: true, callType: node.type }, () => this.generateNodes( context, [ node.callee ] ) );
+        let [ callee ] = context.currentUnit.signalReference( { type: node.callee.type }, () => this.generateNodes( context, [ node.callee ] ) );
         let args = node.arguments.map( argument => context.currentUnit.signalReference( { type: argument.type }, () => this.generateNodes( context, [ argument ] )[ 0 ] ) );
         return generate.call( Node, callee, args, node.optional );
     }
