@@ -135,7 +135,10 @@ describe( `Assignment expressions`, function() {
             (a, b = 2, c = d, e = f);
             `,
             `
-            (a, $x(5, $x => b = 2), $x(9, $x => c = d), $x(14, $x => e = f));
+            // #/2
+            $x(2, $x => {
+                (a, $x(7, $x => b = 2), $x(11, $x => c = d), e = f);
+            });
             `
         );
 
@@ -385,7 +388,7 @@ describe( `Conditional and logical expressions`, function() {
             2 ? 0 : ( 3 ? 0 : 1 );
             `,
             `
-            ($x.memo[5] = 2) ? 0 : ($x.memo[9] = 3) ? 0 : 1;
+            ($x.memo[5] = 2) ? 0 : ($x.memo[11] = 3) ? 0 : 1;
             `
         );
 
@@ -427,17 +430,17 @@ describe( `Conditional and logical expressions`, function() {
             2 && 1;
             `,
             `
-            ($x.memo[4] = 2) && 1;
+            ($x.memo[5] = 2) && 1;
             `
         );
 
         add(
-            `Do smae for nested Logic.`,
+            `Do same for nested Logic.`,
             `
             2 && 1 || 0;
             `,
             `
-            ($x.memo[6] = ($x.memo[4] = 2) && 1) || 0;
+            ($x.memo[9] = ($x.memo[6] = 2) && 1) || 0;
             `
         );
 
@@ -449,7 +452,7 @@ describe( `Conditional and logical expressions`, function() {
             `
             // #/2
             $x(2, $x => {
-                ($x.memo[4] = a) && 1;
+                ($x.memo[6] = a) && 1;
             });
             `
         );
@@ -463,7 +466,7 @@ describe( `Conditional and logical expressions`, function() {
             let b;
             // #/2
             $x(2, $x => {
-                b = ($x.memo[4] = a) && 1;
+                b = ($x.memo[6] = a) && 1;
             });
             `
         );
