@@ -19,7 +19,7 @@ Subscript is a reactivity runtime for JavaScript. It takes any valid JavaScript 
 
 ## What's A Dependency Thread?
 
-That's simply the dependency chain involving two or more JavaScript expressions. 👇
+Think of it as the dependency chain involving two or more JavaScript expressions. 👇
 
 ```js
 let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
