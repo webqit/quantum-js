@@ -11,6 +11,7 @@ import Base from './Base.js';
 export default class Player extends Base( HTMLElement ) {
 
     connectedCallback() {
+        this.autoMode = this.getAttribute( 'auto-mode' );
         this.consoleElement = document.createElement( 'subscript-console' );
         this.controlsElement = document.createElement( 'div' );
         this.controlsElement.classList.add( 'controls-element' );
@@ -45,6 +46,9 @@ export default class Player extends Base( HTMLElement ) {
             this.consoleElement.innerHTML = this.innerHTML;
             setTimeout( () => {
                 this.loadConsole();
+                if ( this.autoMode ) {
+                    this.buttons[ this.autoMode ].dispatchEvent( new MouseEvent( 'click' ) );
+                }
             }, 0 );
         }, 0 );
     }
@@ -100,8 +104,8 @@ export default class Player extends Base( HTMLElement ) {
                 color: silver;
             }
             .controls-element button:is(:hover, .active) {
-                background-color: dimgray;
-                color: gainsboro;
+                background-color: var(--active-bg-color, dimgray);
+                color: var(--active-color, gainsboro);
             }
             .controls-element button .bi {
                 margin-right: 0.5rem;
@@ -110,24 +114,29 @@ export default class Player extends Base( HTMLElement ) {
                 font-size: larger;
             }
 
-            :host(.layout2) {
-                display: flex;
-                display: -webkit-flex;
-            }
-            :host(.layout2) subscript-console {
-                flex-grow: 1;
-            }
-            :host(.layout2) .controls-element {
-                flex-basis: 1rem;
-            }
-            :host(.layout2) .controls-element button {
-                padding: 1rem;
-            }
-            :host(.layout2) .controls-element button span {
-                display: none;
-            }
-            :host(.layout2) .controls-element button .bi {
-                margin-right: 0;
+            @media (min-width: 800px) {
+                :host(.layout2) {
+                    display: flex;
+                    display: -webkit-flex;
+                }
+                :host(.layout2) subscript-console {
+                    flex-grow: 1;
+                }
+                :host(.layout2) .controls-element {
+                    flex-basis: 1rem;
+                }
+                :host(.layout2) .controls-element button {
+                    width: 100%;
+                    text-align: center;
+                    display: block;
+                    padding: 1rem;
+                }
+                :host(.layout2) .controls-element button span {
+                    display: none;
+                }
+                :host(.layout2) .controls-element button .bi {
+                    margin-right: 0;
+                }
             }
             `,
         ]

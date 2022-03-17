@@ -24,6 +24,7 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
         this._preBlock = this._div.appendChild( document.createElement( 'pre' ) );
         this._codeBlock = this._preBlock.appendChild( document.createElement( 'code' ) );
         this._div.classList.add( 'line-numbers' );
+        this._div.classList.add( 'container' );
         //this._preBlock.setAttribute( 'data-label', 'Test' );
         //this._div.classList.add( 'match-braces' );
         //this._preBlock.setAttribute( 'data-line', '1' );
@@ -38,7 +39,7 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
         this._contentSlot.addEventListener( 'slotchange', () => {
             let html = this._contentSlot.assignedNodes().reduce( ( _html, node ) => _html + ( node.outerHTML || node.nodeValue || '' ), '' );
             if ( !this._initialSlotEvent ) {
-                html = normalizeTabs( html.trimStart() );
+                html = normalizeTabs( html );
                 this._initialSlotEvent = true;
             }
             if ( this._textarea ) {
@@ -103,9 +104,10 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
         this._textarea.name = this._name || '';
         this._textarea.value = this._codeBlock.textContent;
         this._preBlock.setAttribute( 'aria-hidden', 'true' );
-        this._scrollBlock = this.getAttribute( 'scroll-block' ) === 'pre' ? this._preBlock : this._codeBlock;
+        this._scrollBlock = this.getAttribute( 'scroll-block' ) === 'code' ? this._codeBlock : this._preBlock;
         this._textarea.addEventListener( 'input', e => { this.source = e.target.value } );
         this._textarea.addEventListener( 'input', () => this._syncScrolling() );
+        this._textarea.addEventListener( 'scroll', () => this._syncScrolling() );
         this._textarea.addEventListener( 'keydown', e => this._handleTabKeyEvent( e ) );
     }
 
@@ -227,6 +229,14 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
                 caret-color: darkgrey;
                 white-space: pre;
                 overflow: hidden;
+            }
+            .container {
+                min-height: 100%;
+                width: 100%;
+                display: flex;
+            }
+            .container > * {
+                width: 100%;
             }
             
             textarea, ${ this._styledBlock } {
