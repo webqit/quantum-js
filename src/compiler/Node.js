@@ -64,6 +64,7 @@ export default {
     },
     identifier( name ) { return { type: 'Identifier', name }; },
     property( key, value, kind = 'init', shorthand = false, computed = false, method = false ) { return { type: 'Property', key, value, kind, shorthand, computed, method }; },
+    methodDefinition( key, value, kind = 'method', $static = false, computed = false ) { return { type: 'MethodDefinition', key, value, kind, static: $static, computed }; },
     spreadElement( argument ) { return { type: 'SpreadElement', argument }; },
     literal( value ) { return { type: 'Literal', value }; },
     templateLiteral( quasis, expressions ) { return { type: 'TemplateLiteral', quasis, expressions }; },

@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Subscript from '../Subscript.js';
+import SubscriptFunction from '../SubscriptFunction.js';
 import Base from './Base.js';
 
 /**
@@ -56,7 +56,7 @@ export default class Player extends Base( HTMLElement ) {
     loadConsole() {
         let devMode = { devMode: true };
         let params = { compiler: devMode, runtime: devMode };
-        this.program = Subscript( this.consoleElement.source /* innerHTML normalized */, params );
+        this.program = SubscriptFunction( this.consoleElement.source /* innerHTML normalized */, params );
         this.consoleElement.bind( this.program, false );
     }
 

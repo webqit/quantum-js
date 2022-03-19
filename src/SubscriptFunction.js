@@ -5,34 +5,34 @@ import { normalizeTabs } from './util.js';
 import { Parser, Compiler, Runtime } from './index.js';
 
 /**
- * @Subscript
+ * @SubscriptFunction
  */
-export default function Subscript( ...args ) {
+export default function SubscriptFunction( ...args ) {
     let params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};
-    params.compiler = { ...Subscript.compilerParams, ...( params.compiler || {} ) };
-    params.runtime = { ...Subscript.runtimeParams, ...( params.runtime || {} ) };
+    params.compiler = { ...SubscriptFunction.compilerParams, ...( params.compiler || {} ) };
+    params.runtime = { ...SubscriptFunction.runtimeParams, ...( params.runtime || {} ) };
     let source = normalizeTabs( args.pop() || '' );
     let compilation, parameters = args;
-    if ( Subscript.cache[ source ] && !params.compiler.devMode && compare( parameters, Subscript.cache[ source ][ 1 ] ) && deepEql( params.compiler, Subscript.cache[ source ][ 2 ] ) ) {
+    if ( SubscriptFunction.cache[ source ] && !params.compiler.devMode && compare( parameters, SubscriptFunction.cache[ source ][ 1 ] ) && deepEql( params.compiler, SubscriptFunction.cache[ source ][ 2 ] ) ) {
         // ----------------
-        [ compilation, parameters ] = Subscript.cache[ source ];
+        [ compilation, parameters ] = SubscriptFunction.cache[ source ];
         // ----------------
     } else {
         let ast = parse( source );
         let compiler = new Compiler( params.compiler );
         compilation = compiler.generate( ast );
         // ----------------
-        Subscript.cache[ source ] = [ compilation, parameters, params.compiler ];
+        SubscriptFunction.cache[ source ] = [ compilation, parameters, params.compiler ];
         // ----------------
     }
     return create( this, compilation, args, params.runtime, source );
 }
-Subscript.cache = {};
+SubscriptFunction.cache = {};
 
 /**
  * @compilerParams
  */
-Subscript.compilerParams = {
+SubscriptFunction.compilerParams = {
     globalsNoObserve: [],
     globalsOnlyPaths: false,
     compact: 2,
@@ -41,13 +41,13 @@ Subscript.compilerParams = {
 /**
  * @runtimeParams
  */
-Subscript.runtimeParams = {}
+SubscriptFunction.runtimeParams = {}
 
 /**
  * @clone
  */
-Subscript.cloneCache = {};
-Subscript.clone = function( _function, defaultThis = null, _compilerParams = {}, _runtimeParams = {} ) {
+SubscriptFunction.cloneCache = {};
+SubscriptFunction.clone = function( _function, defaultThis = null, _compilerParams = {}, _runtimeParams = {} ) {
     if ( typeof _function !== 'function' ) {
         throw new Error( `Expected argument 1 to be of type 'function' but got ${ typeof _function }.` );
     }
@@ -75,9 +75,9 @@ Subscript.clone = function( _function, defaultThis = null, _compilerParams = {},
         source = 'function ' + source;
     }
     let compilation, parameters, originalSource;
-    if ( Subscript.cloneCache[ source ] && !_compilerParams.devMode && deepEql( _compilerParams, Subscript.cloneCache[ source ][ 3 ] ) ) {
+    if ( SubscriptFunction.cloneCache[ source ] && !_compilerParams.devMode && deepEql( _compilerParams, SubscriptFunction.cloneCache[ source ][ 3 ] ) ) {
         // ----------------
-        [ compilation, parameters, originalSource ] = Subscript.cloneCache[ source ];
+        [ compilation, parameters, originalSource ] = SubscriptFunction.cloneCache[ source ];
         // ----------------
     } else {
         let ast = parse( source ).body[ 0 ];
@@ -85,7 +85,7 @@ Subscript.clone = function( _function, defaultThis = null, _compilerParams = {},
         if ( source.substr( bodyStart, 1 ) === "\n" ) {
             bodyStart += 1;
         }
-        let compiler = new Compiler( { ..._compilerParams, ...Subscript.compilerParams, locStart: - bodyStart } );
+        let compiler = new Compiler( { ..._compilerParams, ...SubscriptFunction.compilerParams, locStart: - bodyStart } );
         parameters = ast.params.map( paramExpr => compiler.serialize( paramExpr ) );
         compilation = compiler.generate( { type: 'Program', body: ast.body.body } );
         if ( !compilation.graph.hoistedAwaitKeyword && isAsync ) {
@@ -93,7 +93,7 @@ Subscript.clone = function( _function, defaultThis = null, _compilerParams = {},
         }
         originalSource = source.substring( bodyStart, ast.body.end - 1 );
         // ----------------
-        Subscript.cloneCache[ source ] = [ compilation, parameters, originalSource, _compilerParams ];
+        SubscriptFunction.cloneCache[ source ] = [ compilation, parameters, originalSource, _compilerParams ];
         // ----------------
     }
     return create( defaultThis, compilation, parameters, _runtimeParams, originalSource, _function.name );
@@ -103,7 +103,7 @@ Subscript.clone = function( _function, defaultThis = null, _compilerParams = {},
  * @create
  */
 const create = function( defaultThis, compilation, parameters = [], _runtimeParams = {}, originalSource = null, sourceName = null ) {
-    let runtime = Runtime.create( compilation, parameters, { ..._runtimeParams, ...Subscript.runtimeParams } );
+    let runtime = Runtime.create( compilation, parameters, { ..._runtimeParams, ...SubscriptFunction.runtimeParams } );
     let _function = function( ...args ) {
         return runtime.call( this === undefined ? defaultThis : this, ...args );
     };

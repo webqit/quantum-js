@@ -55,7 +55,7 @@ export default class Compiler {
      * @Array of Nodes
      * ------------
      */
-    generateNodes( context, nodes ) {
+    generateNodes( context, nodes, $static = false ) {
         const total = nodes.length;
         if ( total > 1 ) {
             // Hoist FunctionDeclarations
@@ -72,11 +72,11 @@ export default class Compiler {
             };
             let transformed;
             if ( nodes[ index ] ) {
-                let generate = this.generateNode;
-                if ( this[ `generate${ nodes[ index ].type }` ] ) {
-                    generate = this[ `generate${ nodes[ index ].type }` ];
+                let generate = () => this.generateNode( context, nodes[ index ], $static );
+                if ( this[ `generate${ nodes[ index ].type }` ] && ( !$static || [ 'Identifier', 'FunctionDeclaration', 'FunctionExpression' ].includes( nodes[ index ].type ) ) ) {
+                    generate = () => this[ `generate${ nodes[ index ].type }` ].call( this, context, nodes[ index ], _next );
                 }
-                transformed = generate.call( this, context, nodes[ index ], _next );
+                transformed = generate();
             } else {
                 transformed = [ nodes[ index ] ];
             }
@@ -93,13 +93,13 @@ export default class Compiler {
      * @Any Node
      * ------------
      */
-    generateNode( context, node ) {
+    generateNode( context, node, $static = false ) {
         return Object.keys( node ).reduce( ( _node, key ) => {
             let value = node[ key ];
             if ( Array.isArray( value ) ) {
-                value = this.generateNodes( context, value );
+                value = this.generateNodes( context, value, $static );
             } else if ( typeof value === 'object' && value ) {
-                [ value ] = this.generateNodes( context, [ value ] );
+                [ value ] = this.generateNodes( context, [ value ], $static );
             }
             return { ..._node, [ key ]: value };
         }, {} );
@@ -118,6 +118,16 @@ export default class Compiler {
         let body = context.createScope( def, () => this.generateNodes( context, node.body ) );
         return { ...node, body };
     }
+
+    /**
+     * ------------
+     * @MethodDefinition
+     * ------------
+     */
+    generateMethodDefinition( context, node ) {
+        let value = this.generateNode( context, node.value, true/*$static*/ );
+        return Node.methodDefinition( node.key, value, node.kind, node.static, node.computed );
+    }
     
     /**
      * ------------
@@ -126,10 +136,10 @@ export default class Compiler {
      * @ArrowFunctionExpression
      * ------------
      */
-    generateFunctionDeclaration( context, node, next ) { return this.generateFunction( Node.funcDeclaration, ...arguments ) }
-    generateFunctionExpression( context, node, next ) { return this.generateFunction( Node.funcExpr, ...arguments ) }
-    generateArrowFunctionExpression( context, node, next ) { return this.generateFunction( Node.arrowFuncExpr, ...arguments ) }
-    generateFunction( generate, context, node, next ) {
+    generateFunctionDeclaration( context, node ) { return this.generateFunction( Node.funcDeclaration, ...arguments ) }
+    generateFunctionExpression( context, node ) { return this.generateFunction( Node.funcExpr, ...arguments ) }
+    generateArrowFunctionExpression( context, node ) { return this.generateFunction( Node.arrowFuncExpr, ...arguments ) }
+    generateFunction( generate, context, node ) {
         
         const generateId = ( id, context ) => !id ? [ id ] : context.effectReference( { type: node.type }, () => this.generateNodes( context, [ id ] ), false );
         const generateFunction = ( id, params, body ) => context.defineContext( { type: node.type, isSubscriptFunction: node.isSubscriptFunction }, functionUnit => {
@@ -822,7 +832,7 @@ export default class Compiler {
             [ key ] = context.currentUnit.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
         }
         [ value ] = context.currentUnit.signalReference( { type: value.type }, () => this.generateNodes( context, [ value ] ) );
-        return Node.property( key, value, node.kind, node.shorthand, node.computed, node.method );
+        return Node.property( key, value, node.kind, node.shorthand, node.computed, false/*node.method*/ );
     }
     
     /**

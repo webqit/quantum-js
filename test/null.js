@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import Subscript from '../src/index.js';
+import { SubscriptFunction } from '../src/index.js';
 import Observer from '../../observer/src/index.js';
 
 // -----------
@@ -53,20 +53,28 @@ let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
 `;
 
 globalThis.a = '';
+
+
 let source4 = `
-let scrollSpyActive = this.state.scrollSpy?.active;
-let documentUrl = document.state.url?.href;
-let match = this._matchQueryHash(scrollSpyActive) || this._matchQueryParams(documentUrl) || this._matchQueryPath(documentUrl) || {};
-this.state.active = match.active;
-this.state.hasActive = match.hasActive;
-this.state.expanded = match.expanded;
+let scrollSpyActive = class {
+    construwctor() {
+    }
+
+    **render() {
+        let $x = 44;
+        function** dddd() {
+
+        }
+        console.log(gddh);
+    }
+}
 `;
 
 globalThis.d = undefined;
 
 
-Subscript.compilerParams.globalsNoObserve.push( 'console' );
-let subscriptFunction = new Subscript( 'param1', 'param2', 'param3', source4 );
+SubscriptFunction.compilerParams.globalsNoObserve.push( 'console' );
+let subscriptFunction = new SubscriptFunction( 'param1', 'param2', 'param3', source4 );
 console.log( '.....................sideEffects', subscriptFunction.sideEffects );
 // -----------
 globalThis.someState = false;

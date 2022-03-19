@@ -4,11 +4,13 @@
  */
 import Compiler from './compiler/Compiler.js';
 import Runtime from './runtime/Runtime.js';
-import Subscript from './Subscript.js';
+import SubscriptFunction from './SubscriptFunction.js';
+import { Mixin as SubscriptClass } from './SubscriptClass.js';
 import Parser from './compiler/Parser.js';
 
 export {
-    Subscript as default,
+    SubscriptFunction,
+    SubscriptClass,
     Compiler,
     Runtime,
     Parser,

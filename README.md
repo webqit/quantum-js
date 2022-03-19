@@ -579,7 +579,7 @@ function sum( a, b ) {
 }
 ```
 
-Regardless, Subscript's dependency threads are fully able to pick up changes made via a side effect.
+Regardless, Subscript's dependency threads are fully able to pick up changes made via a side effect. (Side effects made by class methods are currently not being detected.)
 
 
 ```js
@@ -626,7 +626,7 @@ console.log( 'Number of times we\'ve summed:', callCount );
 
 *This time, `sum()` is triggerred from a click event handler, not via a dependency thread, and we do not expect the `console.log()` expression to run!*
 
-#### Subscript Function Syntax (New)
+#### Subscript Function Syntax (`**`)
 
 Subscript explores the possibility of defining functions outright as *reactive* functions using regular *Function Declaration* and *Function Expression* syntaxes!
 
@@ -662,7 +662,7 @@ let sum = function**( a, b ) {
 let sum = new SubscriptFunction( `a`, `b`, `return a + b;` );
 ```
 
-...but the first two (proposed syntaxes) are only currently supported within a Subscript Function itself!
+...but the first two (proposed) syntaxes are only currently supported from within Subscript Function itself!
 
 ```js
 let score = 10;
@@ -688,11 +688,68 @@ let program = new SubscriptFunction(`
 program();
 ```
 
+Objects and classes have an equivalent syntax for a Subscript method...
+
+```js
+let myObject = {
+    sum: function**( a, b ) {
+        return a + b;
+    }
+}
+```
+
+```js
+let myObject = {
+    **sum( a, b ) {
+        return a + b;
+    }
+}
+```
+
+```js
+class MyClass {
+    **sum( a, b ) {
+        return a + b;
+    }
+}
+```
+
+...but these (proposed) syntaxes are only currently supported from within Subscript Function itself! (Also, class methods only currently support the double-star syntax at face value; they do not yet compile as Subscript methods.)
+
+However, Subscript offers a *[Class Mixin](#subscriptclass)* that automatically redefines class methods as Subscript methods.
+
+```js
+class MyClass extends SubscriptClass() {
+
+    static get subscriptMethods() {
+        return [ 'sum' ];
+    }
+
+    sum( a, b ) {
+        return a + b;
+    }
+}
+```
+
+```js
+class MyClass extends SubscriptClass( HTMLElement ) {
+
+    static get subscriptMethods() {
+        return [ 'render' ];
+    }
+
+    render() {
+    }
+}
+```
+
 ## API
+
+### SubscriptFunction
 
 `SubscriptFunction` is a one-to-one equivalent of the [JavaScript Function constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function). They work interchangeably 😎.
 
-### Syntax
+#### Syntax
 
 ```js
 // Statically
@@ -706,17 +763,17 @@ let subscrFunction = new SubscriptFunction( arg1, functionBody );
 let subscrFunction = new SubscriptFunction( arg1, ... argN, functionBody );
 ```
 
-### Parameters
+#### Parameters
 
-#### `arg1, ... argN`
+##### `arg1, ... argN`
 
 Names to be used by the function as formal argument names. Each must be a string that corresponds to a valid JavaScript parameter (any of plain identifier, rest parameter, or destructured parameter, optionally with a default), or a list of such strings separated with commas.
 
-#### `functionBody`
+##### `functionBody`
 
 A string that represents the function body.
 
-### Return Value
+#### Return Value
 
 A regular `Function` object, or an `async function` object where the `await` keyword is used within `functionBody`.
 
@@ -740,7 +797,7 @@ sum( 10, 2 ).then( result => {
 < 12
 ```
 
-### The `this` Binding
+#### The `this` Binding
 
 Functions returned by `SubscriptFunction` are standard functions that can have their own [`this`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this) binding at *call time*.
 
@@ -769,23 +826,23 @@ let h1Element = document.getElementById( 'h1' );
 colorSwitch.call( h1Element, 'red' );
 ```
 
-### The `subscrFunction.thread()` Method
+#### The `subscrFunction.thread()` Method
 
 The `.thread()` method is the *reactivity* API in Subscript functions that lets us send *thread events* into the *reactivity runtime*. It takes a list of the outside variables or properties that have changed; each as an array path.
 
-#### Syntax
+##### Syntax
 
 ```js
 let returnValue = subscrFunction.thread( path1, ... pathN );
 ```
 
-#### Parameters
+##### Parameters
 
 ##### `path1, ... pathN`
 
 An array path representing each variable, or object property, that has changed. *See [Thread Events](#thread-events) for concepts and usage.*
 
-#### Return Value
+##### Return Value
 
 The return value of this method depends on the return value of the *dependency thread* it initiates within the function body.
 
@@ -812,6 +869,40 @@ console.log( sum.thread( [ 'a' ] ) );
 < Promise { 22 }
 ```
 
+### SubscriptClass
+
+`SubscriptClass` is a *convenience* base class *Mixin* that automatically transforms regular class methods as Subscript methods.
+
+#### Syntax
+
+```js
+class MyClass extends SubscriptClass( [ BaseClass = null ] ) {
+
+    static get subscriptMethods() {
+        return [ methodName, ... methodNameN ];
+    }
+
+    method() {
+    }
+}
+```
+
+#### Parameters
+
+##### `BaseClass`
+
+An optional base class that should be extended.
+
+##### `methodName, ... methodNameN`
+
+Names of the methods that should be transformed to Subscript methods.
+
+#### Return Value
+
+A *class* object.
+
+*See [below](#custom-element-example) for usage examples*
+
 ## Installation
 
 \> Install via npm
@@ -820,7 +911,7 @@ console.log( sum.thread( [ 'a' ] ) );
 npm i @webqit/subscript
 ```
 ```js
-import SubscriptFunction from '@webqit/subscript';
+import { SubscriptFunction, SubscriptClass } from '@webqit/subscript';
 ```
 
 \> Include from a CDN
@@ -829,12 +920,12 @@ import SubscriptFunction from '@webqit/subscript';
 <script src="https://unpkg.com/@webqit/subscript/dist/main.js"></script>
 ```
 ```js
-const SubscriptFunction = WebQit.Subscript;
+const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 ```
 
 ## A Custom Element Example
 
-As trivial as our hypothetical [`render()`](#whats-a-dependency-thread) function above is, we can see it applicable in real life places! Consider a neat reactive *Custom Element* example based on [`SubscriptElement`](https://webqit.io/tooling/oohtml/docs/spec/subscript#subscript-element-mixin) from [OOHTML](https://github.com/webqit/oohtml).
+As trivial as our hypothetical [`render()`](#whats-a-dependency-thread) function above is, we can see it applicable in real life places! Consider a neat reactive *Custom Element* example based on [`SubscriptClass`](#subscriptclass).
 
 ```js
 // We'll still keep count as a global variable for now
@@ -843,10 +934,9 @@ let count = 10;
 
 ```js
 // This custom element extends Subscript as a base class… more on this later
-customElements.define( 'click-counter', class extends SubscriptElement( HTMLElement ) {
+customElements.define( 'click-counter', class extends SubscriptClass( HTMLElement ) {
     
     // This is how we designate methods as reactive methods
-    // But this is implicit having extended SubscriptElement()
     static get subscriptMethods() {
         return [ 'render' ];
     }
@@ -876,7 +966,7 @@ customElements.define( 'click-counter', class extends SubscriptElement( HTMLElem
 } );
 ```
 
-*Continue to [SubscriptElement](https://webqit.io/tooling/oohtml/docs/spec/subscript#subscript-element-mixin) for the full story.*
+*See also [SubscriptElement](https://webqit.io/tooling/oohtml/docs/spec/subscript#subscript-element-mixin) - the [OOHTML](https://webqit.io/tooling/oohtml) extension of [`SubscriptClass`](#subscriptclass)*
 
 ## Motivation
 
