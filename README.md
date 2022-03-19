@@ -15,6 +15,7 @@ Subscript is a reactivity runtime for JavaScript. It takes any valid JavaScript 
 + [Installation](#installation)
 + [A Custom Element Example](#a-custom-element-example)
 + [Motivation](#motivation)
++ [Getting Involved](#getting-involved)
 + [Issues](#issues)
 
 ## What's A Dependency Thread?
@@ -1025,6 +1026,10 @@ What's the possibility of turning reactivity *on* and *off* on an existing code 
     ```
 
 This togglability is new!
+
+## Getting Involved
+
+We'd be super excited to have you raise an issue, make a PR, or join in the discussion at [Subscript's Github Discussions](https://github.com/webqit/subscript/discussions).
 
 ## Issues
 

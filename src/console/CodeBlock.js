@@ -4,6 +4,7 @@
  */
 import { normalizeTabs } from '../util.js';
 import Base from './Base.js';
+import './assets/prism.js';
 
 /**
  * @CodeBlock

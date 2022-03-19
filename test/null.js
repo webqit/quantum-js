@@ -56,18 +56,9 @@ globalThis.a = '';
 
 
 let source4 = `
-let scrollSpyActive = class {
-    construwctor() {
-    }
+let app = document.state;
+                        $(this.namespace.error).html(app.network?.error ? (app.network?.online ? 'Network Error - ' : "You're Offline - ") + app.network?.error : '404 - Not Found!');
 
-    **render() {
-        let $x = 44;
-        function** dddd() {
-
-        }
-        console.log(gddh);
-    }
-}
 `;
 
 globalThis.d = undefined;
