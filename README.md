@@ -54,7 +54,7 @@ let render = function() {
 }
 ```
 
-You'll also notice one additional *dependent* at each level of the chain. That brings the *dependency thread* for `count` to the following sequence: statement `2` -> statement `3` -> statement `5` -> statement `6` -> statement `8`; excluding statements `1`, `4`, `7`.
+You'll also notice one additional *dependent* at each level of the chain. That brings the *dependency thread* for `count` to being the following sequence: `statement 2` -> `statement 3` -> `statement 5` -> `statement 6` -> `statement 8`; excluding statements `1`, `4`, `7`.
 
 🤝 Good analysis! But what's the deal?
 
@@ -131,7 +131,7 @@ console.log( count, doubleCount, quadCount );
 
 A general-purpose reactivity runtime for JavaScript, with an overarching philosophy of *reactivity that is based on the dependency graph of your own code, and nothing of its own syntax*!
 
-It takes any piece of code and compiles it into an ordinary JavaScript function that can also run expressions in *dependency threads*!
+It takes any piece of code and compiles it into an ordinary JavaScript function that can also run expressions in *dependency threads* via a `.thread()` method!
 
 Being function-based let's us have all of Subscript as a building block… to fit anywhere!
 
