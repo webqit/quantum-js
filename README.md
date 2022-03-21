@@ -184,7 +184,7 @@ And we can run one thread for multiple changes.
 fn.thread( [ 'a' ], [ 'b' ] );
 ```
 
-Variable declarations within the function belong in their own scope and do not respond to outside events. But when they do reference variables from the outside scope, they are included in the dependency thread of those outside variables.
+Variable declarations within the function belong in their own scope and do not respond to outside events. But their containing expression may also maintain a binding to those variables from the outside scope.
 
 ```js
 let fn = new SubscriptFunction(`
@@ -645,7 +645,7 @@ let sum = function**( a, b ) {
 
 Functions defined this way are compiled as `SubscriptFunction`, exposing a `.thread()` method for running dependency threads, and offering everything else as in when we use the `SubscriptFunction` constructor.
 
-The following syntaxes are interchangeable...
+The following syntaxes produce a reactive function...
 
 ```js
 function** sum( a, b ) {
@@ -677,12 +677,14 @@ let program = new SubscriptFunction(`
 
     // The following call results in a side effect
     let result = sum( score, 100 );
+    
     // and "callCount" is logged as "1" to the console 
     console.log( 'Number of times we\'ve summed:', callCount );
 
     // The following call runs a dependency thread that excludes the side effect
     // while return the sum of the previous values of "a" and "b"
     let result = sum.thread( [ 'a' ] );
+
     // and "callCount" is still logged as "1", not "2", to the console 
     console.log( 'Number of times we\'ve summed:', callCount );
 `);
@@ -829,7 +831,9 @@ colorSwitch.call( h1Element, 'red' );
 
 #### The `subscrFunction.thread()` Method
 
-The `.thread()` method is the *reactivity* API in Subscript functions that lets us send *thread events* into the *reactivity runtime*. It takes a list of the outside variables or properties that have changed; each as an array path.
+The `.thread()` method is the *reactivity* API in Subscript functions that lets us send *thread events* into the *reactivity runtime*. It constitues one clear interaction point and enables a one-liner approach to reactivity.
+
+It takes a list of the outside variables or properties that have changed; each as an array path.
 
 ##### Syntax
 
