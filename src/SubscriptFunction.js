@@ -54,7 +54,7 @@ SubscriptFunction.clone = function( _function, defaultThis = null, _compilerPara
     if ( !_function.name ) {
         throw new Error(`Function must have a name.`);
     }
-    let rawSource = normalizeTabs( _function.toString() );
+    let rawSource = normalizeTabs( _function.toString(), true );
     let source = rawSource, isAsync;
     if ( rawSource.startsWith( 'async ' ) ) {
         isAsync = true;

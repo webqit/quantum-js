@@ -17,7 +17,7 @@ export const Mixin = Class => class extends ( Class || class {} ) {
     }
     
     static implementMethod( method, thisBinding = undefined ) {
-       return SubscriptFunction.clone( method, thisBinding );
+        return SubscriptFunction.clone( method, thisBinding );
     }
 
     /**

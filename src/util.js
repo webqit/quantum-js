@@ -2,11 +2,11 @@
 /**
  * @normalizeTabs
  */
-export  function normalizeTabs( rawSource ) {
+export  function normalizeTabs( rawSource, isFunc = false ) {
     let rawSourceSplit = rawSource.split(/\n/g);
     if ( rawSourceSplit.length > 1 ) {
         while ( !rawSourceSplit[ 0 ].trim().length ) rawSourceSplit.shift();
-        let possibleBodyIndentLevel = rawSourceSplit[ 0 ].split(/[^\s]/)[0].length;
+        let possibleBodyIndentLevel = rawSourceSplit[ isFunc ? 1 : 0 ].split(/[^\s]/)[0].length;
         if ( possibleBodyIndentLevel ) {
             return rawSourceSplit.map( ( line, i ) => {
                 let possibleIndent = line.substring( 0, possibleBodyIndentLevel );
