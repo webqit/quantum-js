@@ -19,7 +19,7 @@ export default class Console extends CodeBlock( Unit ) {
             if ( !this._codeBlock.textContent.length ) return;
             let runtime = subscriptFunction.runtime;
             super.bind( { runtime, graph: runtime.graph } );
-        }, 0 );
+        }, 10 );
     }
 
     createRef( refBinding ) { }
