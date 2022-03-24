@@ -20,6 +20,10 @@ export default class Inspector extends Base( HTMLElement ) {
                 let subscriptElement = this._contentSlot.assignedNodes().reduce( ( _subscriptElement, node ) => _subscriptElement || ( node.subscripts instanceof Map ? node : null), null );
                 if ( subscriptElement ) {
                     this.inspectElement( subscriptElement );
+                    let activeButton = this.getAttribute( 'active' );
+                    if ( activeButton ) {
+                        this.inspectFunction( activeButton );
+                    }
                 }
             }, 0 );
         } );
@@ -59,16 +63,15 @@ export default class Inspector extends Base( HTMLElement ) {
     }
 
     inspectFunction( subscriptFunction ) {
-        if ( !subscriptFunction ) {
-            let buttins = Object.keys( this.buttons );
-            if ( buttins.length ) {
-                let firstButton = this.buttons[ buttins[ 0 ] ];
-                let event = new MouseEvent( 'click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                } );
-                firstButton.dispatchEvent( event );
+        if ( !subscriptFunction || typeof subscriptFunction === 'string' ) {
+            let buttinName = subscriptFunction;
+            if ( !subscriptFunction ) {
+                buttinName = Object.keys( this.buttons )[ 0 ];
+            }
+            if ( buttinName ) {
+                let button = this.buttons[ buttinName ];
+                let event = new MouseEvent( 'click', { view: window, } );
+                button.dispatchEvent( event );
             }
             return;
         };
