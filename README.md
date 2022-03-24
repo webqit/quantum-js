@@ -123,9 +123,13 @@ console.log( count, doubleCount, quadCount );
 < 11, 22, 44
 ```
 
-\> Use `SubscriptFunction` as a building block.
+\> See `SubscriptFunction` in real life.
 
 *A Custom Element Example [ahead](#a-custom-element-example)*
+
+*Or click on the demo below to see the "count" dependency thread in real life.*
+
+[![Demo Count Button](https://unpkg.com/@webqit/subscript/dist/dependency-thread-demo-3-counts-button.webqit.repl.co_%20(1).png)](https://replit.com/@WebQit/Dependency-Thread-Demo-3-Counts-Button)
 
 ## What Is Subscript?
 
