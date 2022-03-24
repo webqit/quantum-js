@@ -37,7 +37,7 @@ export default class Inspector extends Base( HTMLElement ) {
         this.shadowRoot.append( this.consoleElement, this.controlsElement );
         // ----------------
         this.buttons = {};
-        subscriptElement.subscriptConsole.forEach( ( subscriptFunction, id ) => {
+        subscriptElement.subscripts.forEach( ( subscriptFunction, id ) => {
             let title = typeof id === 'number' ? `script:${ id }` : `${ id }()`;
             this.buttons[ id ] = this.controlsElement.appendChild( document.createElement( 'button' ) );
             this.buttons[ id ].setAttribute( 'script-id', id );

@@ -12,3 +12,4 @@ let ast = _parse( source );
 let gen = _generate( ast );
 
 console.log( gen.source );
+
