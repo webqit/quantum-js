@@ -127,7 +127,8 @@ console.log( count, doubleCount, quadCount );
 
 *A Custom Element Example [ahead](#a-custom-element-example)*
 
-*Or click on the demo below to see the "count" dependency thread in real life.*
+*Or click on the demo below to **visualize** the "count" dependency thread in realtime.*
+
 
 [![Demo Count Button](https://unpkg.com/@webqit/subscript/dist/dependency-thread-demo-3-counts-button.webqit.repl.co_%20(1).png)](https://replit.com/@WebQit/Dependency-Thread-Demo-3-Counts-Button)
 
@@ -1046,6 +1047,8 @@ This togglability is new!
 ## Getting Involved
 
 We'd be super excited to have you raise an issue, make a PR, or join in the discussion at [Subscript's Github Discussions](https://github.com/webqit/subscript/discussions).
+
+**And, please comrade, your star counts up there 🤨**
 
 ## Issues
 
