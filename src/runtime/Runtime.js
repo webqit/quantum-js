@@ -8,7 +8,9 @@ export default class Runtime extends Unit {
 
     static create( compilation, parameters = [], params = {} ) {
         const _Function = compilation.graph.hoistedAwaitKeyword ? Object.getPrototypeOf( async function() {} ).constructor : Function;
-        const callee = new _Function( compilation.identifier, ...parameters, compilation.source );
+        const callee = params.compileFunction 
+            ? params.compileFunction( compilation.source, [ compilation.identifier ].concat( parameters ) )
+            : new _Function( compilation.identifier, ...parameters, compilation.source );
         const runtime = new this( null, compilation.graph, callee, params );
         return runtime;
     }
