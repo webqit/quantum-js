@@ -12,12 +12,20 @@ import SubscriptFunction from './SubscriptFunction.js';
 
 export const Mixin = Class => class extends ( Class || class {} ) {
 
+    static get compilerParams() {
+        return {};
+    }
+
+    static get runtimeParams() {
+        return {};
+    }
+
     static get subscriptMethods() {
         return [];
     }
     
-    static implementMethod( method, thisBinding = undefined ) {
-        return SubscriptFunction.clone( method, thisBinding );
+    static implementMethod( method, thisBinding = null ) {
+        return SubscriptFunction.clone( method, thisBinding, this.compilerParams, this.runtimeParams );
     }
 
     /**

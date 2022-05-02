@@ -9,23 +9,23 @@ import { Parser, Compiler, Runtime } from './index.js';
  */
 export default function SubscriptFunction( ...args ) {
     let params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};
-    params.compiler = { ...SubscriptFunction.compilerParams, ...( params.compiler || {} ) };
-    params.runtime = { ...SubscriptFunction.runtimeParams, ...( params.runtime || {} ) };
+    params.compilerParams = { ...SubscriptFunction.compilerParams, ...( params.compilerParams || {} ) };
+    params.runtimeParams = { ...SubscriptFunction.runtimeParams, ...( params.runtimeParams || {} ) };
     let source = normalizeTabs( args.pop() || '' );
     let compilation, parameters = args;
-    if ( SubscriptFunction.cache[ source ] && !params.compiler.devMode && compare( parameters, SubscriptFunction.cache[ source ][ 1 ] ) && deepEql( params.compiler, SubscriptFunction.cache[ source ][ 2 ] ) ) {
+    if ( SubscriptFunction.cache[ source ] && !params.compilerParams.devMode && compare( parameters, SubscriptFunction.cache[ source ][ 1 ] ) && deepEql( params.compilerParams, SubscriptFunction.cache[ source ][ 2 ] ) ) {
         // ----------------
         [ compilation, parameters ] = SubscriptFunction.cache[ source ];
         // ----------------
     } else {
         let ast = parse( source );
-        let compiler = new Compiler( params.compiler );
+        let compiler = new Compiler( params.compilerParams );
         compilation = compiler.generate( ast );
         // ----------------
-        SubscriptFunction.cache[ source ] = [ compilation, parameters, params.compiler ];
+        SubscriptFunction.cache[ source ] = [ compilation, parameters, params.compilerParams ];
         // ----------------
     }
-    return create( this, compilation, args, params.runtime, source );
+    return create( this, compilation, args, params.runtimeParams, source );
 }
 SubscriptFunction.cache = {};
 

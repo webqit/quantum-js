@@ -16,8 +16,8 @@ export default class Inspector extends Base( HTMLElement ) {
         // ----------------
         super.connectedCallback();
         this._contentSlot.addEventListener( 'slotchange', () => {
-            setTimeout( () => { // Allow embedded subscripts in slotted elements to manifest
-                let subscriptElement = this._contentSlot.assignedNodes().reduce( ( _subscriptElement, node ) => _subscriptElement || ( node.subscripts instanceof Map ? node : null), null );
+            setTimeout( () => { // Allow embedded subscript instances in slotted elements to manifest
+                let subscriptElement = this._contentSlot.assignedNodes().reduce( ( _subscriptElement, node ) => _subscriptElement || ( node.subscript instanceof Map ? node : null), null );
                 if ( subscriptElement ) {
                     this.inspectElement( subscriptElement );
                     let activeButton = this.getAttribute( 'active' );
@@ -41,7 +41,7 @@ export default class Inspector extends Base( HTMLElement ) {
         this.shadowRoot.append( this.consoleElement, this.controlsElement );
         // ----------------
         this.buttons = {};
-        subscriptElement.subscripts.forEach( ( subscriptFunction, id ) => {
+        subscriptElement.subscript.forEach( ( subscriptFunction, id ) => {
             let title = typeof id === 'number' ? `script:${ id }` : `${ id }()`;
             this.buttons[ id ] = this.controlsElement.appendChild( document.createElement( 'button' ) );
             this.buttons[ id ].setAttribute( 'script-id', id );
