@@ -115,7 +115,15 @@ export default class Unit {
         if ( this.disposed ) {
             throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Instance not runable after having been disposed.` );
         }
-        let returnValue = this.callee.call( $this, this.unit, ...$arguments );
+        let returnValue;
+        try {
+            returnValue = this.callee.call( $this, this.unit, ...$arguments );
+        } catch(e) {
+            console.error('-----------------------');
+            console.log(originalSource);
+            console.error('-----------------------');
+            throw e;
+        }    
         if ( this.graph.$sideEffects ) {
             for ( let referenceId in this.graph.effects ) {
                 for ( let effectRef of this.graph.effects[ referenceId ].refs ) {
