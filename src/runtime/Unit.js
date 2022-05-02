@@ -119,9 +119,9 @@ export default class Unit {
         try {
             returnValue = this.callee.call( $this, this.unit, ...$arguments );
         } catch(e) {
-            console.error('-----------------------');
-            console.log(originalSource);
-            console.error('-----------------------');
+            console.info('-----------------------');
+            console.log(this.params.originalSource || '');
+            console.info('-----------------------');
             throw e;
         }    
         if ( this.graph.$sideEffects ) {
