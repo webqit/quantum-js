@@ -6,17 +6,17 @@ import Unit from './Unit.js';
 
 export default class Runtime extends Unit {
 
-    static create( compilation, parameters = [], params = {} ) {
+    static create( compilation, parameters = [], runtimeParams = {} ) {
         const _Function = compilation.graph.hoistedAwaitKeyword ? Object.getPrototypeOf( async function() {} ).constructor : Function;
-        const callee = params.compileFunction 
-            ? params.compileFunction( compilation.source, [ compilation.identifier ].concat( parameters ) )
-            : new _Function( compilation.identifier, ...parameters, compilation.source );
-        const runtime = new this( null, compilation.graph, callee, params );
+        const callee = runtimeParams.compileFunction 
+            ? runtimeParams.compileFunction( compilation.source, [ compilation.identifier + '' ].concat( parameters ) )
+            : new _Function( compilation.identifier + '', ...parameters, compilation.source );
+        const runtime = new this( null, compilation.graph, callee, runtimeParams );
         return runtime;
     }
 
-    constructor( ownerUnit, graph, callee, params = {}, exits = null ) {
-        super( ownerUnit, graph, callee, params = {}, exits );
+    constructor( ownerUnit, graph, callee, runtimeParams = {}, exits = null ) {
+        super( ownerUnit, graph, callee, runtimeParams = {}, exits );
         this.observers = [];
     }
 
