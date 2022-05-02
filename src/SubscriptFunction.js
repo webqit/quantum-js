@@ -103,9 +103,16 @@ SubscriptFunction.clone = function( _function, defaultThis = null, _compilerPara
  * @create
  */
 const create = function( defaultThis, compilation, parameters = [], _runtimeParams = {}, originalSource = null, sourceName = null ) {
-    let runtime = Runtime.create( compilation, parameters, { ..._runtimeParams, ...SubscriptFunction.runtimeParams, originalSource } );
+    let runtime = Runtime.create( compilation, parameters, { ..._runtimeParams, ...SubscriptFunction.runtimeParams } );
     let _function = function( ...args ) {
-        return runtime.call( this === undefined ? defaultThis : this, ...args );
+        try {
+            return runtime.call( this === undefined ? defaultThis : this, ...args );
+        } catch(e) {
+            console.info('-----------------------');
+            console.log(originalSource || '');
+            console.info('-----------------------');
+            throw e;
+        }    
     };
     _function.thread = runtime.thread.bind( runtime );
     _function.dispose = runtime.dispose.bind( runtime );
