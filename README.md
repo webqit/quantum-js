@@ -652,7 +652,7 @@ customElements.define( 'click-counter', class extends HTMLElement {
         } );
     }
 
-    render**() {
+    **render() {
         let countElement = document.querySelector( '#count' );
         countElement.innerHTML = count;
         
