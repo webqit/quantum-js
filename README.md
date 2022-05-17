@@ -159,7 +159,7 @@ let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
 Now, being function-based lets us have this everywhere:
 
 ```js
-// As a property
+// As property
 let myObject = {
     fn: function**( a, b ) {
         return a + b;
@@ -168,7 +168,7 @@ let myObject = {
 ```
 
 ```js
-// As a method
+// As method
 let myObject = {
     **fn( a, b ) {
         return a + b;
@@ -177,7 +177,7 @@ let myObject = {
 ```
 
 ```js
-// As a class method
+// As class method
 class MyClass {
     **fn( a, b ) {
         return a + b;
@@ -215,7 +215,7 @@ var b = 2;
 // A function with two possible return values
 let sum = function**() {
     if ( a > 10 ) {
-        return a + await b;
+        return Promise.resolve( a + b );
     }
     return a + b;
 }
