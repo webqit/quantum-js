@@ -1,4 +1,690 @@
-# Subscript
+# Subscript Function Proposal
+
+This project proposes a new function primitive that lets us open a reactive programming context within JavaScript.
+
++ [Introduction](#introduction)
++ [What We Propose](#what-we-propose)
+    + [Overview](#overview)
+    + [Formal Syntax](#formal-syntax)
+    + [Dependency Threads](#dependency-threads)
+    + [Heuristics](#heuristics)
+    + [Conditionals And Logic](#conditionals-and-logic)
+    + [Loops](#loops)
++ [Example Usecase](#example-usecase)
++ [Design Goals](#design-goals)
++ [Discussion Points](#discussion-points)
++ [Polyfill](#polyfill)
+    + [Download](#download)
+    + [Playground](#playground)
+    + [Getting Involved](#getting-involved)
+    + [Issues](#issues)
+    + [License](#license)
++ [Prior Art](#prior-art)
++ [Credits](#credits)
+
+## Introduction
+
+Reactive programming has become one of the most exciting programming paradigms of modern frontend development! While there continues to be varying opinions (and a high degree of polarization) as to what it is and what implementation makes the most sense, you'd realize that everyone is converging on one idea: **an automated approach to keeping something (b) in sync with something else (a), such that the expression `b = a` is held as a contract throughout the lifetime of the program**.
+
+**Problem is:** in the real world, the concept of “contract” isn't in the design of literal assignment expressions as we have in theory above (nor does it exist in any other imperative operation). **One must have to model the equivalent of an imperative expression in functional programming - to have a chance to ensure that the “contract” is kept!**
+
+Consider how the following theoretical reactive code would be constructed across a selection of frameworks (ignoring completeness and perfectionism):
+
+```js
+let a, b; a = 10, b = a * 2;
+```
+
+```js
+// React:
+let [ valueA, setValueA ] = useState(10);
+let [ valueB, setValueB ] = useState();
+useEffect(() => setValueB(valueA() * 2));
+```
+
+```js
+// Solid JS:
+let [ valueA, setValueA ] = createSignal(10);
+let [ valueB, setValueB ] = createSignal();
+createEffect(() => setValueB(valueA() * 2));
+```
+
+```js
+// Vue:
+let a = ref(10);
+let b = ref();
+watchEffect(() => b.value = a.value * 2);
+```
+
+```js
+// Svelte (with equivalent constructs hidden behind a compiler):
+let a = 10;
+$: b = a * 2;
+```
+
+```js
+// etc
+```
+
+Where does it hurt? Why, everywhere!
++ We've continued to ship libraries and frameworks to users to enable a universal idea for all of the time!
++ Plus, we're guaranteed to keep sitting at one level of abstraction or the other in all of our means to it, with developers consequently slaving over a slew of functional APIs, or unconventional syntaxes and their compile step!
+
+## What We Propose
+
+Having reactivity as a native language feature - this time, reactivity in the literal, imperative form of the language!
+
+You'd realize that as the language engine, we aren't subject to the same userland constraints that hang reactivity at an abstraction. We operate at the root and can conveniently solve for the lowest common denominator.
+
+So, we want to be able to just say (`let a, b; a = 10, b = a * 2`) and have it binding - but **specifically in a reactive programming context**!
+
+### Overview
+
+*Subscript Function* is a proposed function primitive that provides this *reactive programming context* within JavaScript. It “keeps the contract” for the individual expressions and statements that go into its context! 
+
+These functions go with a notation as in below...
+
+```js
+function fn**() {}
+// much like the syntax for generator functions - function fn*() {}
+```
+
+...and the function body is any regular piece of code that needs to stay up to date with its dependencies *in fine-grained details*.
+
+```js
+let var1 = 10;
+function fn**() {
+    console.log(var1);
+}
+```
+
+It is, in every way, like a regular function, and can be called any number of times.
+
+```js
+fn();
+// prints: 10
+```
+
+But it also exposes a `.thread()` method that specifically lets us keep it in sync with one or more of its *outer* dependencies - whenever those change.
+
+```js
+var1 = 20
+fn.thread( [ 'var1' ] );
+// prints: 20
+```
+
+This method passes a list of outer references for which a selection of dependent expressions or statements within the program are rerun - in the order they appear.
+
+```js
+let var1 = 10, var2 = 0;
+function fn**() {
+    let localVar1 = var1 * 2;
+    let localVar2 = var2 * 2;
+    console.log(localVar1);
+    console.log(localVar2);
+}
+```
+
+```js
+var2 = 11;
+fn.thread( [ 'var2' ] );
+// prints: 22
+```
+
+So, calling the `.thread()` method in the example above moves the function's control directly to its second statement, and next to its fourth statement - as this has `localVar2` as a dependency. Local state is changed until next time. Statements 1 and 3 are left in the same state as from the last time they were touched.
+
+Now, in logical terms, a `.thread()` update follows the implicit *dependency graph* of the expressions and statements in the function body. This means nothing is ever overrun or underrun throughout the lifetime of the program! (And you're right! Now, it gets harder for applications to not be performant!)
+
+### Formal Syntax
+
+A reactive programming context must be explicitly designated. So we propose using a double star (`**`) on the function syntax <sup><a href=”#discussion-points”><small>Discussion Point 1</small></a></sup>. (And this would be just one star extra on the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) `function* gen() {}`.)
+
+```js
+// As function declaration
+function fn**() {}
+```
+
+```js
+// As function expression
+let fn = function**( a, b ) {
+    return a + b;
+}
+```
+
+```js
+// As a constructor
+// A one-on-one equivalent of the standard function constructor (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function)
+let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
+```
+
+Now, being function-based lets us have this everywhere:
+
+```js
+// As a property
+let myObject = {
+    fn: function**( a, b ) {
+        return a + b;
+    }
+}
+```
+
+```js
+// As a method
+let myObject = {
+    **fn( a, b ) {
+        return a + b;
+    }
+}
+```
+
+```js
+// As a class method
+class MyClass {
+    **fn( a, b ) {
+        return a + b;
+    }
+}
+```
+
+#### The `subscrFunction.thread()` Method
+
+The `.thread()` method is the reactivity API in Subscript Functions. It constitutes one clear interaction point and enables a one-liner approach to fine-grained reactivity.
+
+It passes a list of the outside variables or properties that have changed; each as an array path.
+
+##### Syntax:
+
+```js
+let returnValue = subscrFunction.thread( path1, ... pathN );
+```
+
+**Parameters**
+
++ `path1, ... pathN` - An array path representing each variable, or object property, that has changed.
+
+**Return Value**
+
+The return value of this method depends on the return value of the dependency thread it initiates within the function body.
+
+##### Example
+
+```js
+// Outer dependencies
+var a = 10;
+var b = 2;
+
+// A function with two possible return values
+let sum = function**() {
+    if ( a > 10 ) {
+        return a + await b;
+    }
+    return a + b;
+}
+```
+
+```js
+// Run normally
+console.log( sum() );
+< 12
+```
+
+```js
+// Run a thread with a different return value
+a = 20;
+console.log( sum.thread( [ 'a' ] ) );
+< Promise { 22 }
+```
+
+### Dependency Threads
+
+Expressions and statements in Subscript Function contexts maintain a binding to their dependencies.
+
+For example, variable declarations, with *let* and *var*, and assignment expressions, are bound to any references on their right-hand side. (*const* declarations are an exception as they're designed to be immutable.)
+
+```js
+var tense = score > 50 ? 'passed' : 'failed';
+```
+
+So, above, the assignment expression is bound to an external reference `score`; and thus responds to an update event for `score`.
+
+Where an expression or statement depends on a previous one, a *dependency thread* is formed, and updates are executed along this thread.
+
+Thus, any subsequent statement, like the one below, having the `tense` variable itself as a dependency is updated next...
+
+```js
+let message = `Hi ${ candidate.firstName }, you ${ tense } this test!`;
+```
+
+And the update continues to include any subsequent dependents of the `message` variable itself... and any dependents of those dependents... until the end of the dependency thread.
+
+```js
+// This. (Having the “message” variable as a dependency.)
+let fullMessage = [ message, ' ', 'Thank you!' ].join( '' );
+```
+
+```js
+// This. (Having the “fullMessage” variable as a dependency, in addition to the “candidate.username” property.)
+let broadcast = { [ candidate.username ]: fullMessage };
+```
+
+```js
+// These two. (Having the “broadcast” variable as a dependency.)
+let broadcastInstance = new BroadcastMessage( broadcast );
+console.log( broadcast );
+```
+
+### Heuristics
+
+Subscript Functions employ a mix of compile-time and runtime heuristics to deliver fine-grained reactivity. This lets us enjoy the full range of language features without “loosing” reactivity or trading performance.
+
+For example, expressions that reference deep object properties are bound to updates that actually happen along those paths.
+
+```js
+let username = candidate.username;
+let avatarUrl = candidate.profile.avatar;
+```
+
+So, above, the first expression responds only when the `candidate.username` property is updated or deleted, or when the root object `candidate` is changed. And the second expression responds only when the `candidate.profile.avatar` property or the parent path `candidate.profile` is updated or deleted, or when the root object `candidate` is changed.
+
+The above holds even with a dynamic syntax.
+
+```js
+let username = candidate[1 ? 'username' : 'name'];.
+let avatarUrl = (1 ? candidate : {}).profile?.avatar;
+```
+
+Also, the two expressions continue to be treated individually - as two distinct contracts - even when combined in one declaration.
+
+```js
+let username = candidate.username, avatarUrl = candidate.profile.avatar;
+```
+
+Heuristics make it all work with all of ES6+ syntax niceties. Thus, they continue to be two distinct contracts (and reactivity remains fine-grained) even with a destructuring syntax.
+
+```js
+let { username, profile: { avatar: avatarUrl } } = candidate;
+```
+
+And even when so dynamically destructured.
+
+```js
+let profileProp = ''avatar';
+let { username, profile: { [ profileProp ]: avatarUrl } } = candidate;
+```
+
+As another special-syntax case, *spread* expressions are bound to both the *spread element* itself and its sub elements.
+
+```js
+let candidateCopy = { …candidate };
+```
+
+This means that the expression will re-evaluate when the *spread element* `candidate` changes, and when any of its direct properties change.
+
+#### Side Effects
+
+Powerful heuristics make it possible to pick up side effects - indirect mutations - made by inner functions within the Subscript Function context itself.
+
+```js
+function fn**() {
+    function sum( a, b ) {
+        callCount ++;
+        return a + b;
+    }
+    let callCount = 0;
+    let result = sum( score, 100 );
+    console.log( 'Number of times we\'ve summed:', callCount );
+}
+fn();
+```
+
+Above, a side effect happens whenever `sum()` is called. Although the `console.log()` statement isn't directly dependent on the `result = sum()` expression, it is directly dependent on the side effect - `callCount` - of `sum()`. So, with an update event for `score`, the `result = sum()` expression runs, and the `console.log()` expression runs next.
+
+If these two expressions were to appear in reverse order, as in below…
+
+```js
+console.log( 'Number of times we\'ve summed:', callCount );
+let result = sum( score, 100 );
+```
+
+…an update event for `score` would run only the `result = sum()` expression, because, following the runtime's *stack-based execution model*, the side effect on `callCount` would have happened after `console.log()` got a chance to run.
+
+### Conditionals And Logic
+
+When the "test" expression of an "if/else" statement, "switch" statement, or other logical expression contains references, the statement or logical expression is bound to those references. This lets us have conditionals and logic as a contract.
+
+#### "If/else" Statements
+
+An "if/else" statement is bound to references in its "test" expression.
+
+```js
+if ( testExpr ) {
+    // consequentBlock
+} else {
+    // alternateBlock
+}
+```
+
+Above, the "if/else" construct is bound to any references in `testExpr`. An update event for any of these gets the construct evaluated again to keep the contract. So, the "test" expression (`testExpr`) is run, then, the body of the appropriate branch of the construct is executed as a block.
+
+An “else/if” block is taken as a standalone contract nested within the “else” block of a parent “if/else” contract. In other words, the two forms below are functionally equivalent.
+
+```js
+if ( testExpr1 ) {
+    // consequentBlock1
+} else if ( testExpr2 ) {
+    // consequentBlock2
+} else {
+    // alternateBlock
+}
+```
+
+```js
+if ( testExpr1 ) {
+    // consequentBlock1
+} else {
+    if ( testExpr2 ) {
+        // consequentBlock2
+    } else {
+        // alternateBlock
+    }
+}
+```
+
+#### "Switch" Statements
+
+A "switch" statement is bound to references in its "switch/case" conditions.
+
+```js
+switch( operandExpr ) {
+    case caseExpr1:
+        // consequentBlock1
+        break;
+    case caseExpr2:
+        // consequentBlock2
+        break;
+    default:
+        // defaultBlock
+}
+```
+
+Above, the "switch" construct is bound to any references in `operandExpr`, `caseExpr1` and `caseExpr2`. An update event for any of these gets the construct evaluated again to keep the contract. So, the "switch/case" conditions (`operandExpr === caseExpr1` | `operandExpr === caseExpr2` | `operandExpr === null`) are run, then, the body of the appropriate branch of the construct is executed as a block.
+
+#### Logical And Ternary Expressions
+
+Expressions with logical and ternary operators also work as conditional contracts. These expressions are bound to references in their “test” expression.
+
+```js
+// Logical expression
+let result = testExpr && consequentExpr || alternateExpr;
+```
+
+```js
+// Ternary expression
+let result = testExpr ? consequentExpr : alternateExpr;
+```
+
+#### Fine-Grained Updates Within Conditional Contexts
+
+In all conditional constructs above, the contract is that updates to the “test” expressions themselves result in the rerun of the appropriate branch of the construct. The selected branch is rerun *as a block*, not in *fine-grained* execution mode.
+
+```js
+if ( testExpr ) {
+    addBadge( candidate );
+    console.log('You\'ve got a badge');
+} else {
+    removeAllBadges( candidate );
+    console.log('You\'ve lost all badges');
+}
+```
+
+So, above, an update to `testExpr` runs the selected branch as a block - involving its two statements.
+
+But being each a contract of their own, individual expressions and statements inside a conditional context also respond to update events in isolation. This time, the conditions in context have to be “true” for the expression or statement to rerun.
+
+So, above, the `addBadge()` and `removeAllBadges()` expressions are both bound to the reference `candidate`. But on an update to `candidate`, only one of these expressions is run depending on the state of the condition in context - `testExpr`.
+
+In a nested conditional context…
+
+```js
+if ( parentTestExpr ) {
+    if ( testExpr ) {
+    }
+}
+```
+
+…all conditions in context (`parentTestExpr` >> `testExpr`) have to be “true” for an update to take place.
+
+In all cases, the "state" of *all conditions in context* are determined via *memoization*, and no re-evaluation ever takes place on the “test” expressions.
+
+“Switch” statements and logical and ternary expressions have this fine-grained behaviour in their own way.
+
+### Loops
+
+When the parameters of a loop ("for" loop, "while" and "do … while" loop) contain references, the loop is bound to those references. This lets us have loops as a contract.
+
+#### A “for” Loop, “while” And “do … while” Loop
+
+A "for" loop is bound to references in its 3-statement definition.
+
+```js
+for (initStatement; testStatement; incrementStatement) {
+    // Loop block
+}
+```
+
+So, in the loop above, an update event for any references in `initStatement`; `testStatement`; `incrementStatement` restarts the loop to keep the contract.
+
+As with a "for" loop, a "while" and "do ... while" loop are bound to references in their "test" expression.
+
+```js
+while (testExpr) {
+     // Loop block
+}
+```
+
+```js
+do {
+     // Loop block
+} while (testExpr);
+```
+
+So, in each case above, an update event for any references in `testExpr` restarts the loop to keep the contract.
+
+#### A "for ... of" And “for … in” Loop
+
+These loops are bound to references in their *iteratee*.
+
+```js
+for (let value of iteratee) {
+    // Loop body
+}
+```
+
+```js
+for (let key in iteratee) {
+    // Loop body
+}
+```
+
+So, in each case above, an update event for any references in `iteratee` restarts the loop to keep the contract.
+
+#### Fine-Grained Updates Within A Loop
+
+In all loop constructs above, the contract is that updates to the iteration parameters themselves result in the restart of the loop. The loop body, in each iteration, is run *as a block*, not in *fine-grained* execution mode.
+
+```js
+var start = 0;
+var items = [ 'one', 'two', 'three', 'four', 'five' ];
+var targetItems = [];
+var prefix = '';
+function fn**() {
+    for ( let index = start; index < items.length; index ++ ) {
+        console.log( `Current iteration index is: ${ index }, and value is: '${ items[ index ] }'` );
+        targetItems[ index ] = prefix + items[ index ];
+    }
+}
+fn();
+```
+
+So, above, an update to any of `start`, `items`, and `items.length` gets the loop restarted…
+
+```js
+start = 2;
+fn.thread( [ 'start' ] );
+```
+
+```js
+items.unshift( 'zero' );
+fn.thread( [ 'items', 'length' ] );
+```
+
+…with each iteration running the loop body as a block - involving its two statements.
+
+But being each a contract of their own, individual expressions and statements in the body of a loop also respond to update events in isolation. This time, an update happens *in-place in each of the previously-made iterations of the loop*.
+
+So, above, on updating the reference `prefix`, the second statement (specifically) in each existing round of the loop responds to keep their contract. Thus, each entry in `targetItems` gets updated with prefixed values.
+
+```js
+prefix = 'updated-';
+fn.thread( [ 'prefix' ] );
+```
+
+A “for … of, for … in” loop further has the unique characteristic where each round of the loop maintains a direct relationship with its corresponding key in the *iteratee*. Now, on updating the value of a key in `iteratee` in-place, the associate round (specifically) also runs in-place to keep its contract.
+
+```js
+var items = [ { name: 'one' }, { name: 'two' }, { name: 'three' }, { name: 'four' }, { name: 'five' } ];
+function fn**() {
+    for ( let entry of items ) {
+        let index = items.indexOf( entry );
+        console.log( `Current iteration index is: ${ index }, and name is: '${ entry.name }'.` );
+        targetItems[ index ] = items[ index ].name;
+    }
+}
+fn();
+```
+
+```js
+entries[ 2 ] = { name: 'new three' };
+fn.thread( [ 'items', 2 ] );
+```
+
+Now, the console reports…
+
+```js
+Current iteration index is: 2, and name is: 'new three'.
+```
+
+…and index 2 of `targetEntries` is updated. 
+
+If we mutate the `name` property of the above entry in-place, then it gets even more fine-grained: only the dependent `console.log()` expression in that round runs to keep its contact.
+
+```js
+entries[ 2 ].name = 'new three';
+fn.thread( [ 'items', 2, 'name' ] );
+```
+
+Now, the console reports…
+
+```js
+Current iteration index is: 2, and name is: 'new three'.
+```
+
+This granular reactivity makes it often pointless to trigger a full rerun of a loop, offering multiple opportunities to deliver unmatched performance.
+
+##### Handling Labeled `Break` And `Continue` Directives
+
+Fine-grained updates observe `break` and `continue` statements, even when these direct control to a parent block using *labels*.
+
+```js
+let  entries = { one: { name: 'one' }, two: { name: 'two' } };
+function fn**() {
+    parentLoop: for ( let propertyName in entries ) {
+        childLoop: for ( let subPropertyName in entries[ propertyName ] ) {
+            If ( propertyName === 'two' ) {
+                break parentLoop;
+            }
+            console.log( propertyName, subPropertyName );
+        }
+    }
+}
+fn();
+```
+
+So, above, on updating the `entries` object, the nested loops run as expected, and the child loop effectively *breaks* the parent loop at the appropriate point.
+
+```js
+fn.thread( [ 'entries' ] );
+```
+
+If we mutated the object in-place to make just the child loop rerun…
+
+```js
+fn.thread( [ 'entries', 'two' ] );
+```
+
+…the `break` directive in the child loop would be pointing to a parent loop that isn't running, but this would be harmless. The child loop would simply exit as it would if the parent were to actually break at this point.
+
+But if we did the above with a `continue` directive, the child loop would also exit as it would if the parent were to actually receive control back at this point, without control actually moving to a non-running parent.
+
+## Example Usecase
+
+> A Custom Element Example
+
+This example uses it's `render()` method to open a reactive context.
+
+```js
+// Outer dependency
+let count = 10;
+```
+
+```js
+customElements.define( 'click-counter', class extends HTMLElement {
+      
+    connectedCallback() {
+        // Full rendering at connected time
+        // The querySelector() calls below are run
+        this.render();
+
+        // Fine-grained rendering at click time
+        // The querySelector() calls below don't run again
+        this.addEventListener( 'click', () => {
+            count ++;
+            this.render.thread( [ 'count' ] );
+        } );
+    }
+
+    render**() {
+        let countElement = document.querySelector( '#count' );
+        countElement.innerHTML = count;
+        
+        let doubleCount = count * 2;
+        let doubleCountElement = document.querySelector( '#double-count' );
+        doubleCountElement.innerHTML = doubleCount;
+        
+        let quadCount = doubleCount * 2;
+        let quadCountElement = document.querySelector( '#quad-count' );
+        quadCountElement.innerHTML = quadCount;
+    }
+
+} );
+```
+
+Above, `render()` is called only once. Subsequent updates employ its `.thread()` method to update just the relevant contracts in the block. Fine-grained reactivity and optimal performance is gained.
+
+## Design Goals
+
++ Enable reactivity directly *at the program flow level* - with commands, operators, control flow and other language constructs literally compiling as “contracts”, as against the alternative of painstakingly remodeling same in functional programming or other syntaxes.
++ Keep the business of change detection *out of scope* (that is, don't be concerned with how changes are observed); simply accept change events from the outer scope.
++ Implement Subscript Function as an extension of standard JavaScript functions, such that either can be used interchangeably, or where necessary, code can be easily ported between function types.
++ Stay conservative with syntax! By no means adopt imitation syntaxes for the same language constructs and operators!
+
+## Discussion Points
+
++ **The syntax notation for Subscript Functions** - does the double star idea (`**`) work?
++ (Addiontal points are acceptable via a PR.)
+
+## Polyfill
+
+This Polifyll is a work in progress. But it is usable today.
 
 <!-- BADGES/ -->
 
@@ -6,922 +692,7 @@
 
 <!-- /BADGES -->
 
-Subscript is a reactivity runtime for JavaScript. It takes any valid JavaScript code, reads its dependency graph, and offers a mechanism to run it both in whole and in *reactive* selections, called *dependency threads*.
-
-+ [What's A Dependency Thread?](#whats-a-dependency-thread)
-+ [What Is Subscript?](#what-is-subscript)
-+ [Concepts](#concepts)
-+ [API](#api)
-+ [Installation](#installation)
-+ [A Custom Element Example](#a-custom-element-example)
-+ [Motivation](#motivation)
-+ [Getting Involved](#getting-involved)
-+ [Issues](#issues)
-
-## What's A Dependency Thread?
-
-Think of it as the dependency chain involving two or more JavaScript expressions. 👇
-
-```js
-let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
-```
-
-We just expressed that `doubleCount` should be two times the value of `count`, and that `quadCount` should be two times the value of `doubleCount`; each subsequent expression being a *dependent* of the previous.
-
-```js
-console.log( count, doubleCount, quadCount );
-< 10, 20, 40
-```
-
-😉 Can you spot that same dependency chain in the following hypothetical UI render function…?
-
-```js
-let count = 10;
-```
-
-```js
-let render = function() {
-    let countElement = document.querySelector( '#count' );
-    countElement.innerHTML = count;
-    
-    let doubleCount = count * 2;
-    let doubleCountElement = document.querySelector( '#double-count' );
-    doubleCountElement.innerHTML = doubleCount;
-    
-    let quadCount = doubleCount * 2;
-    let quadCountElement = document.querySelector( '#quad-count' );
-    quadCountElement.innerHTML = quadCount;
-}
-```
-
-You'll also notice one additional *dependent* at each level of the chain. That brings the *dependency thread* for `count` to being the following sequence: `statement 2` -> `statement 3` -> `statement 5` -> `statement 6` -> `statement 8`; excluding statements `1`, `4`, `7`.
-
-🤝 Good analysis! But what's the deal?
-
-Programs are generally expected to run **in whole**, **not in dependency threads**! It would take some magic to have the latter. But... well, that's what's for dinner with Subscript! 😁
-
-Problem is: the mathematical relationship above only holds for as long as nothing changes. Should the value of `count` change, then its dependents are sure out of sync.
-
-```js
-count ++;
-```
-
-```js
-console.log( count, doubleCount, quadCount );
-< 11, 20, 40
-```
-
-This is that reminder that expressions in JavaScript aren't automatically bound to their dependencies. (Something we'd expect of any programming language.) The `render()` function must be called again each time the value of `count` changes.
-
-An important worry is that we end up running overheads on sebsequent calls to `render()`, as those `document.querySelector()` calls traverse the DOM again, just to return the same elements as in previous runs. (In real life, there could be even more expensive operations up there.)
-
-Enter dependency threads; suddenly, we can get statements to run in isolation in response to a change! **Here comes a new way to think about reactivity and performance in JavaScript**! 👇
-
-\> Obtain `SubscriptFunction` and use as a drop-in replacement for `Function`! 👇
-
-```js
-let render = new SubscriptFunction(`
-    let countElement = document.querySelector( '#count' );
-    countElement.innerHTML = count;
-    
-    let doubleCount = count * 2;
-    let doubleCountElement = document.querySelector( '#double-count' );
-    doubleCountElement.innerHTML = doubleCount;
-    
-    let quadCount = doubleCount * 2;
-    let quadCountElement = document.querySelector( '#quad-count' );
-    quadCountElement.innerHTML = quadCount;`
-);
-```
-
-> More about the syntatic rhyme between `SubscriptFunction` and `Function` [ahead](#api).
-
-\> Use `render` as a normal function…
-
-```js
-render();
-```
-
-*The above executes the function body in whole as we'd expect. Elements are selected and assigned content. And we can see the counters in the console.*
-
-```js
-console.log( count, doubleCount, quadCount );
-< 10, 20, 40
-```
-
-\> Run just the `count` dependency thread…
-
-```js
-count ++;
-render.thread( [ 'count' ] );
-```
-
-*This time, only statements `2` -> `3` -> `5` -> `6` -> `8` are run - *the "count" dependency thread*; and the previously selected UI elements in those local variables are only now updated.*
-
-```js
-console.log( count, doubleCount, quadCount );
-< 11, 22, 44
-```
-
-\> See `SubscriptFunction` in real life.
-
-*A Custom Element Example [ahead](#a-custom-element-example)*
-
-*Or click on the demo below to **visualize** the "count" dependency thread in realtime.*
-
-
-[![Demo Count Button](https://unpkg.com/@webqit/subscript/dist/dependency-thread-demo-3-counts-button.webqit.repl.co_%20(1).png)](https://replit.com/@WebQit/Dependency-Thread-Demo-3-Counts-Button)
-
-## What Is Subscript?
-
-A general-purpose reactivity runtime for JavaScript, with an overarching philosophy of *reactivity that is based on the dependency graph of your own code, and nothing of its own syntax*!
-
-It takes any piece of code and compiles it into an ordinary JavaScript function that can also run expressions in *dependency threads* via a `.thread()` method!
-
-Being function-based let's us have all of Subscript as a building block… to fit anywhere!
-
-## Concepts
-
-+ [Thread Events](#thread-events)
-+ [References And Bindings](#references-and-bindings)
-+ [Conditionals And Logic](#conditionals-and-logic)
-+ [Loops](#loops)
-+ [Functions](#functions)
-
-### Thread Events
-
-Subscript is not concerned with how changes happen or are detected on the outer scope of the function. It simply gives us a way to announce that something has changed. That announcement is called a *thread event*.
-
-A Subscript function has a `thread()` method that lets us trigger a thread for the list of outside variables or properties that have changed.
-
-```js
-let a = 'Apple', b = 'Banana', c = { prop: 'Fruits' };
-```
-
-```js
-let fn = new SubscriptFunction(`
-    console.log( \`The value of 'a' is: \${ a }\` );
-    console.log( \`The value of 'b' is: \${ b }\` );
-    console.log( \`The value of 'c.prop' is: \${ c.prop }\` );
-`);
-```
-
-```js
-// Initial run
-fn();
-```
-
-```js
-// Updates and threads
-b = 'Breadfruit';
-fn.thread( [ 'b' ] );
-```
-
-The array syntax allows us to represent properties as paths.
-
-```js
-fn.thread( [ 'c', 'prop' ] );
-```
-
-And we can run one thread for multiple changes.
-
-```js
-fn.thread( [ 'a' ], [ 'b' ] );
-```
-
-Variable declarations within the function belong in their own scope and do not respond to outside events. But their containing expression may also maintain a binding to those variables from the outside scope.
-
-```js
-let fn = new SubscriptFunction(`
-    let a = 'Apple', b = 'Banana' + ' ' + c.prop;
-    console.log( \`The value of 'a' is: \${ a }\` );
-    console.log( \`The value of 'b' is: \${ b }\` );
-    console.log( \`The value of 'c.prop' is: \${ c.prop }\` );
-`);
-```
-
-```js
-// Initial run
-fn();
-```
-
-```js
-// The following events will have no effect since "a" and "b" are local variables.
-fn.thread( [ 'a' ], [ 'b' ] );
-```
-
-```js
-// The local variable "b" will be part of the dependency thread of "c.prop"
-// (The console will therefore show the result of the last two statements in the function)
-fn.thread( [ 'c', 'prop' ] );
-```
-
-### References And Bindings
-
-Expressions and statements in Subscript maintain a binding to their references. And that's the basis for reactivity in Subscript.
-
-For example, variable declarations, with `let` and `var`, and assignment expressions, are bound to any references that may be in their argument. (`const` declarations are an exception as they're always *const* in nature.)
-
-```js
-var tense = score > 50 ? 'passed' : 'failed';
-```
-
-*Above, the assignment expression is bound to the reference `score`; and thus responds to a thread event for `score`.*
-
-The thread continues with any susequent bindings to the `tense` variable itself...
-
-```js
-let message = `Hi ${ candidate.firstName }, you ${ tense } this test!`;
-```
-
-*Above, the assignment expression is bound to the references `candidate`, `candidate.firstName`, and `tense`; and thus responds to a thread event for each.*
-
-And the thread continues with any susequent bindings to the `message` variable itself... and any bindings of those bindings...
-
-```js
-let fullMessage = [ message, ' ', 'Thank you!' ].join( '' );
-```
-
-```js
-let broadcast = { [ candidate.username ]: fullMessage };
-```
-
-```js
-console.log( broadcast );
-```
-
-```js
-let broadcastInstance = new BroadcastMessage( broadcast );
-```
-
-And ES6 syntax niceties can come in anywhere.
-
-```js
-let { username, profile: { avatar: avatarUrl } } = candidate;
-```
-
-*And that's essentially two variables declared up there: `username` and `avatarUrl`! And while `username` is bound to `candidate.username`, `avatarUrl` is bound to `candidate.profile.avatar`. Each gets updated independent of the other; in sync with their own binding. (But a thread event for their common root object - `candidate` - gets both variables updated.)*
-
-### Conditionals And Logic
-
-When the *test expression* of an "If/Else" statement, "Switch" statement, or other logical expressions contains references, the statement or logical expression is bound to those references. This lets us have *reactive conditionals and logic*.
-
-#### "If/Else" Statements
-
-An "If/Else" statement is bound to references in its "test" expression.
-
-```js
-if ( score > 80 && passesSomeOtherTest() ) {
-    addBadge( candidate );
-    candidate.remark = 'You\'ve got a badge';
-} else {
-}
-```
-
-*Above, the "If/Else" construct is bound to the references `score` and `passesSomeOtherTest` - yes, should that also change. A thread event for any of these gets the construct re-evaluated; first, the "test" expression (`score > 80 && passesSomeOtherTest()`), then, the body of the appropriate branch of the construct.*
-
-Statements in the body of the "consequent" and "alternate" branches form a binding to references of their own, independent of their containing "If" construct. But they only respond to thread events for as long as the "state" of all *conditions in context* allows.
-
-*Above, the `addBadge()` expression is bound to the reference `candidate`, and joins alone in the dependency thread, independent of the "If" construct, but for as long as the condition in context (`score > 80 && passesSomeOtherTest()`) holds true.*
-
-> The "state" of all *conditions in context* are determined via *memoization*, and no re-evaluation ever takes place.
-
-An "Else/If" block is taken for just an "If" statement in the "Else" block of a parent "If" statement...
-
-```js
-if ( score > 80 && passesSomeOtherTest() ) {
-    addBadge( candidate );
-    candidate.remark = 'You\'ve got a badge';
-} else if ( someOtherCondition ) {
-} else {
-}
-```
-
-...and is bound to references in its own "test" expression, independent of its parent. But it only responds to thread events for as long as the "state" of all *conditions in context* allows.
-
-*Above, the nested "If" statement is bound to the reference `someOtherCondition`, and joins alone in the dependency thread, independent of the parent "If" construct, but for as long as the parent condition (`score > 80 && passesSomeOtherTest()`) holds false.*
-
-#### "Switch" Statements
-
-A "Switch" statement is bound to references in its "test" expressions - the "switch/case" expressions.
-
-```js
-switch( score ) {
-    case 0:
-        candidate.remark = 'You got nothing at all';
-        break;
-    case maxScore:
-        candidate.remark = 'You got the most';
-        break;
-    default:
-        candidate.remark = defaultRemark;
-}
-```
-
-*Above, the "Switch" construct is bound to the references `score` and `maxScore`. A thread event for any of these gets the construct re-evaluated; first, the "switch/case" expressions (`score === 0` | `score === maxScore` | `score === null`), then, the body of the appropriate branch of the construct.*
-
-Statements in the body of the branches form a binding to references of their own, independent of the "Switch" construct. But they only respond to thread events for as long as the "state" of all *conditions in context* allows.
-
-*Above, the assignment to `candidate.remark` (in the "default" case) is bound to the reference `defaultRemark`, and joins alone in the dependency thread, independent of the "Switch" construct, but for as long as the conditions in context (`score === null`) hold true.*
-
-> The "state" of all *conditions in context* are determined via *memoization*, and no re-evaluation ever takes place.
-
-#### Logical And Ternary Expressions
-
-Subscript observes the state of logical (`a && b || c`) and ternary (`a ? b : c`) expressions when running dependency threads.
-
-```js
-let a = () => 1;
-let b = 2;
-let c = 3;
-let d, e;
-```
-
-A logical expression...
-
-```js
-e = a() && b || c;
-```
-
-A ternary expression...
-
-```js
-d = a() ? b : c;
-```
-
-*Above, each of the two expressions is bound to the references `a`, `b` and `c`. A thread event for any of `a` and `b` - or `a` and `c`, as determined by the "logical state" of the expressions<sup>*</sup> - gets the expressions re-evaluated; first, the "test" expression (`a()`), then, the expression on the appropriate side of the construct.*
-
-<sup>*</sup>Since expressions in the "consequent" and "alternate" sides of a conditional or logical expression are mutually exclusive (`b` and `c` above), as determined by the "test" expression (`a()` above), only the thread events for the references in the currently active side (`b` above) are honoured by the expression at any given point in time.
-
-### Loops
-
-When the parameters of a loop ("For" loops, "While" and "Do … While" loops) contain references, the loop is bound to those references. This lets us have reactive loops.
-
-#### A `for` Loop, `while` And `do … while` Loop
-
-A "For" loop is bound to references in its 3-part definition.
-
-```js
-let start = 0;
-let items = [ 'one', 'two', 'three', 'four', 'five' ];
-let targetItems = [];
-```
-
-```js
-for ( let index = start; index < items.length; index ++ ) {
-    targetItems[ index ] = items[ index ];
-}
-```
-
-*The loop above is bound to the references `start`, `items`, and `items.length`. A thread event for any of these gets the loop to run again.*
-
-```js
-// Say, "start" were a global variable
-start = 2;
-fn.thread( [ 'start' ] );
-```
-
-```js
-// Say, "items" were a global variable
-items.unshift( 'zero' );
-fn.thread( [ 'items', 'length' ] );
-```
-
-As with a "For" loop, a "While" and "Do ... While" loop are bound to references in their "test" expression.
-
-```js
-let index = 0;
-let items = [ 'one', 'two', 'three', 'four', 'five' ];
-let targetItems = [];
-```
-
-```js
-while ( index < items.length ) {
-    targetItems[ index ] = items[ index ];
-    index ++;
-}
-```
-
-*The loop above is bound to the references `items` and `items.length`. A thread event for any of these gets the loop to run again.*
-
-```js
-// Say, items were global variables
-items.unshift( 'zero' );
-fn.thread( [ 'items', 'length' ] );
-```
-
-#### A `for … of` Loop
-
-A "For ... Of" loop is bound to references in its *iteratee*.
-
-```js
-let  entries = [ 'one', 'two', 'three', 'four', 'five' ];
-let targetEntries = [];
-```
-
-```js
-for ( let entry of entries ) {
-    let index = entries.indexOf( entry );
-    console.log( `Current iteration index is: ${ index }, and entry is: '${ entry }'` );
-    targetEntries[ index ] = entries[ index ];
-}
-```
-
-*The loop above is bound to the reference `entries`. A thread event for `entries` gets the loop to run again.*
-
-```js
-// Say, entries were a global variable
-entries = [ 'six', 'seven', 'eight', 'nine', 'ten' ];
-fn.thread( [ 'entries' ] );
-```
-
-As an added advantage of this form of loop, updating a specific entry in `entries` moves the loop's pointer to the specific iteration involving that entry, and the body of that iteration is run again.
-
-```js
-entries[ 7 ] = 'This is new eight';
-fn.thread( [ 'entries', 7 ] );
-```
-
-Now, the console reports…
-
-```js
-Current iteration index is: 7, and entry is: 'This is new eight'
-```
-
-…and index `7` of `targetEntries` is updated.
-
-#### A `for … in` Loop
-
-A "For ... In" loop is bound to references in its *iteratee*.
-
-```js
-let  entries = { one: 'one', two: 'two', three: 'three', four: 'four', five: 'five' };
-let targetEntries = {};
-```
-
-```js
-for ( let propertyName in entries ) {
-    console.log( `Current property name is: ${ propertyName }, and associated value is: '${ entries[ propertyName ] }'` );
-    targetEntries[ propertyName ] = entries[ propertyName ];
-}
-```
-
-*The loop above is bound to the reference `entries`. A thread event for `entries` gets the loop to run again.*
-
-```js
-// Say, entries were a global variable
-entries = { six: 'six', seven: 'seven', eight: 'eight', nine: 'nine', ten: 'ten' };
-fn.thread( [ 'entries' ] );
-```
-
-As an added advantage of this form of loop, updating a specific property in `entries` moves the loop's pointer to the specific iteration involving that property, and the body of that iteration is run again.
-
-```js
-entries[ 'eight' ] = 'This is new eight';
-fn.thread( [ 'entries', 'eight' ] );
-```
-
-Now, the console reports…
-
-```js
-Current property name is: eight, and property value is: 'This is new eight'
-```
-
-…and the property `eight` of `targetEntries` is updated.
-
-#### Iteration States
-
-Conceptually, each round of iteration in a loop is an instance that Subscript can access directly when running a thread. A round of iteration is thus updatable in isolation, in response to a directed event. This is what happens when the *iteratee* of a "For ... Of" and "For ... In" loop has any of its properties updated, as seen above.
-
-Below is a similar case.
-
-```js
-let  entries = { one: { name: 'one' }, two: { name: 'two' } };
-let targetEntries = {};
-```
-
-```js
-for ( let propertyName in entries ) {
-    console.log( `Current property name is: ${ propertyName }, and its alias name is: '${ entries[ propertyName ].name }'` );
-    targetEntries[ propertyName ] = entries[ propertyName ];
-}
-```
-
-On updating the first entry, only the first round of iteration is executed again.
-
-```js
-entries[ 'one' ] = { name: 'New one' };
-fn.thread( [ 'entries', 'one' ] );
-```
-
-For even more granularity, individual expressions inside a round of iteration are also responsive to thread events of their own. So, if we updated just `entries.one.name`…
-
-```js
-entries.one.name = 'New one';
-fn.thread( [ 'entries', 'one', 'name' ] );
-```
-
-…we would have skipped the iteration instance itself, to target just the first statement within it.
-
-This granular reactivity makes it often pointless to trigger a full rerun of a loop, offering multiple opportunities to deliver unmatched performance.
-
-#### Breakouts
-
-Subscript observes `break` and `continue` statements even when running a thread. And any of these statements may employ *labels*.
-
-```js
-let  entries = { one: { name: 'one' }, two: { name: 'two' } };
-```
-
-```js
-parentLoop: for ( let propertyName in entries ) {
-    childLoop: for ( let subPropertyName in entries[ propertyName ] ) {
-        If ( propertyName === 'one' ) {
-            break parentLoop;
-        }
-        console.log( propertyName, subPropertyName );
-    }
-}
-```
-
-### Functions
-
-Functions are *static* definitions...
-
-```js
-function sum( a, b ) {
-}
-```
-
-```js
-let sum = function( a, b ) {
-}
-```
-
-```js
-let sum = ( a, b ) => {
-}
-```
-
-...and nothing about their parameters is reactive!
-
-They are really only significant at *call-time*; and call-time arguments are rightly *reactive*!
-
-```js
-let result = sum( score, 100 );
-```
-
-*The expression above is bound to the reference `score`. A thread event for `score` gets the `sum()` function called again with its current value.*
-
-#### Side Effects
-
-When a function modifies anything outside of its scope, it is said to have *side effects*.
-
-```js
-let callCount = 0;
-function sum( a, b ) {
-    callCount ++;
-    return a + b;
-}
-```
-
-When it does not, it is said to be a *pure function*.
-
-```js
-function sum( a, b ) {
-    return a + b;
-}
-```
-
-Regardless, Subscript's dependency threads are fully able to pick up changes made via a side effect. (Side effects made by class methods are currently not being detected.)
-
-
-```js
-function sum( a, b ) {
-    callCount ++;
-    return a + b;
-}
-let callCount = 0;
-let result = sum( score, 100 );
-console.log( 'Number of times we\'ve summed:', callCount );
-```
-
-*Above, each time the thread event for `score` gets the `sum()` expression to run again, `callCount` is incremented as a side effect; and the dependent `console.log()` expression joins in the thread to pick that up!*
-
-Since statements in a dependency thread are executed in normal program execution order, side effects only trigger dependent expressions that appear *after the point of call*, *not before*.
-
-
-```js
-function sum( a, b ) {
-    callCount ++;
-    return a + b;
-}
-let callCount = 0;
-console.log( 'BEFORE POINT OF CALL: Number of times we\'ve summed:', callCount );
-let result = sum( score, 100 );
-console.log( 'AFTER POINT OF CALL: Number of times we\'ve summed:', callCount );
-```
-
-*Above, on the thread event for `score`, the first `console.log()` expression doesn't run because at that point `sum()` hasn't been called to make the side effect!*
-
-Also, since Subscript does not change runtime expection in any way, side effects made by function calls outside of a running thread do not get to start a thread in a bid to engage its dependent expressions!
-
-```js
-function sum( a, b ) {
-    callCount ++;
-    return a + b;
-}
-let callCount = 0;
-document.body.addEventListener( 'click', () => {
-    let result = sum( score, 100 );
-} );
-console.log( 'Number of times we\'ve summed:', callCount );
-```
-
-*This time, `sum()` is triggerred from a click event handler, not via a dependency thread, and we do not expect the `console.log()` expression to run!*
-
-#### Subscript Function Syntax (`**`)
-
-Subscript explores the possibility of defining functions outright as *reactive* functions using regular *Function Declaration* and *Function Expression* syntaxes!
-
-```js
-function** sum( a, b ) {
-}
-```
-
-```js
-let sum = function**( a, b ) {
-}
-```
-
-*Notice the double star `**` symbol above; it's just one star extra to the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) (`function* gen() {}`) - one more thing in the same classification of a special-purpose function in JavaScript! 😎*
-
-Functions defined this way are compiled as `SubscriptFunction`, exposing a `.thread()` method for running dependency threads, and offering everything else as in when we use the `SubscriptFunction` constructor.
-
-The following syntaxes produce a reactive function...
-
-```js
-function** sum( a, b ) {
-    return a + b;
-}
-```
-
-```js
-let sum = function**( a, b ) {
-    return a + b;
-}
-```
-
-```js
-let sum = new SubscriptFunction( `a`, `b`, `return a + b;` );
-```
-
-...but the first two (proposed) syntaxes are only currently supported from within Subscript Function itself!
-
-```js
-let score = 10;
-let program = new SubscriptFunction(`
-    function** sum( a, b ) {
-        callCount ++;
-        return a + b;
-    }
-
-    let callCount = 0;
-
-    // The following call results in a side effect
-    let result = sum( score, 100 );
-    
-    // and "callCount" is logged as "1" to the console 
-    console.log( 'Number of times we\'ve summed:', callCount );
-
-    // The following call runs a dependency thread that excludes the side effect
-    // while return the sum of the previous values of "a" and "b"
-    let result = sum.thread( [ 'a' ] );
-
-    // and "callCount" is still logged as "1", not "2", to the console 
-    console.log( 'Number of times we\'ve summed:', callCount );
-`);
-program();
-```
-
-Objects and classes have an equivalent syntax for a Subscript method...
-
-```js
-let myObject = {
-    sum: function**( a, b ) {
-        return a + b;
-    }
-}
-```
-
-```js
-let myObject = {
-    **sum( a, b ) {
-        return a + b;
-    }
-}
-```
-
-```js
-class MyClass {
-    **sum( a, b ) {
-        return a + b;
-    }
-}
-```
-
-...but these (proposed) syntaxes are only currently supported from within Subscript Function itself! (Also, class methods only currently support the double-star syntax at face value; they do not yet compile as Subscript methods.)
-
-However, Subscript offers a *[Class Mixin](#subscriptclass)* that automatically redefines class methods as Subscript methods.
-
-```js
-class MyClass extends SubscriptClass() {
-
-    static get subscriptMethods() {
-        return [ 'sum' ];
-    }
-
-    sum( a, b ) {
-        return a + b;
-    }
-}
-```
-
-```js
-class MyClass extends SubscriptClass( HTMLElement ) {
-
-    static get subscriptMethods() {
-        return [ 'render' ];
-    }
-
-    render() {
-    }
-}
-```
-
-## API
-
-### SubscriptFunction
-
-`SubscriptFunction` is a one-to-one equivalent of the [JavaScript Function constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function). They work interchangeably 😎.
-
-#### Syntax
-
-```js
-// Statically
-let subscrFunction = SubscriptFunction( functionBody );
-let subscrFunction = SubscriptFunction( arg1, functionBody );
-let subscrFunction = SubscriptFunction( arg1, ... argN, functionBody );
-
-// With the new operator
-let subscrFunction = new SubscriptFunction( functionBody );
-let subscrFunction = new SubscriptFunction( arg1, functionBody );
-let subscrFunction = new SubscriptFunction( arg1, ... argN, functionBody );
-```
-
-#### Parameters
-
-##### `arg1, ... argN`
-
-Names to be used by the function as formal argument names. Each must be a string that corresponds to a valid JavaScript parameter (any of plain identifier, rest parameter, or destructured parameter, optionally with a default), or a list of such strings separated with commas.
-
-##### `functionBody`
-
-A string that represents the function body.
-
-#### Return Value
-
-A regular `Function` object, or an `async function` object where the `await` keyword is used within `functionBody`.
-
-```js
-// Create a regular function - sum
-let sum = SubscriptFunction( 'a', 'b', 'return a + b;' );
-
-// Call the returned sum function and log the result
-console.log( sum( 10, 2 ) );
-< 12
-```
-
-```js
-// Create an async function - sum
-let sum = SubscriptFunction( 'a', 'b', 'return a + await b;' );
-
-// Call the returned sum function and log the result
-sum( 10, 2 ).then( result => {
-    console.log( result );
-} );
-< 12
-```
-
-#### The `this` Binding
-
-Functions returned by `SubscriptFunction` are standard functions that can have their own [`this`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this) binding at *call time*.
-
-```js
-// Create a function - colorSwitch - that sets a DOM element's color
-let colorSwitch = SubscriptFunction( 'color', 'this.style.color = color;' );
-
-// Call colorSwitch, with document.body as it's this binding
-let element = document.body;
-colorSwitch.call( element, 'red' );
-```
-
-But, where the `this` binding is `undefined` at call time, the `this` binding of the `SubscriptFunction` itself is used. This lets us have a default `this` binding at *creation time*.
-
-```js
-// Create the same colorSwitch, this time, with a this binding that can be used at call time
-let element = document.body;
-let colorSwitch = SubscriptFunction.call( element, 'color', 'this.style.color = color;' );
-
-// Call colorSwitch, without a this binding
-colorSwitch( 'red' );
-colorSwitch.call( undefined, 'red' );
-
-// Call colorSwitch, with a different this binding
-let h1Element = document.getElementById( 'h1' );
-colorSwitch.call( h1Element, 'red' );
-```
-
-#### The `subscrFunction.thread()` Method
-
-The `.thread()` method is the *reactivity* API in Subscript functions that lets us send *thread events* into the *reactivity runtime*. It constitues one clear interaction point and enables a one-liner approach to reactivity.
-
-It takes a list of the outside variables or properties that have changed; each as an array path.
-
-##### Syntax
-
-```js
-let returnValue = subscrFunction.thread( path1, ... pathN );
-```
-
-##### Parameters
-
-##### `path1, ... pathN`
-
-An array path representing each variable, or object property, that has changed. *See [Thread Events](#thread-events) for concepts and usage.*
-
-##### Return Value
-
-The return value of this method depends on the return value of the *dependency thread* it initiates within the function body.
-
-```js
-// Global variables to use
-a = 10;
-b = 2;
-
-// Create a function with two possible values
-let sum = SubscriptFunction(`
-    if ( a > 10 ) {
-        return a + await b;
-    }
-    return a + b;
-`);
-
-// Run normally
-console.log( sum() );
-< 12
-
-// Run a thread with a different return value
-a = 20;
-console.log( sum.thread( [ 'a' ] ) );
-< Promise { 22 }
-```
-
-### SubscriptClass
-
-`SubscriptClass` is a *convenience* base class *Mixin* that automatically transforms regular class methods as Subscript methods.
-
-#### Syntax
-
-```js
-class MyClass extends SubscriptClass( [ BaseClass = null ] ) {
-
-    static get subscriptMethods() {
-        return [ methodName, ... methodNameN ];
-    }
-
-    method() {
-    }
-}
-```
-
-#### Parameters
-
-##### `BaseClass`
-
-An optional base class that should be extended.
-
-##### `methodName, ... methodNameN`
-
-Names of the methods that should be transformed to Subscript methods.
-
-#### Return Value
-
-A *class* object.
-
-*See [below](#custom-element-example) for usage examples*
-
-## Installation
+### Download
 
 \> Install via npm
 
@@ -941,119 +712,112 @@ import { SubscriptFunction, SubscriptClass } from '@webqit/subscript';
 const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 ```
 
-## A Custom Element Example
+### Usage
 
-As trivial as our hypothetical [`render()`](#whats-a-dependency-thread) function above is, we can see it applicable in real life places! Consider a neat reactive *Custom Element* example based on [`SubscriptClass`](#subscriptclass).
+*Notes:*
 
-```js
-// We'll still keep count as a global variable for now
-let count = 10;
-```
-
-```js
-// This custom element extends Subscript as a base class… more on this later
-customElements.define( 'click-counter', class extends SubscriptClass( HTMLElement ) {
-    
-    // This is how we designate methods as reactive methods
-    static get subscriptMethods() {
-        return [ 'render' ];
-    }
-        
-    connectedCallback() {
-        // Full execution at connected time
-        this.render();
-        // Granularly-selective execution at click time
-        this.addEventListener( 'click', () => {
-            count ++;
-            this.render.thread( [ 'count' ] );
-        } );
-    }
-
-    render() {
-        let countElement = document.querySelector( '#count' );
-        countElement.innerHTML = count;
-        
-        let doubleCount = count * 2;
-        let doubleCountElement = document.querySelector( '#double-count' );
-        doubleCountElement.innerHTML = doubleCount;
-        
-        let quadCount = doubleCount * 2;
-        let quadCountElement = document.querySelector( '#quad-count' );
-        quadCountElement.innerHTML = quadCount;
-    }
-} );
-```
-
-*See also [SubscriptElement](https://webqit.io/tooling/oohtml/docs/spec/subscript#subscript-element-mixin) - the [OOHTML](https://webqit.io/tooling/oohtml) extension of [`SubscriptClass`](#subscriptclass)*
-
-## Motivation
-
-### The Best Syntax Is No Syntax At All!
-
-*Frontend has a syntax problem*! Every framework has come contributing something *JavaScript-like*, *HTML-like*, or even *JavaScript/HTML-like<sup>2</sup>* to the plague! And for many of us, that bit is a non-starter! 😡
-
-So, we're rethinking reactivity, again! This, time, to lay its very principles on nothing at all but plain JavaScript!
-
-### Performant JavaScript
-
-With an insane focus on pure JavaScript syntax, Subscript is able to keep its footprint, and your footprint, ridiculously small. This *less clutter*, is *more performance*!
-
-Subscript follows a compiler-aided approach that translates to a tiny, highly-optimized piece at runtime - no diffing; no *callback wizardry*!
-
-### Developer "Joooy" 😎
-
-Much work goes into learning and using today's slew of reactivity primitives - those `on____` and `use____` hooks! But to explicitly construct reactive relationships is to slave over something that is *implicit* in a program's dependency graph!
-
-Subscript lets you write your code, not the hooks! Graph-based reactivity just kicks in! 🤩
-
-Offering the full range of modern JavaScript, with zero additional clutter, none of a complex toolchain and no required build step is a new dimension to developer productivity!
-
-### Compasable Reactivity
-
-Subscript comes as *reactivity in a function* - the smallest possible unit of composition, and this is new! But that is to say: composition is king!
-
-Thinking of reactive JavaScript classes? Make one... with Subscript Function as a method! Building the next reactive system? Put Subscript Functions under the hood!
-
-### Progressive Development
-
-What's the possibility of turning reactivity *on* and *off* on an existing code base, in an afterthought? Oh that's a nobrainer with Subscript Functions!
-
-+ Using the [Function Constructor](#api) approach? Just toggle between the function type, while everything else stays intact:
++ The cirrent polyfill only supports the constructable form of Subscript Function.
 
     ```js
-    let sum = new Function( `a`, `b`, `return a + b` );
+    let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
     ```
 
+    But the double star syntax is supported from within the function itself.
+
     ```js
-    let sum = new SubscriptFunction( `a`, `b`, `return a + b` );
+    let fn = new SubscriptFunction( `
+        function** sum( a, b ) {
+            return a + b;
+        }
+        let result = sum( score, 100 );
+        // result = sum.thread();
+    ` );
     ```
 
-+ Using the [Function Synctax](#subscript-function-syntax-new) approach? Just toggle the *double star*, while everything else stays intact:
++ Subscript Functions as class methods are currently only supported using a `SubscriptClass()` mixin.
 
     ```js
-    function sum( a, b, ) {
-        return a + b;
+    class MyClass extends SubscriptClass() {
+
+        static get subscriptMethods() {
+            return [ 'sum' ];
+        }
+
+        sum( a, b ) {
+            return a + b;
+        }
     }
     ```
 
     ```js
-    function** sum( a, b, ) {
-        return a + b;
+    class MyClass extends SubscriptClass( HTMLElement ) {
+
+        static get subscriptMethods() {
+            return [ 'render' ];
+        }
+
+        render() {
+        }
     }
     ```
 
-This togglability is new!
++ *Watch the **issues** tab for new known issues*
 
-## Getting Involved
+### Playground
+
++ To visualize *dependency threads* in a live `.thread()` update, we've provided a custom element named `subscript-player`.
+
+    Simply include a pair of scripts in your page...
+
+    ```html
+    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
+    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/player-element.js"></script>
+    ```
+
+    Wrap any piece of code with it... (or edit right in the UI.)
+
+    ```html
+    <subscript-player automode="play">
+        let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
+        console.log( count, doubleCount, quadCount );
+    </subscript-player>
+    ```
+
+    Then click on local varaibles to see their dependency threads.
+
++ To inspect Subscript Methods and their *dependency threads* in a live custom element that you've designed, we've provided a custom element named `subscript-inspector`.
+
+    Simply include a pair of scripts in your page...
+
+    ```html
+    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
+    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/inspector-element.js"></script>
+    ```
+
+    Wrap your custom element markup with it...
+
+    ```html
+    <subscript-inspector>
+        <my-counter></my-counter>
+    </subscript-inspector>
+    ```
+
+    Then inspect each Subscript Method while you interact with your element. (See [this REPL](https://replit.com/@WebQit/Dependency-Thread-Demo-3-Counts-Button) for an example.)
+
+### Getting Involved
 
 We'd be super excited to have you raise an issue, make a PR, or join in the discussion at [Subscript's Github Discussions](https://github.com/webqit/subscript/discussions).
 
-**And, please comrade, your star counts up there 🤨**
+**And, please give a star for this 🤨**
 
-## Issues
+### Issues
 
 To report bugs or request features, please submit an [issue](https://github.com/webqit/subscript/issues).
 
-## License
+### License
 
 MIT.
+
+## Prior Art
+
+## Credits
