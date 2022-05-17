@@ -84,7 +84,7 @@ So, we want to be able to just say (`let a, b; a = 10, b = a * 2`) and have it b
 These functions go with a notation as in below...
 
 ```js
-function fn**() {}
+function** fn() {}
 // much like the syntax for generator functions - function fn*() {}
 ```
 
@@ -92,7 +92,7 @@ function fn**() {}
 
 ```js
 let var1 = 10;
-function fn**() {
+function** fn() {
     console.log(var1);
 }
 ```
@@ -116,7 +116,7 @@ This method passes a list of outer references for which a selection of dependent
 
 ```js
 let var1 = 10, var2 = 0;
-function fn**() {
+function** fn() {
     let localVar1 = var1 * 2;
     let localVar2 = var2 * 2;
     console.log(localVar1);
@@ -140,7 +140,7 @@ A reactive programming context must be explicitly designated. So we propose usin
 
 ```js
 // As function declaration
-function fn**() {}
+function** fn() {}
 ```
 
 ```js
@@ -324,7 +324,7 @@ This means that the expression will re-evaluate when the *spread element* `candi
 Powerful heuristics make it possible to pick up side effects - indirect mutations - made by inner functions within the Subscript Function context itself.
 
 ```js
-function fn**() {
+function** fn() {
     function sum( a, b ) {
         callCount ++;
         return a + b;
@@ -516,7 +516,7 @@ var start = 0;
 var items = [ 'one', 'two', 'three', 'four', 'five' ];
 var targetItems = [];
 var prefix = '';
-function fn**() {
+function** fn() {
     for ( let index = start; index < items.length; index ++ ) {
         console.log( `Current iteration index is: ${ index }, and value is: '${ items[ index ] }'` );
         targetItems[ index ] = prefix + items[ index ];
@@ -552,7 +552,7 @@ A “for … of, for … in” loop further has the unique characteristic where 
 
 ```js
 var items = [ { name: 'one' }, { name: 'two' }, { name: 'three' }, { name: 'four' }, { name: 'five' } ];
-function fn**() {
+function** fn() {
     for ( let entry of items ) {
         let index = items.indexOf( entry );
         console.log( `Current iteration index is: ${ index }, and name is: '${ entry.name }'.` );
@@ -596,7 +596,7 @@ Fine-grained updates observe `break` and `continue` statements, even when these 
 
 ```js
 let  entries = { one: { name: 'one' }, two: { name: 'two' } };
-function fn**() {
+function** fn() {
     parentLoop: for ( let propertyName in entries ) {
         childLoop: for ( let subPropertyName in entries[ propertyName ] ) {
             If ( propertyName === 'two' ) {
