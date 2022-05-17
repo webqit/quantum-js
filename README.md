@@ -629,7 +629,7 @@ But if we did the above with a `continue` directive, the child loop would also e
 
 > A Custom Element Example
 
-This example uses it's `render()` method to open a reactive context.
+This custom element has it's `render()` method as a Subscript Function.
 
 ```js
 // Outer dependency
@@ -672,10 +672,10 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Design Goals
 
-+ Enable reactivity directly *at the program flow level* - with commands, operators, control flow and other language constructs literally compiling as “contracts”, as against the alternative of painstakingly remodeling same in functional programming or other syntaxes.
-+ Keep the business of change detection *out of scope* (that is, don't be concerned with how changes are observed); simply accept change events from the outer scope.
-+ Implement Subscript Function as an extension of standard JavaScript functions, such that either can be used interchangeably, or where necessary, code can be easily ported between function types.
-+ Stay conservative with syntax! By no means adopt imitation syntaxes for the same language constructs and operators!
+1. Enable reactivity directly *at the program flow level* - with commands, operators, control flow and other language constructs literally compiling as “contracts”, as against the alternative of painstakingly remodeling same in functional programming or other syntaxes.
+2. Keep the business of change detection *out of scope* (that is, don't be concerned with how changes are observed); simply accept change events from the outer scope.
+3. Implement Subscript Function as an extension of standard JavaScript functions, such that either can be used interchangeably, or where necessary, code can be easily ported between function types.
+4. Stay conservative with syntax! By no means adopt imitation syntaxes for the same language constructs and operators!
 
 ## Discussion Points
 
@@ -684,7 +684,7 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Polyfill
 
-This Polifyll is a work in progress. But it is usable today.
+This Polyfill is a work in progress. But it is usable today.
 
 <!-- BADGES/ -->
 
@@ -713,8 +713,6 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 ```
 
 ### Usage
-
-*Notes:*
 
 + The cirrent polyfill only supports the constructable form of Subscript Function.
 
@@ -808,7 +806,7 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 
 We'd be super excited to have you raise an issue, make a PR, or join in the discussion at [Subscript's Github Discussions](https://github.com/webqit/subscript/discussions).
 
-**And, please give a star for this 🤨**
+**And, wouldn't yoi give a star for this 🤨 ?**
 
 ### Issues
 
