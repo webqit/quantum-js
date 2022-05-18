@@ -2,6 +2,6 @@
 /**
  * @imports
  */
-import Unit from './Unit.js';
+import Contract from './Contract.js';
 
-export default class Context extends Unit {}
+export default class Context extends Contract {}

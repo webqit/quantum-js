@@ -38,13 +38,13 @@ export default class Compiler {
     generate( nodes ) {
         let def = { type: 'Global' };
         let globalContext = new Context( null, '#', { ...def, params: this.params, } );
-        globalContext.defineSubscriptIdentifier( '$unit', [ '$x' ] );
+        globalContext.defineSubscriptIdentifier( '$contract', [ '$x' ] );
         let [ ast ] = globalContext.createScope( def, () => this.generateNodes( globalContext, [ nodes ] ) );
         this.deferredTasks.forEach( task => task() );
         return {
             source: this.serialize( ast ),
             graph: globalContext.toJson( false ),
-            identifier: globalContext.getSubscriptIdentifier( '$unit' ),
+            identifier: globalContext.getSubscriptIdentifier( '$contract' ),
             locations: this.locations,
             ast,
         };
@@ -142,48 +142,48 @@ export default class Compiler {
     generateFunction( generate, context, node ) {
         
         const generateId = ( id, context ) => !id ? [ id ] : context.effectReference( { type: node.type }, () => this.generateNodes( context, [ id ] ), false );
-        const generateFunction = ( id, params, body ) => context.defineContext( { type: node.type, isSubscriptFunction: node.isSubscriptFunction }, functionUnit => {
-            return functionUnit.createScope( { type: node.type }, () => {
+        const generateFunction = ( id, params, body ) => context.defineContext( { type: node.type, isSubscriptFunction: node.isSubscriptFunction }, functionContract => {
+            return functionContract.createScope( { type: node.type }, () => {
                 // FunctionExpressions have their IDs in function scope
-                id = generateId( id, functionUnit )[ 0 ];
+                id = generateId( id, functionContract )[ 0 ];
                 // Function params go into function scope
                 params = params.map( param => {
                     if ( param.type === 'AssignmentPattern' ) {
-                        let right = this.generateNode( functionUnit, param.right );
+                        let right = this.generateNode( functionContract, param.right );
                         let def = { type: param.left.type };
-                        let [ left ] = functionUnit.effectReference( def, () => this.generateNodes( functionUnit, [ param.left ] ), false );
+                        let [ left ] = functionContract.effectReference( def, () => this.generateNodes( functionContract, [ param.left ] ), false );
                         return Node.assignmentPattern( left, right );
                     }
                     let def = { type: param.type };
-                    [ param ] = functionUnit.effectReference( def, () => this.generateNodes( functionUnit, [ param ] ), false );
+                    [ param ] = functionContract.effectReference( def, () => this.generateNodes( functionContract, [ param ] ), false );
                     return param;
                 } );
                 if ( node.type === 'ArrowFunctionExpression' && node.expression ) {
-                    body = this.generateNode( functionUnit, Node.blockStmt( [ Node.returnStmt( body ) ] ) );
+                    body = this.generateNode( functionContract, Node.blockStmt( [ Node.returnStmt( body ) ] ) );
                 } else {
-                    body = this.generateNode( functionUnit, body );
+                    body = this.generateNode( functionContract, body );
                 }
-                return [ functionUnit, id, params, body ];
+                return [ functionContract, id, params, body ];
             } );
         } );
 
-        let subscript$unit = Node.identifier( context.getSubscriptIdentifier( '$unit', true ) );
-        let unitCreate = ( generate, functionUnit, funcName, params, body ) => functionUnit.generate(
-            generate.call( Node, funcName, [ subscript$unit ].concat( params ), body, node.async, node.expression, node.generator ), {
+        let subscript$contract = Node.identifier( context.getSubscriptIdentifier( '$contract', true ) );
+        let contractCreate = ( generate, functionContract, funcName, params, body ) => functionContract.generate(
+            generate.call( Node, funcName, [ subscript$contract ].concat( params ), body, node.async, node.expression, node.generator ), {
                 args: [ Node.literal( node.type ), Node.identifier( node.isSubscriptFunction ? 'true' : 'false' ) ],
-                isFunctionUnit: true,
+                isFunctionContract: true,
                 generateForArgument: true
             }
         );
 
-        let resultNode, functionUnit, id, params, body;
+        let resultNode, functionContract, id, params, body;
         if ( node.type === 'FunctionDeclaration' ) {
             // FunctionDeclarations have their IDs in current scope
             [ id ] = generateId( node.id, context );
-            [ functionUnit, , params, body ] = generateFunction( null, node.params, node.body );
-            resultNode = unitCreate( Node.funcExpr, functionUnit, null, params, body );
+            [ functionContract, , params, body ] = generateFunction( null, node.params, node.body );
+            resultNode = contractCreate( Node.funcExpr, functionContract, null, params, body );
             // We'll physically do hoisting
-            let definitionRef = Node.memberExpr( subscript$unit, Node.identifier( 'functions' ) );
+            let definitionRef = Node.memberExpr( subscript$contract, Node.identifier( 'functions' ) );
             let definitionCall = ( method, ...args ) => Node.callExpr( Node.memberExpr( definitionRef, Node.identifier( method ) ), [ id, ...args ] );
             // Generate now
             resultNode = [
@@ -196,13 +196,13 @@ export default class Compiler {
             ];
         } else {
             // FunctionExpressions and ArrowFunctionExpressions are quite simpler
-            [ functionUnit, id, params, body ] = generateFunction( node.id, node.params, node.body );
-            resultNode = unitCreate( generate, functionUnit, id, params, body );
+            [ functionContract, id, params, body ] = generateFunction( node.id, node.params, node.body );
+            resultNode = contractCreate( generate, functionContract, id, params, body );
         }
 
         this.deferredTasks.unshift( () => {
-            functionUnit.sideEffects.forEach( sideEffect => {
-                functionUnit.ownerScope.doSideEffectUpdates( sideEffect.reference, sideEffect.remainderRefs );
+            functionContract.sideEffects.forEach( sideEffect => {
+                functionContract.ownerScope.doSideEffectUpdates( sideEffect.reference, sideEffect.remainderRefs );
             } );
         } );
 
@@ -217,16 +217,16 @@ export default class Compiler {
     generateVariableDeclaration( context, node ) {
         let def = { type: node.type, kind: node.kind };
         let assignmentRefactors = [];
-        let exec = ( unit, declarator, isForLoopInit ) => {
-            let initReference, [ init ] = unit.signalReference( def, reference => ( initReference = reference, this.generateNodes( context, [ declarator.init ] ) ) );
-            let idReference, [ id ] = unit.effectReference( def, reference => ( idReference = reference, this.generateNodes( context, [ declarator.id ] ) ) );
+        let exec = ( contract, declarator, isForLoopInit ) => {
+            let initReference, [ init ] = contract.signalReference( def, reference => ( initReference = reference, this.generateNodes( context, [ declarator.init ] ) ) );
+            let idReference, [ id ] = contract.effectReference( def, reference => ( idReference = reference, this.generateNodes( context, [ declarator.id ] ) ) );
             initReference.setAssignee( idReference );
-            this.setLocation( unit, declarator );
+            this.setLocation( contract, declarator );
             if ( isForLoopInit 
                 || node.kind === 'const' 
                 || !declarator.init 
                 // note that we're not asking initReference.refs.size
-                || ( !this.params.devMode && !unit.references.filter( reference => reference instanceof SignalReference ).length )
+                || ( !this.params.devMode && !contract.references.filter( reference => reference instanceof SignalReference ).length )
             ) {
                 // init might still have effects
                 return Node.varDeclarator( id, init );
@@ -242,16 +242,16 @@ export default class Compiler {
                 //assignmentExpr = Node.parensExpr( assignmentExpr );
             }
             if ( assignmentRefactors.length ) {
-                assignmentRefactors.push( Node.varDeclaration( node.kind, declarations ), ...unit.generate( Node.exprStmt( assignmentExpr ) ) );
+                assignmentRefactors.push( Node.varDeclaration( node.kind, declarations ), ...contract.generate( Node.exprStmt( assignmentExpr ) ) );
                 return [];
             }
-            assignmentRefactors.push( ...unit.generate( Node.exprStmt( assignmentExpr ) ) );
+            assignmentRefactors.push( ...contract.generate( Node.exprStmt( assignmentExpr ) ) );
             return declarations;
         }
-        let isForLoopInit = context.currentUnit && [ 'ForStatement', 'ForOfStatement', 'ForInStatement' ].includes( context.currentUnit.type );
+        let isForLoopInit = context.currentContract && [ 'ForStatement', 'ForOfStatement', 'ForInStatement' ].includes( context.currentContract.type );
         let declarations = node.declarations.reduce( ( declarators, declarator ) => {
-            if ( isForLoopInit ) return declarators.concat( exec( context.currentUnit, declarator, true ) );
-            return context.defineUnit( def, unit => declarators.concat( exec( unit, declarator ) ) );
+            if ( isForLoopInit ) return declarators.concat( exec( context.currentContract, declarator, true ) );
+            return context.defineContract( def, contract => declarators.concat( exec( contract, declarator ) ) );
         }, [] );
         if ( !declarations.length ) return assignmentRefactors;
         return [ Node.varDeclaration( node.kind, declarations ), ...assignmentRefactors ];
@@ -264,9 +264,9 @@ export default class Compiler {
      */
     generateIfStatement( context, node ) {
         let def = { type: node.type };
-        return context.defineUnit( def, unit => {
+        return context.defineContract( def, contract => {
             let { consequent, alternate } = node;
-            let [ test ] = unit.signalReference( def, () => this.generateNodes( context, [ node.test ] ) ),
+            let [ test ] = contract.signalReference( def, () => this.generateNodes( context, [ node.test ] ) ),
                 [ $test, memo ] = context.defineMemo( { expr: test } ).generate();
             consequent = context.createCondition( { when: memo }, () => this.generateNodes( context, [ node.consequent ] ) );
             if ( consequent[ 0 ].type !== 'BlockStatement' && consequent.length > 1 ) {
@@ -282,9 +282,9 @@ export default class Compiler {
                     alternate = alternate[ 0 ];
                 }
             }
-            this.setLocation( unit, node );
+            this.setLocation( contract, node );
             this.setLocation( memo, node.test );
-            return unit.generate(  Node.ifStmt( $test, consequent, alternate ) );
+            return contract.generate(  Node.ifStmt( $test, consequent, alternate ) );
         } );
     }
 
@@ -295,14 +295,14 @@ export default class Compiler {
      */
     generateSwitchStatement( context, node ) {
         let def = { type: node.type };
-        return context.defineUnit( def, unit => {
-            let [ discriminant ] = unit.signalReference( def, () => this.generateNodes( context, [ node.discriminant ] ) );
+        return context.defineContract( def, contract => {
+            let [ discriminant ] = contract.signalReference( def, () => this.generateNodes( context, [ node.discriminant ] ) );
             let [ $discriminant, memo ] = context.defineMemo( { expr: discriminant } ).generate();
             
             let $cases = context.createScope( def, () => node.cases.reduce( ( casesDef, caseNode ) => {
                 let prevCaseDef = casesDef.slice( -1 )[ 0 ];
                 let hasBreak = caseNode.consequent.some( stmt => stmt.type === 'BreakStatement' );
-                let [ test ] = unit.signalReference( { type: caseNode.type }, () => this.generateNodes( context, [ caseNode.test ] ) );
+                let [ test ] = contract.signalReference( { type: caseNode.type }, () => this.generateNodes( context, [ caseNode.test ] ) );
                 let [ $test, _memo ] = context.defineMemo( { expr: test } ).generate();
                 let condition = { switch: memo, cases: [ _memo ] };
                 if ( prevCaseDef && !prevCaseDef.hasBreak ) {
@@ -315,9 +315,9 @@ export default class Compiler {
                 return Node.switchCase( $test, consequent );
             } ) );
 
-            this.setLocation( unit, node );
+            this.setLocation( contract, node );
             this.setLocation( memo, node.discriminant );
-            return unit.generate( Node.switchStmt( $discriminant, $cases ) );
+            return contract.generate( Node.switchStmt( $discriminant, $cases ) );
         } );
     }
 
@@ -333,18 +333,18 @@ export default class Compiler {
     generateForStatement( context, node ) { return this.generateLoopStmtA( Node.forStmt, ...arguments ); }
     generateLoopStmtA( generate, context, node ) {
         let def = { type: node.type };
-        return context.defineUnit( { type: node.type }, iteratorUnit => {
-            this.setLocation( iteratorUnit, node );
-            iteratorUnit.defineSubscriptIdentifier( '$counter', [ '$x_index' ] );
+        return context.defineContract( { type: node.type }, iteratorContract => {
+            this.setLocation( iteratorContract, node );
+            iteratorContract.defineSubscriptIdentifier( '$counter', [ '$x_index' ] );
             // A scope for variables declared in header
             return context.createScope( { type: 'Iteration' }, () => {
                 let createNodeCallback, init, test, update;
                 
                 if ( node.type === 'ForStatement' ) {
-                    [ init, test, update ] = iteratorUnit.signalReference( def, () => this.generateNodes( context, [ node.init, node.test, node.update ] ) );
+                    [ init, test, update ] = iteratorContract.signalReference( def, () => this.generateNodes( context, [ node.init, node.test, node.update ] ) );
                     createNodeCallback = $body => generate.call( Node, init, test, update, $body );
                 } else {
-                    [ test ] = iteratorUnit.signalReference( def, () => this.generateNodes( context, [ node.test ] ) );
+                    [ test ] = iteratorContract.signalReference( def, () => this.generateNodes( context, [ node.test ] ) );
                     createNodeCallback = $body => generate.call( Node, test, $body );
                 }
 
@@ -356,7 +356,7 @@ export default class Compiler {
                         [ preIterationDeclarations, body ] = this.composeLoopStmt( iterationContext, body );
                     }
                     let statements = [].concat( preIterationDeclarations || [] ).concat( createNodeCallback( Node.blockStmt( body ) ) );
-                    return iteratorUnit.generate( statements );
+                    return iteratorContract.generate( statements );
                 } );
 
             } );
@@ -371,7 +371,7 @@ export default class Compiler {
     composeLoopStmt( iterationContext, body, params = {} ) {
         let disposeCallbacks = [ params.disposeCallback ], disposeCallback = () => disposeCallbacks.forEach( callback => callback && callback() );
         let preIterationDeclarations = [], iterationDeclarations = [];
-        let iterationBody = [], unitBody = body.body.slice( 0 );
+        let iterationBody = [], contractBody = body.body.slice( 0 );
         // Counter?
         if ( !params.iterationId ) {
             params.iterationId = Node.identifier( iterationContext.getSubscriptIdentifier( '$counter', true ) );
@@ -388,7 +388,7 @@ export default class Compiler {
             disposeCallbacks.push( () => iterationBody.splice( -1 ) /* iterationDeclarations */ );
         }
         // Main
-        iterationBody.push( ...iterationContext.generate( unitBody, { args: [ params.iterationId ], disposeCallback } ) );
+        iterationBody.push( ...iterationContext.generate( contractBody, { args: [ params.iterationId ], disposeCallback } ) );
     
         // Convert to actual declaration
         if ( preIterationDeclarations.length ) {
@@ -410,9 +410,9 @@ export default class Compiler {
     generateForInStatement( context, node ) { return this.generateLoopStmtB( Node.forInStmt, ...arguments ); }
     generateLoopStmtB( generate, context, node ) {
         let def = { type: node.type };
-        return context.defineUnit( { type: node.type }, iteratorUnit => {
-            this.setLocation( iteratorUnit, node );
-            iteratorUnit.defineSubscriptIdentifier( '$counter', [ node.type === 'ForInStatement' ? '$x_key' : '$x_index' ] );
+        return context.defineContract( { type: node.type }, iteratorContract => {
+            this.setLocation( iteratorContract, node );
+            iteratorContract.defineSubscriptIdentifier( '$counter', [ node.type === 'ForInStatement' ? '$x_key' : '$x_index' ] );
             // A scope for variables declared in header
             return context.createScope( { type: 'Iteration' }, () => {
                 
@@ -421,10 +421,10 @@ export default class Compiler {
                     [ left ] = this.generateNodes( context, [ node.left ] );
                     iterationId = left.declarations[ 0 ].id;
                 } else {
-                    [ left ] = iteratorUnit.affectedsReference( def, () => this.generateNodes( context, [ node.left ] ) );
+                    [ left ] = iteratorContract.affectedsReference( def, () => this.generateNodes( context, [ node.left ] ) );
                     iterationId = left;
                 }
-                let [ right ] = iteratorUnit.signalReference( def, () => this.generateNodes( context, [ node.right ] ) );
+                let [ right ] = iteratorContract.signalReference( def, () => this.generateNodes( context, [ node.right ] ) );
                 
                 return context.defineContext( { type: 'Iteration', isIteration: true }, iterationContext => {
                     this.setLocation( iterationContext, node.body );
@@ -459,7 +459,7 @@ export default class Compiler {
                         forStatement = generate.call( Node, newLeft, right, Node.blockStmt( newBody ) );
                     }
 
-                    return iteratorUnit.generate( [].concat( preIterationDeclarations || [] ).concat( forStatement ) );
+                    return iteratorContract.generate( [].concat( preIterationDeclarations || [] ).concat( forStatement ) );
                 } );
 
             } );
@@ -475,10 +475,10 @@ export default class Compiler {
         context.subscriptIdentifiersNoConflict( node.label );
         let def = { type: node.type, label: node.label };
         if ( !node.body.type.endsWith( 'Statement' ) ) {
-            return context.defineUnit( def, unit => {
-                this.setLocation( unit, node.body );
+            return context.defineContract( def, contract => {
+                this.setLocation( contract, node.body );
                 let [ body ] = this.generateNodes( context, [ node.body ] );
-                return Node.labeledStmt( node.label, unit.generate( body ) );
+                return Node.labeledStmt( node.label, contract.generate( body ) );
             } );
         }
         return context.createScope( { type: node.body.type, label: node.label }, scope => {
@@ -501,19 +501,19 @@ export default class Compiler {
     generateBreakStatement( context, node ) { return this.generateExitStmt( Node.breakStmt, ...arguments ); }
     generateContinueStatement( context, node ) { return this.generateExitStmt( Node.continueStmt, ...arguments ); }
     generateExitStmt( generate, context, node ) {
-        let nearestExitTarget = context.currentUnit.closest( [ 'Iteration', 'SwitchStatement', 'LabeledStatement' ] );
+        let nearestExitTarget = context.currentContract.closest( [ 'Iteration', 'SwitchStatement', 'LabeledStatement' ] );
         if ( nearestExitTarget && nearestExitTarget.type === 'SwitchStatement' && node.type === 'BreakStatement' && !node.label ) {
             return generate.call( Node, null );
         }
-        let subscript$unit = Node.identifier( context.getSubscriptIdentifier( '$unit', true ) );
+        let subscript$contract = Node.identifier( context.getSubscriptIdentifier( '$contract', true ) );
         let keyword = Node.literal( node.type === 'BreakStatement' ? 'break' : 'continue' );
         let label = node.label ? Node.literal( node.label.name ) : Node.identifier( 'null' );
         let exitCall = Node.exprStmt( 
-            Node.callExpr( Node.memberExpr( subscript$unit, Node.identifier( 'exit' ) ), [ keyword, label ] ),
+            Node.callExpr( Node.memberExpr( subscript$contract, Node.identifier( 'exit' ) ), [ keyword, label ] ),
         );
         // Break / continue statement hoisting
-        context.currentUnit.hoistExitStatement( keyword, label );
-        // unit.subscriptIdentifiersNoConflict() wont be necessary
+        context.currentContract.hoistExitStatement( keyword, label );
+        // contract.subscriptIdentifiersNoConflict() wont be necessary
         // as the label definition would have had the same earlier
         return [ exitCall, Node.returnStmt() ];
     }
@@ -525,17 +525,17 @@ export default class Compiler {
      */
     generateReturnStatement( context, node ) {
         let def = { type: node.type };
-        return context.defineUnit( def, unit => {
-            let [ argument ] = unit.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
-            let subscript$unit = Node.identifier( context.getSubscriptIdentifier( '$unit', true ) );
+        return context.defineContract( def, contract => {
+            let [ argument ] = contract.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
+            let subscript$contract = Node.identifier( context.getSubscriptIdentifier( '$contract', true ) );
             let keyword = Node.literal( 'return' );
             let arg = argument || Node.identifier( 'undefined' );
             let exitCall = Node.exprStmt(
-                Node.callExpr( Node.memberExpr( subscript$unit, Node.identifier( 'exit' ) ), [ keyword, arg ] ),
+                Node.callExpr( Node.memberExpr( subscript$contract, Node.identifier( 'exit' ) ), [ keyword, arg ] ),
             );
             // Return statement hoisting
-            unit.hoistExitStatement( keyword, Node.identifier( 'true' ) );
-            return unit.generate( [ exitCall, Node.returnStmt() ] );
+            contract.hoistExitStatement( keyword, Node.identifier( 'true' ) );
+            return contract.generate( [ exitCall, Node.returnStmt() ] );
         } );
     }
 
@@ -559,10 +559,10 @@ export default class Compiler {
      */
     generateExpressionStatement( context, node ) {
         let def = { type: node.type };
-        return context.defineUnit( def, unit => {
-            this.setLocation( unit, node.expression );
-            let [ expression ] = unit.signalReference( def, () => this.generateNodes( context, [ node.expression ] ) );
-            return unit.generate( Node.exprStmt( expression ) );
+        return context.defineContract( def, contract => {
+            this.setLocation( contract, node.expression );
+            let [ expression ] = contract.signalReference( def, () => this.generateNodes( context, [ node.expression ] ) );
+            return contract.generate( Node.exprStmt( expression ) );
         } );
     }
 
@@ -578,13 +578,13 @@ export default class Compiler {
         let expresions = node.expressions.map( ( expr, i ) => {
             let def = { type: expr.type, inSequence: true };
             if ( i === node.expressions.length - 1 ) {
-                [ expr ] = context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ expr ] ) );
+                [ expr ] = context.currentContract.chainableReference( def, () => this.generateNodes( context, [ expr ] ) );
                 return expr;
             }
-            return context.defineUnit( def, unit => {
-                this.setLocation( unit, expr );
-                [ expr ] = unit.signalReference( def, () => this.generateNodes( context, [ expr ] ) );
-                return expr.type === 'Identifier' ? expr : unit.generate( expr );
+            return context.defineContract( def, contract => {
+                this.setLocation( contract, expr );
+                [ expr ] = contract.signalReference( def, () => this.generateNodes( context, [ expr ] ) );
+                return expr.type === 'Identifier' ? expr : contract.generate( expr );
             } );
         } );
         return Node.sequenceExpr( expresions );
@@ -597,8 +597,8 @@ export default class Compiler {
      */
     generateAssignmentExpression( context, node ) {
         let def = { type: node.type, kind: node.operator };
-        let rightReference, [ right ] = context.currentUnit.signalReference( def, reference => ( rightReference = reference, this.generateNodes( context, [ node.right ] ) ) );
-        let leftReference, [ left ] = context.currentUnit.embeddableEffectReference( def, reference => ( leftReference = reference, this.generateNodes( context, [ node.left ] ) ) );
+        let rightReference, [ right ] = context.currentContract.signalReference( def, reference => ( rightReference = reference, this.generateNodes( context, [ node.right ] ) ) );
+        let leftReference, [ left ] = context.currentContract.embeddableEffectReference( def, reference => ( leftReference = reference, this.generateNodes( context, [ node.left ] ) ) );
         rightReference.setAssignee( leftReference );
         return Node.assignmentExpr( left, right, node.operator );
     }
@@ -613,12 +613,12 @@ export default class Compiler {
     generateUnaryExpression( context, node ) {
         if ( node.operator === 'delete' ) return this.generateMutationExpr( Node.unaryExpr, ...arguments );
         let def = { type: node.type, kind: node.operator };
-        let [ argument ] = context.currentUnit.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
+        let [ argument ] = context.currentContract.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
         return Node.unaryExpr( node.operator, argument, node.prefix );
     }
     generateMutationExpr( generate, context, node ) {
         let def = { type: node.type, kind: node.operator };
-        let [ argument ] = context.currentUnit.effectReference( def, () => this.generateNodes( context, [ node.argument ] ) );
+        let [ argument ] = context.currentContract.effectReference( def, () => this.generateNodes( context, [ node.argument ] ) );
         return generate.call( Node, node.operator, argument, node.prefix );
     }
 
@@ -628,8 +628,8 @@ export default class Compiler {
      * ------------
      */
     generateBinaryExpression( context, node ) {
-        let [ left ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.left ] ) );
-        let [ right ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.right ] ) );
+        let [ left ] = context.currentContract.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.left ] ) );
+        let [ right ] = context.currentContract.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.right ] ) );
         return Node.binaryExpr( node.operator, left, right );
     }
 
@@ -640,11 +640,11 @@ export default class Compiler {
      */
     generateLogicalExpression( context, node ) {
         let def = { type: node.type, kind: node.operator };
-        let [ left ] = context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.left ] ) );
+        let [ left ] = context.currentContract.chainableReference( def, () => this.generateNodes( context, [ node.left ] ) );
         let [ $left, memo ] = context.defineMemo( { expr: left } ).generate();
         let conditionAdjacent = node.operator === '||' ? { whenNot: memo } : { when: memo };
         let [ right ] = context.createCondition( conditionAdjacent, () => {
-            return context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.right ] ) )
+            return context.currentContract.chainableReference( def, () => this.generateNodes( context, [ node.right ] ) )
         } );
         this.setLocation( memo, node.left );
         return Node.logicalExpr( node.operator, $left, right );
@@ -657,10 +657,10 @@ export default class Compiler {
      */
     generateConditionalExpression( context, node ) {
         let def = { type: node.type };
-        let [ test ] = context.currentUnit.signalReference( def, () => this.generateNodes( context, [ node.test ] ) ),
+        let [ test ] = context.currentContract.signalReference( def, () => this.generateNodes( context, [ node.test ] ) ),
             [ $test, memo ] = context.defineMemo( { expr: test } ).generate(),
-            [ consequent ] = context.createCondition( { when: memo }, () => context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.consequent ] ) ) ),
-            [ alternate ] = context.createCondition( { whenNot: memo }, () => context.currentUnit.chainableReference( def, () => this.generateNodes( context, [ node.alternate ] ) ) );
+            [ consequent ] = context.createCondition( { when: memo }, () => context.currentContract.chainableReference( def, () => this.generateNodes( context, [ node.consequent ] ) ) ),
+            [ alternate ] = context.createCondition( { whenNot: memo }, () => context.currentContract.chainableReference( def, () => this.generateNodes( context, [ node.alternate ] ) ) );
         this.setLocation( memo, node.test );
         return Node.condExpr( $test, consequent, alternate );
     }
@@ -672,7 +672,7 @@ export default class Compiler {
      */
     generateArrayPattern( context, node ) {
         let elements = node.elements.map( ( element, i ) => {
-            [ element ] = context.currentUnit.currentReference.withDestructure( { name: i }, () => this.generateNodes( context, [ element ] ) );
+            [ element ] = context.currentContract.currentReference.withDestructure( { name: i }, () => this.generateNodes( context, [ element ] ) );
             return element;
         } );
         return Node.arrayPattern( elements );
@@ -687,7 +687,7 @@ export default class Compiler {
         let properties = node.properties.map( property => {
             let { key, value } = property;
             if ( property.computed ) {
-                [ key ] = context.currentUnit.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
+                [ key ] = context.currentContract.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
             }
             let element = { name: property.key.name };
             if ( property.computed ) {
@@ -697,7 +697,7 @@ export default class Compiler {
                     [ key, element ] = context.defineMemo( { expr: key } ).generate();
                 }
             }
-            [ value ] = context.currentUnit.currentReference.withDestructure( element, () => this.generateNodes( context, [ value ] ) );
+            [ value ] = context.currentContract.currentReference.withDestructure( element, () => this.generateNodes( context, [ value ] ) );
             this.setLocation( element, property.key );
             return Node.property( key, value, property.kind, property.shorthand, property.computed, property.method );
         } );
@@ -712,7 +712,7 @@ export default class Compiler {
     generateMemberExpression( context, node ) {
         let { property } = node;
         if ( node.computed ) {
-            [ property ] = context.currentUnit.signalReference( { type: property.type }, () => this.generateNodes( context, [ property ] ) );
+            [ property ] = context.currentContract.signalReference( { type: property.type }, () => this.generateNodes( context, [ property ] ) );
         }
         let element = { name: node.property.name };
         if ( node.computed ) {
@@ -722,7 +722,7 @@ export default class Compiler {
                 [ property, element ] = context.defineMemo( { expr: property } ).generate();
             }
         }
-        let [ object ] = context.currentUnit.currentReference.withProperty( element, () => this.generateNodes( context, [ node.object ] ) );
+        let [ object ] = context.currentContract.currentReference.withProperty( element, () => this.generateNodes( context, [ node.object ] ) );
         this.setLocation( element, node.property );
         return Node.memberExpr( object, property, node.computed, node.optional );
     }
@@ -745,7 +745,7 @@ export default class Compiler {
         };
         this.setLocation( $identifier, node );
         const closestFunction = context.closestFunction();
-        let reference = ( context.currentUnit || context ).currentReference;
+        let reference = ( context.currentContract || context ).currentReference;
         if ( reference ) {
             do {
                 if ( !closestFunction || closestFunction.isSubscriptFunction || ( reference instanceof EffectReference ) ) {
@@ -764,11 +764,11 @@ export default class Compiler {
      */
     generateSpreadElement( context, node ) { return this.generateArgumentExpr( Node.spreadElement, ...arguments ); }
     generateAwaitExpression( context, node ) {
-        context.currentUnit.hoistAwaitKeyword();
+        context.currentContract.hoistAwaitKeyword();
         return this.generateArgumentExpr( Node.awaitExpr, ...arguments );
     }
     generateArgumentExpr( generate, context, node ) {
-        let [ argument ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.argument ] ) );
+        let [ argument ] = context.currentContract.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.argument ] ) );
         return generate.call( Node, argument );
     }
 
@@ -782,8 +782,8 @@ export default class Compiler {
     generateNewExpression( context, node ) { return this.generateCallExpr( Node.newExpr, ...arguments ); }
     generateCallExpr( generate, context, node ) {
         // The ongoing reference must be used for callee
-        let [ callee ] = context.currentUnit.signalReference( { type: node.callee.type }, () => this.generateNodes( context, [ node.callee ] ) );
-        let args = node.arguments.map( argument => context.currentUnit.signalReference( { type: argument.type }, () => this.generateNodes( context, [ argument ] )[ 0 ] ) );
+        let [ callee ] = context.currentContract.signalReference( { type: node.callee.type }, () => this.generateNodes( context, [ node.callee ] ) );
+        let args = node.arguments.map( argument => context.currentContract.signalReference( { type: argument.type }, () => this.generateNodes( context, [ argument ] )[ 0 ] ) );
         return generate.call( Node, callee, args, node.optional );
     }
     
@@ -807,7 +807,7 @@ export default class Compiler {
      * ------------
      */
     generateArrayExpression( context, node ) {
-        let elements = node.elements.map( element => context.currentUnit.signalReference( { type: element.type }, () => this.generateNodes( context, [ element ] )[ 0 ] ) );
+        let elements = node.elements.map( element => context.currentContract.signalReference( { type: element.type }, () => this.generateNodes( context, [ element ] )[ 0 ] ) );
         return Node.arrayExpr( elements );
     }
     
@@ -829,9 +829,9 @@ export default class Compiler {
     generateProperty( context, node ) {
         let { key, value } = node;
         if ( node.computed ) {
-            [ key ] = context.currentUnit.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
+            [ key ] = context.currentContract.signalReference( { type: key.type }, () => this.generateNodes( context, [ key ] ) );
         }
-        [ value ] = context.currentUnit.signalReference( { type: value.type }, () => this.generateNodes( context, [ value ] ) );
+        [ value ] = context.currentContract.signalReference( { type: value.type }, () => this.generateNodes( context, [ value ] ) );
         return Node.property( key, value, node.kind, node.shorthand, node.computed, false/*node.method*/ );
     }
     
@@ -841,7 +841,7 @@ export default class Compiler {
      * ------------
      */
     generateTaggedTemplateExpression( context, node ) {
-        let [ tag, quasi ] = context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.tag, node.quasi ] ) );
+        let [ tag, quasi ] = context.currentContract.signalReference( { type: node.type }, () => this.generateNodes( context, [ node.tag, node.quasi ] ) );
         return Node.taggedTemplateExpr( tag, quasi );
     }
     
@@ -851,7 +851,7 @@ export default class Compiler {
      * ------------
      */
     generateTemplateLiteral( context, node ) {
-        let expressions = node.expressions.map( expression => context.currentUnit.signalReference( { type: node.type }, () => this.generateNodes( context, [ expression ] )[ 0 ] ) );
+        let expressions = node.expressions.map( expression => context.currentContract.signalReference( { type: node.type }, () => this.generateNodes( context, [ expression ] )[ 0 ] ) );
         return Node.templateLiteral( node.quasis, expressions );
     }
 

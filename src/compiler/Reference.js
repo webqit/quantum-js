@@ -6,9 +6,9 @@ import Common from './Common.js';
 
 export default class Reference extends Common {
 
-    constructor( ownerUnit, id, def = {} ) {
+    constructor( ownerContract, id, def = {} ) {
         super( id, def );
-        this.ownerUnit = ownerUnit;
+        this.ownerContract = ownerContract;
         this.refs = new Set;
         this.propertyStack = [];
         this.embeddingReference = null;
@@ -24,7 +24,7 @@ export default class Reference extends Common {
     }
 
     get lineage() {
-        return `${ this.ownerUnit.lineage }:${ this.id }`;
+        return `${ this.ownerContract.lineage }:${ this.id }`;
     }
 
     toJson( filter = false ) {
@@ -33,7 +33,7 @@ export default class Reference extends Common {
             type: this.type,
             kind: this.kind,
             refs: Array.from( this.refs ).map( ref => ref.toJson( filter ) ),
-            unitId: this.ownerUnit.id,
+            contractId: this.ownerContract.id,
         };
     }
 

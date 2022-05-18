@@ -44,7 +44,7 @@ export default class Ref extends Interactable() {
 
             if ( this.subscriptions ) {
                 this._on( pathIndex, 'click', () => {
-                    this.ownerReference.ownerUnit.runThread( fullPath );
+                    this.ownerReference.ownerContract.runThread( fullPath );
                 } );
             }
         } );

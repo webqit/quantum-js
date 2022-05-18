@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import Unit from './Unit.js';
+import Contract from './Contract.js';
 
-export default class Runtime extends Unit {
+export default class Runtime extends Contract {
 
     static create( compilation, parameters = [], runtimeParams = {} ) {
         const _Function = compilation.graph.hoistedAwaitKeyword ? Object.getPrototypeOf( async function() {} ).constructor : Function;
@@ -15,22 +15,22 @@ export default class Runtime extends Unit {
         return runtime;
     }
 
-    constructor( ownerUnit, graph, callee, runtimeParams = {}, exits = null ) {
-        super( ownerUnit, graph, callee, runtimeParams = {}, exits );
+    constructor( ownerContract, graph, callee, runtimeParams = {}, exits = null ) {
+        super( ownerContract, graph, callee, runtimeParams = {}, exits );
         this.observers = [];
     }
 
-    observe( unitUrl, callback ) {
+    observe( contractUrl, callback ) {
         if ( !this.params.devMode ) {
             // Only allow observers in dev mode
             //throw new Error( `Observers are allowed only in dev mode.` );
         }
-        this.observers.push( { unitUrl, callback } );
+        this.observers.push( { contractUrl, callback } );
     }
 
-    fire( unitUrl, event, refs ) {
+    fire( contractUrl, event, refs ) {
         ( this.observers || [] ).forEach( observer => {
-            if ( observer.unitUrl !== unitUrl ) return;
+            if ( observer.contractUrl !== contractUrl ) return;
             observer.callback( event, refs );
         } );
     }
