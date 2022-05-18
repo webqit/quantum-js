@@ -14,6 +14,7 @@ This project proposes a new function primitive that lets us open a reactive prog
     + [Loops](#loops)
 + [Example Usecase](#example-usecase)
 + [Design Goals](#design-goals)
++ [Non-Goals](#non-goals)
 + [Discussion Points](#discussion-points)
 + [Polyfill](#polyfill)
     + [Download](#download)
@@ -679,6 +680,10 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 2. Keep the business of change detection *out of scope* (that is, don't be concerned with how changes are observed); simply accept change events from the outer scope.
 3. Implement Subscript Function as an extension of standard JavaScript functions, such that either can be used interchangeably, or where necessary, code can be easily ported between function types.
 4. Stay conservative with syntax! By no means adopt imitation syntaxes for the same language constructs and operators!
+
+## Non-Goals
+
+1. Feature "x" in framework "x". No, the idea with Subscript Functions is to enable reactivity at the lowest level but leave the higher-level details to userland libraries and frameworks. This time, tooling that's with just a tiny footprint but provide syntax sugars and additional DX.
 
 ## Discussion Points
 
