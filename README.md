@@ -4,7 +4,7 @@ This project proposes a new function primitive that lets us open a reactive prog
 
 ## Table of Contents
 
-+ [Introduction](#introduction)
++ [Background](#background)
 + [What We Propose](#what-we-propose)
     + [Overview](#overview)
     + [Formal Syntax](#formal-syntax)
@@ -23,7 +23,7 @@ This project proposes a new function primitive that lets us open a reactive prog
     + [License](#license)
 + [Credits](#credits)
 
-## Introduction
+## Background
 
 Reactive programming has become one of the most exciting programming paradigms of modern frontend development! While there continues to be varying opinions (and a high degree of polarization) as to what it is and what implementation makes the most sense, you'd realize that everyone is converging on one idea: **an automated approach to keeping something (b) in sync with something else (a), such that the expression `b = a` is held as a contract throughout the lifetime of the program**.
 
