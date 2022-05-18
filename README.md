@@ -138,7 +138,7 @@ Now, in logical terms, a `.thread()` update follows the implicit *dependency gra
 
 ### Formal Syntax
 
-A reactive programming context must be explicitly designated. So we propose using a double star (`**`) on the function syntax <sup><a href=”#discussion-points”><small>Discussion Point 1</small></a></sup>. (And this would be just one star extra on the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) `function* gen() {}`.)
+A reactive programming context must be explicitly designated. So we propose using a double star (`**`) on the function syntax <a href=”#discussion-points”><sup><small>Discussion Point 1</small></sup></a>. (And this would be just one star extra on the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) `function* gen() {}`.)
 
 ```js
 // As function declaration
