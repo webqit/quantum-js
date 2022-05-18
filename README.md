@@ -339,7 +339,7 @@ function** fn() {
 fn();
 ```
 
-Above, a side effect happens whenever `sum()` is called. Although the `console.log()` statement isn't directly dependent on the `result = sum()` expression, it is directly dependent on the side effect - `callCount` - of `sum()`. So, with an update event for `score`, the `result = sum()` expression runs, and the `console.log()` expression runs next.
+Above, a side effect happens whenever `sum()` is called. Although the `console.log()` expression isn't directly dependent on the `result = sum()` expression, it is directly dependent on the side effect - `callCount` - of `sum()`. So, with an update event for `score`, the `result = sum()` expression runs, and the `console.log()` expression runs next.
 
 If these two expressions were to appear in reverse order, as in below…
 
