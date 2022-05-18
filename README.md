@@ -28,7 +28,7 @@ This project proposes a new function primitive that lets us open a reactive prog
 
 Reactive programming has become one of the most exciting programming paradigms of modern frontend development! While there continues to be varying opinions (and a high degree of polarization) as to what it is and what implementation makes the most sense, you'd realize that everyone is converging on one idea: **an automated approach to keeping something (b) in sync with something else (a), such that the expression `b = a` is held as a contract throughout the lifetime of the program**.
 
-**Problem is:** in the real world, the concept of “contract” isn't in the design of literal assignment expressions as we have in theory above (nor does it exist in any other imperative operation). **One must have to model the equivalent of an imperative expression in functional programming - to have a chance to ensure that the “contract” is kept!**
+**Problem is:** in the real world, the concept of “contract" isn't in the design of literal assignment expressions as we have in theory above (nor does it exist in any other imperative operation). **One must have to model the equivalent of an imperative expression in functional programming - to have a chance to ensure that the “contract" is kept!**
 
 Consider how the following theoretical reactive code would be constructed across a selection of frameworks (ignoring completeness and perfectionism):
 
@@ -81,7 +81,7 @@ So, we want to be able to just say (`let a, b; a = 10, b = a * 2`) and have it b
 
 ### Overview
 
-*Subscript Function* is a proposed function primitive that provides this *reactive programming context* within JavaScript. It “keeps the contract” for the individual expressions and statements that go into its context! 
+*Subscript Function* is a proposed function primitive that provides this *reactive programming context* within JavaScript. It “keeps the contract" for the individual expressions and statements that go into its context! 
 
 These functions go with a notation as in below...
 
@@ -138,7 +138,7 @@ Now, in logical terms, a `.thread()` update follows the implicit *dependency gra
 
 ### Formal Syntax
 
-A reactive programming context must be explicitly designated. So we propose using a double star (`**`) on the function syntax <a href=”#discussion-points”><sup><small>Discussion Point 1</small></sup></a>. (And this would be just one star extra on the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) `function* gen() {}`.)
+A reactive programming context must be explicitly designated. So we propose using a double star (`**`) on the function syntax <a href="#discussion-points"><sup><small>Discussion Point 1</small></sup></a>. (And this would be just one star extra on the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) `function* gen() {}`.)
 
 ```js
 // As function declaration
@@ -261,24 +261,24 @@ let message = `Hi ${ candidate.firstName }, you ${ tense } this test!`;
 And the update continues to include any subsequent dependents of the `message` variable itself... and on to dependents of those dependents... until the end of the dependency thread.
 
 ```js
-// This. (Having the “message” variable as a dependency.)
+// This. (Having the “message" variable as a dependency.)
 let fullMessage = [ message, ' ', 'Thank you!' ].join( '' );
 ```
 
 ```js
-// This. (Having the “fullMessage” variable as a dependency, in addition to the “candidate.username” property.)
+// This. (Having the “fullMessage" variable as a dependency, in addition to the “candidate.username" property.)
 let broadcast = { [ candidate.username ]: fullMessage };
 ```
 
 ```js
-// These two. (Having the “broadcast” variable as a dependency.)
+// These two. (Having the “broadcast" variable as a dependency.)
 let broadcastInstance = new BroadcastMessage( broadcast );
 console.log( broadcast );
 ```
 
 ### Heuristics
 
-Subscript Functions employ a mix of compile-time and runtime heuristics to deliver fine-grained reactivity. This lets us enjoy the full range of language features without “loosing” reactivity or trading performance.
+Subscript Functions employ a mix of compile-time and runtime heuristics to deliver fine-grained reactivity. This lets us enjoy the full range of language features without “loosing" reactivity or trading performance.
 
 For example, expressions that reference deep object properties are bound to updates that actually happen along those paths.
 
@@ -369,7 +369,7 @@ if ( testExpr ) {
 
 Above, the "if/else" construct is bound to any references in `testExpr`. An update event for any of these gets the construct evaluated again to keep the contract. So, the "test" expression (`testExpr`) is run, then, the body of the appropriate branch of the construct is executed as a block.
 
-An “else/if” block is taken as a standalone contract nested within the “else” block of a parent “if/else” contract. In other words, the two forms below are functionally equivalent.
+An “else/if" block is taken as a standalone contract nested within the “else" block of a parent “if/else" contract. In other words, the two forms below are functionally equivalent.
 
 ```js
 if ( testExpr1 ) {
@@ -414,7 +414,7 @@ Above, the "switch" construct is bound to any references in `operandExpr`, `case
 
 #### Logical And Ternary Expressions
 
-Expressions with logical and ternary operators also work as conditional contracts. These expressions are bound to references in their “test” expression.
+Expressions with logical and ternary operators also work as conditional contracts. These expressions are bound to references in their “test" expression.
 
 ```js
 // Logical expression
@@ -428,7 +428,7 @@ let result = testExpr ? consequentExpr : alternateExpr;
 
 #### Fine-Grained Updates Within Conditional Contexts
 
-In all conditional constructs above, the contract is that updates to the “test” expressions themselves result in the rerun of the appropriate branch of the construct. The selected branch is rerun *as a block*, not in *fine-grained* execution mode.
+In all conditional constructs above, the contract is that updates to the “test" expressions themselves result in the rerun of the appropriate branch of the construct. The selected branch is rerun *as a block*, not in *fine-grained* execution mode.
 
 ```js
 if ( testExpr ) {
@@ -442,7 +442,7 @@ if ( testExpr ) {
 
 So, above, an update to `testExpr` runs the selected branch as a block - involving its two statements.
 
-But being each a contract of their own, individual expressions and statements inside a conditional context also respond to update events in isolation. This time, the conditions in context have to be “true” for the expression or statement to rerun.
+But being each a contract of their own, individual expressions and statements inside a conditional context also respond to update events in isolation. This time, the conditions in context have to be “true" for the expression or statement to rerun.
 
 So, above, the `addBadge()` and `removeAllBadges()` expressions are both bound to the reference `candidate`. But on an update to `candidate`, only one of these expressions is run depending on the state of the condition in context - `testExpr`.
 
@@ -455,17 +455,17 @@ if ( parentTestExpr ) {
 }
 ```
 
-…all conditions in context (`parentTestExpr` >> `testExpr`) have to be “true” for an update to take place.
+…all conditions in context (`parentTestExpr` >> `testExpr`) have to be “true" for an update to take place.
 
-In all cases, the "state" of *all conditions in context* are determined via *memoization*, and no re-evaluation ever takes place on the “test” expressions.
+In all cases, the "state" of *all conditions in context* are determined via *memoization*, and no re-evaluation ever takes place on the “test" expressions.
 
-“Switch” statements and logical and ternary expressions have this fine-grained behaviour in their own way.
+“Switch" statements and logical and ternary expressions have this fine-grained behaviour in their own way.
 
 ### Loops
 
 When the parameters of a loop ("for" loop, "while" and "do … while" loop) contain references, the loop is bound to those references. This lets us have loops as a contract.
 
-#### A “for” Loop, “while” And “do … while” Loop
+#### A “for" Loop, “while" And “do … while" Loop
 
 A "for" loop is bound to references in its 3-statement definition.
 
@@ -493,7 +493,7 @@ do {
 
 So, in each case above, an update event for any references in `testExpr` reruns the loop to keep the contract.
 
-#### A "for ... of" And “for … in” Loop
+#### A "for ... of" And “for … in" Loop
 
 These loops are bound to references in their *iteratee*.
 
@@ -552,7 +552,7 @@ prefix = 'updated-';
 fn.thread( [ 'prefix' ] );
 ```
 
-A “for … of, for … in” loop further has the unique characteristic where each round of the loop maintains a direct relationship with its corresponding key in the *iteratee*. Now, on updating the value of a key in `iteratee` in-place, the associate round (specifically) also runs in-place to keep its contract.
+A “for … of, for … in" loop further has the unique characteristic where each round of the loop maintains a direct relationship with its corresponding key in the *iteratee*. Now, on updating the value of a key in `iteratee` in-place, the associate round (specifically) also runs in-place to keep its contract.
 
 ```js
 var items = [ { name: 'one' }, { name: 'two' }, { name: 'three' }, { name: 'four' }, { name: 'five' } ];
@@ -676,7 +676,7 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Design Goals
 
-1. Enable reactivity directly *at the program flow level* - with commands, operators, control flow and other language constructs literally compiling as “contracts”, as against the alternative of painstakingly remodeling same in functional programming or other syntaxes.
+1. Enable reactivity directly *at the program flow level* - with commands, operators, control flow and other language constructs literally compiling as “contracts", as against the alternative of painstakingly remodeling same in functional programming or other syntaxes.
 2. Keep the business of change detection *out of scope* (that is, don't be concerned with how changes are observed); simply accept change events from the outer scope.
 3. Implement Subscript Function as an extension of standard JavaScript functions, such that either can be used interchangeably, or where necessary, code can be easily ported between function types.
 4. Stay conservative with syntax! By no means adopt imitation syntaxes for the same language constructs and operators!
