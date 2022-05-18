@@ -2,6 +2,8 @@
 
 This project proposes a new function primitive that lets us open a reactive programming context within JavaScript.
 
+## Table of Contents
+
 + [Introduction](#introduction)
 + [What We Propose](#what-we-propose)
     + [Overview](#overview)
@@ -139,7 +141,9 @@ A reactive programming context must be explicitly designated. So we propose usin
 
 ```js
 // As function declaration
-function** fn() {}
+function** fn( a, b ) {
+    return a + b;
+}
 ```
 
 ```js
@@ -150,7 +154,7 @@ let fn = function**( a, b ) {
 ```
 
 ```js
-// As a constructor
+// As function constructor
 // A one-on-one equivalent of the standard function constructor (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function)
 let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
 ```
