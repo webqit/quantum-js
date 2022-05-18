@@ -87,7 +87,7 @@ These functions go with a notation as in below...
 
 ```js
 function** fn() {}
-// much like the syntax for generator functions - function fn*() {}
+// much like the syntax for generator functions - function* fn() {}
 ```
 
 ...and the function body is any regular piece of code that needs to stay up to date with its dependencies *in fine-grained details*.
