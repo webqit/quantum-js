@@ -683,7 +683,7 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 ## Discussion Points
 
 + **The syntax notation for Subscript Functions** - does the double star idea (`**`) work?
-+ (Addiontal points are acceptable via a PR.)
++ (Additional points are acceptable via a PR.)
 
 ## Polyfill
 
@@ -717,7 +717,7 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 
 ### Usage
 
-+ The cirrent polyfill only supports the constructable form of Subscript Function.
++ The current polyfill only supports the constructable form of Subscript Function.
 
     ```js
     let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
