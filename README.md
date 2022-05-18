@@ -19,7 +19,6 @@ This project proposes a new function primitive that lets us open a reactive prog
     + [Getting Involved](#getting-involved)
     + [Issues](#issues)
     + [License](#license)
-+ [Prior Art](#prior-art)
 + [Credits](#credits)
 
 ## Introduction
@@ -254,7 +253,7 @@ Thus, any subsequent statement, like the one below, having the `tense` variable 
 let message = `Hi ${ candidate.firstName }, you ${ tense } this test!`;
 ```
 
-And the update continues to include any subsequent dependents of the `message` variable itself... and any dependents of those dependents... until the end of the dependency thread.
+And the update continues to include any subsequent dependents of the `message` variable itself... and on to dependents of those dependents... until the end of the dependency thread.
 
 ```js
 // This. (Having the “message” variable as a dependency.)
@@ -471,7 +470,7 @@ for (initStatement; testStatement; incrementStatement) {
 }
 ```
 
-So, in the loop above, an update event for any references in `initStatement`; `testStatement`; `incrementStatement` restarts the loop to keep the contract.
+So, in the loop above, an update event for any references in `initStatement`; `testStatement`; `incrementStatement` reruns the loop to keep the contract.
 
 As with a "for" loop, a "while" and "do ... while" loop are bound to references in their "test" expression.
 
@@ -487,7 +486,7 @@ do {
 } while (testExpr);
 ```
 
-So, in each case above, an update event for any references in `testExpr` restarts the loop to keep the contract.
+So, in each case above, an update event for any references in `testExpr` reruns the loop to keep the contract.
 
 #### A "for ... of" And “for … in” Loop
 
@@ -505,7 +504,7 @@ for (let key in iteratee) {
 }
 ```
 
-So, in each case above, an update event for any references in `iteratee` restarts the loop to keep the contract.
+So, in each case above, an update event for any references in `iteratee` reruns the loop to keep the contract.
 
 #### Fine-Grained Updates Within A Loop
 
@@ -590,9 +589,9 @@ Current iteration index is: 2, and name is: 'new three'.
 
 This granular reactivity makes it often pointless to trigger a full rerun of a loop, offering multiple opportunities to deliver unmatched performance.
 
-##### Handling Labeled `Break` And `Continue` Directives
+##### Handling Labeled `Break` And `Continue` Statements
 
-Fine-grained updates observe `break` and `continue` statements, even when these direct control to a parent block using *labels*.
+Fine-grained updates observe `break` and `continue` statements, even when these redirect control to a parent block using *labels*.
 
 ```js
 let  entries = { one: { name: 'one' }, two: { name: 'two' } };
@@ -815,7 +814,5 @@ To report bugs or request features, please submit an [issue](https://github.com/
 ### License
 
 MIT.
-
-## Prior Art
 
 ## Credits
