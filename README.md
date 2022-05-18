@@ -683,7 +683,7 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Non-Goals
 
-1. Feature "x" in framework "x". No, the idea with Subscript Functions is to enable reactivity at the lowest level but leave the higher-level details to userland libraries and frameworks. This time, tooling that's with just a tiny footprint but provide syntax sugars and additional DX.
+1. Feature "x" in framework "x". No, the idea with Subscript Functions is to enable reactivity at the lowest level but leave the higher-level details - syntax sugars and additional DX - to userland implementation. This time, tooling that's with just a tiny footprint.
 
 ## Discussion Points
 
