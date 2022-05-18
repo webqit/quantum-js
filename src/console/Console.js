@@ -3,12 +3,12 @@
  * @imports
  */
 import CodeBlock from './CodeBlock.js';
-import Unit from './Unit.js';
+import Contract from './Contract.js';
 
 /**
  * @Console
  */
-export default class Console extends CodeBlock( Unit ) {
+export default class Console extends CodeBlock( Contract ) {
 
     bind( subscriptFunction, autoRender = true ) {
         if ( autoRender ) {
@@ -67,8 +67,8 @@ export default class Console extends CodeBlock( Unit ) {
                 color: lightgreen;
             }
 
-            subscript-unit.block-hover,
-            subscript-unit.block-runtime-active {
+            subscript-contract.block-hover,
+            subscript-contract.block-runtime-active {
                 outline: 1px dashed gray;
                 outline-offset: 0.1rem;
                 border-radius: 0.1rem;
@@ -76,7 +76,7 @@ export default class Console extends CodeBlock( Unit ) {
                 background-color: darkblue;
                 */
             }
-            subscript-unit.block-runtime-active {
+            subscript-contract.block-runtime-active {
                 background-color: rgba(100, 100, 100, 0.35);
             }
             `
@@ -89,5 +89,5 @@ export default class Console extends CodeBlock( Unit ) {
  * @define
  */
 customElements.define( 'subscript-codeblock', CodeBlock() );
-customElements.define( 'subscript-unit', Unit );
+customElements.define( 'subscript-contract', Contract );
 customElements.define( 'subscript-console', Console );

@@ -3,92 +3,92 @@
  * @imports
  */
 
-export default class Unit {
+export default class Contract {
 
-    constructor( ownerUnit, graph, callee, params = {}, $thread = null, exits = null ) {
-        this.ownerUnit = ownerUnit;
+    constructor( ownerContract, graph, callee, params = {}, $thread = null, exits = null ) {
+        this.ownerContract = ownerContract;
         this.graph = graph;
         this.callee = callee;
         this.params = params;
         this.exits = exits || new Map;
-        this.$thread = $thread || { entries: new Map, sequence: [], ownerUnit: this };
-        this.subUnits = new Map;
-        this.unit = function( unitId, arg1, arg2 = null, arg3 = null ) {
-            if ( !this.graph.subUnits[ unitId ] ) {
-                throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Graph not found for child unit ${ unitId }.` );
+        this.$thread = $thread || { entries: new Map, sequence: [], ownerContract: this };
+        this.subContracts = new Map;
+        this.contract = function( contractId, arg1, arg2 = null, arg3 = null ) {
+            if ( !this.graph.subContracts[ contractId ] ) {
+                throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Graph not found for child contract ${ contractId }.` );
             }
 
-            let subGraph = this.graph.subUnits[ unitId ];
+            let subGraph = this.graph.subContracts[ contractId ];
             let subParams = {
                 ...this.params,
-                isIterationUnit: arguments.length === 3,
+                isIterationContract: arguments.length === 3,
                 iterationId: arguments.length === 3 && arg1,
-                isFunctionUnit: arguments.length === 4,
+                isFunctionContract: arguments.length === 4,
                 functionType: arguments.length === 4 && arg1,
                 isSubscriptFunction: arguments.length === 4 && arg2,
-                functionScope: ( this.params.isFunctionUnit && this.graph.lineage ) || this.params.functionScope,
+                functionScope: ( this.params.isFunctionContract && this.graph.lineage ) || this.params.functionScope,
             };
 
-            if ( subParams.isIterationUnit ) {
-                // This is an iteration unit
+            if ( subParams.isIterationContract ) {
+                // This is an iteration contract
                 let callee = arg2;
                 // Create iteration
-                let iterationInstanceUnit = new Unit( this, subGraph, callee, subParams, this.$thread, this.exits );
+                let iterationInstanceContract = new Contract( this, subGraph, callee, subParams, this.$thread, this.exits );
                 // Add iteration
-                let iterations = this.subUnits.get( unitId );
+                let iterations = this.subContracts.get( contractId );
                 if ( !iterations ) {
                     iterations = new Map;
-                    this.subUnits.set( unitId, iterations );
+                    this.subContracts.set( contractId, iterations );
                 }
                 // Dispose all existing
                 if ( iterations.has( subParams.iterationId ) ) {
                     iterations.get( subParams.iterationId ).dispose();
                 }
-                iterations.set( subParams.iterationId, iterationInstanceUnit );
-                return iterationInstanceUnit.call();
+                iterations.set( subParams.iterationId, iterationInstanceContract );
+                return iterationInstanceContract.call();
             }
 
-            let callee, subUnit, returnValue;
+            let callee, subContract, returnValue;
             // Dispose existing
-            if ( this.subUnits.has( unitId ) ) {
-                this.subUnits.get( unitId ).dispose();
+            if ( this.subContracts.has( contractId ) ) {
+                this.subContracts.get( contractId ).dispose();
             }
 
-            if ( subParams.isFunctionUnit ) {
-                // Function units
-                callee = arg3, returnValue = subUnit = new Unit( this, subGraph, callee, subParams );
+            if ( subParams.isFunctionContract ) {
+                // Function contracts
+                callee = arg3, returnValue = subContract = new Contract( this, subGraph, callee, subParams );
                 if ( subParams.functionType !== 'FunctionDeclaration' ) {
                     returnValue = callee instanceof ( async () => {} ).constructor
-                        ? async function() { return subUnit.call( this, ...arguments ); }
-                        : function() { return subUnit.call( this, ...arguments ); };
-                    bindFunctionToRuntime( returnValue, subUnit );
+                        ? async function() { return subContract.call( this, ...arguments ); }
+                        : function() { return subContract.call( this, ...arguments ); };
+                    bindFunctionToRuntime( returnValue, subContract );
                 }
             } else {
-                // Regular units
-                callee = arg1, subUnit = new Unit( this, subGraph, callee, subParams, this.$thread, this.exits );
-                returnValue = subUnit.call();
+                // Regular contracts
+                callee = arg1, subContract = new Contract( this, subGraph, callee, subParams, this.$thread, this.exits );
+                returnValue = subContract.call();
             }
 
-            this.subUnits.set( unitId, subUnit );
+            this.subContracts.set( contractId, subContract );
             return returnValue;
         }.bind( this );
-        this.unit.memo = Object.create( null );
+        this.contract.memo = Object.create( null );
         // ---------------------------
-        this.unit.exiting = function( keyword, arg ) {
+        this.contract.exiting = function( keyword, arg ) {
             if ( !arguments.length ) return this.exits.size;
             let exitMatch = this.exits.get( keyword ) === arg;
             if ( exitMatch ) this.exits.clear();
             return exitMatch;
         }.bind( this );
         // ---------------------------
-        this.unit.exit = function( keyword, arg ) {
+        this.contract.exit = function( keyword, arg ) {
             this.exits.set( keyword, arg );
         }.bind( this );
         // ---------------------------
-        this.unit.functions = new Map;
-        this.unit.functions.define = ( functionDeclaration, unitInstance ) => {
-            this.unit.functions.set( functionDeclaration, unitInstance );
-            bindFunctionToRuntime( functionDeclaration, unitInstance, true );
+        this.contract.functions = new Map;
+        this.contract.functions.define = ( functionDeclaration, contractInstance ) => {
+            this.contract.functions.set( functionDeclaration, contractInstance );
+            bindFunctionToRuntime( functionDeclaration, contractInstance, true );
         }
         const bindFunctionToRuntime = ( _function, runtime, isDeclaration = false ) => {
             if ( !isDeclaration ) {
@@ -106,16 +106,16 @@ export default class Unit {
         }
     }
 
-    fire( unitUrl, event, refs ) {
-        if ( !this.ownerUnit ) return;
-        return this.ownerUnit.fire( unitUrl, event, refs );
+    fire( contractUrl, event, refs ) {
+        if ( !this.ownerContract ) return;
+        return this.ownerContract.fire( contractUrl, event, refs );
     }
 
     call( $this, ...$arguments ) {
         if ( this.disposed ) {
             throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Instance not runable after having been disposed.` );
         }
-        let returnValue = this.callee.call( $this, this.unit, ...$arguments );
+        let returnValue = this.callee.call( $this, this.contract, ...$arguments );
         if ( this.graph.$sideEffects ) {
             for ( let referenceId in this.graph.effects ) {
                 for ( let effectRef of this.graph.effects[ referenceId ].refs ) {
@@ -124,7 +124,7 @@ export default class Unit {
                 }
             }
         }
-        if ( !this.ownerUnit || this.params.isFunctionUnit ) {
+        if ( !this.ownerContract || this.params.isFunctionContract ) {
             let exitReturnValue = this.exits.get( 'return' );
             this.exits.clear();
             if ( exitReturnValue !== undefined ) {
@@ -136,10 +136,10 @@ export default class Unit {
 
     iterate( keys = [] ) {
         if ( this.disposed ) return false;
-        if ( ![ 'ForOfStatement', 'ForInStatement'].includes( this.graph.type ) || this.subUnits.size !== 1 ) {
-            throw new Error( `Unit ${ this.graph.lineage } is not an iterator.` );
+        if ( ![ 'ForOfStatement', 'ForInStatement'].includes( this.graph.type ) || this.subContracts.size !== 1 ) {
+            throw new Error( `Contract ${ this.graph.lineage } is not an iterator.` );
         }
-        let [ [ /* iterationUnitId */, iterationInstances ] ] = this.subUnits;
+        let [ [ /* iterationContractId */, iterationInstances ] ] = this.subContracts;
         let prev, _await = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
         if ( !keys.length || ( keys.includes( 'length') && this.graph.type === 'ForOfStatement' ) ) {
             for ( let [ /* iterationId */, iterationInstance ] of iterationInstances ) {
@@ -173,7 +173,7 @@ export default class Unit {
     runThread() {
         let execute = ( entry, refs ) => {
             if ( [ 'ForOfStatement', 'ForInStatement' ].includes( entry.graph.type ) 
-            && refs.every( ref => ref.executionPlan.isIterationUnitTarget ) ) {
+            && refs.every( ref => ref.executionPlan.isIterationContractTarget ) ) {
                 let targets = refs.map( ref => ref.executionPlan.iterationTarget );
                 this.fire( entry.graph.lineage, 'iterating', refs );
                 return entry.iterate( targets );
@@ -212,7 +212,7 @@ export default class Unit {
 
     buildThread( eventRef, effectRef, computes, remainder = 0, isSideEffect = false ) {
         let shouldMatchEventRef = remainder > 0;
-        if ( this.ownerUnit ) {
+        if ( this.ownerContract ) {
             // IMPORTANT: effectRef at global level are not supposed to be checked for computes and condition
             if ( !this.compute( computes ) ) return;
             if ( effectRef.condition !== undefined && !this.assert( effectRef.condition ) ) return;
@@ -222,13 +222,13 @@ export default class Unit {
         let subscriptionsObject = isSideEffect ? effectRef.$subscriptions : effectRef.subscriptions;
         // First we assert the conditions for the effectRef before moving on
         Object.keys( subscriptionsObject ).forEach( fullReferenceUrl => {
-            let [ unitUrl, referenceId ] = fullReferenceUrl.split( ':' );
+            let [ contractUrl, referenceId ] = fullReferenceUrl.split( ':' );
             let selectRefs = _subscriberInstance => {
                 if ( !_subscriberInstance ) return;
                 _subscriberInstance.selectRefs( referenceId, subscriptionsObject[ fullReferenceUrl ], shouldMatchEventRef ? eventRef : null );
             }
             // We find the subscriber instance
-            let subscriberInstance = this.locate( unitUrl );
+            let subscriberInstance = this.locate( contractUrl );
             if ( Array.isArray( subscriberInstance ) ) {
                 subscriberInstance.forEach( selectRefs );
             } else {
@@ -305,12 +305,12 @@ export default class Unit {
             }
             if ( remainder_b === 1 && this.graph.type === 'ForOfStatement' ) {
                 // An iteration item was changed or the length property of the list was changed
-                selectRef( ref, computes_b, { isIterationUnitTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
+                selectRef( ref, computes_b, { isIterationContractTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
                 continue;
             }
             if ( remainder_b === 1 && this.graph.type === 'ForInStatement' ) {
                 // An iteration property was changed
-                selectRef( ref, computes_b, { isIterationUnitTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
+                selectRef( ref, computes_b, { isIterationContractTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
                 continue;
             }
         }
@@ -364,41 +364,41 @@ export default class Unit {
         ];
     }
 
-    locate( unitUrl ) {
+    locate( contractUrl ) {
         let ownLineage_ = this.graph.lineage + '/';
-        let unitUrl_ = unitUrl + '/';
-        if ( unitUrl_ === ownLineage_ ) return this;
-        if ( unitUrl_.startsWith( ownLineage_ ) ) {
-            let postLineage = unitUrl.slice( ownLineage_.length ).split( '/' );
-            let subUnit = this.subUnits.get( parseInt( postLineage.shift() ) );
+        let contractUrl_ = contractUrl + '/';
+        if ( contractUrl_ === ownLineage_ ) return this;
+        if ( contractUrl_.startsWith( ownLineage_ ) ) {
+            let postLineage = contractUrl.slice( ownLineage_.length ).split( '/' );
+            let subContract = this.subContracts.get( parseInt( postLineage.shift() ) );
             if ( postLineage.length) {
-                if ( subUnit instanceof Map ) {
-                    return Array.from( subUnit ).reduce( ( subUnits, [ key, _subUnit ] ) => {
-                        return subUnits.concat( _subUnit.locate( unitUrl ) );
+                if ( subContract instanceof Map ) {
+                    return Array.from( subContract ).reduce( ( subContracts, [ key, _subContract ] ) => {
+                        return subContracts.concat( _subContract.locate( contractUrl ) );
                     }, [] );
                 }
-                if ( subUnit ) {
-                    return subUnit.locate( unitUrl );
+                if ( subContract ) {
+                    return subContract.locate( contractUrl );
                 }
             }
-            return subUnit;
+            return subContract;
         }
-        if ( this.ownerUnit ) {
-            return this.ownerUnit.locate( unitUrl );
+        if ( this.ownerContract ) {
+            return this.ownerContract.locate( contractUrl );
         }
     }
 
     compute( computes ) {
-        return !computes.some( compute => compute( this.unit.memo ) === false );
+        return !computes.some( compute => compute( this.contract.memo ) === false );
     }
 
     assert( condition ) {
         if ( typeof condition === 'string' && condition.includes( ':' ) ) {
-            let [ unitUrl, _condition ] = condition.split( ':' );
-            return this.locate( unitUrl ).assert( _condition );
+            let [ contractUrl, _condition ] = condition.split( ':' );
+            return this.locate( contractUrl ).assert( _condition );
         }
         let conditionDef = this.graph.conditions[ condition ];
-        let memo = this.unit.memo;
+        let memo = this.contract.memo;
         if ( typeof conditionDef.parent !== 'undefined'  && !this.assert( conditionDef.parent ) ) return false;
         if ( typeof conditionDef.switch !== 'undefined' ) {
             return conditionDef.cases.some( _case => memo[ _case ] === memo[ conditionDef.switch ] );
@@ -413,20 +413,20 @@ export default class Unit {
     }
 
     dispose() {
-        if ( this.params.isFunctionUnit ) return;
-        this.subUnits.forEach( ( subUnit, unitId ) => {
-            if ( subUnit instanceof Map ) {
-                subUnit.forEach( subUnit => subUnit.dispose() );
-                subUnit.clear();
+        if ( this.params.isFunctionContract ) return;
+        this.subContracts.forEach( ( subContract, contractId ) => {
+            if ( subContract instanceof Map ) {
+                subContract.forEach( subContract => subContract.dispose() );
+                subContract.clear();
             } else {
-                subUnit.dispose();
+                subContract.dispose();
             }
         } );
-        this.subUnits.clear();
-        delete this.ownerUnit;
+        this.subContracts.clear();
+        delete this.ownerContract;
         delete this.callee;
         delete this.params;
-        delete this.unit.memo;
+        delete this.contract.memo;
         this.disposed = true;
     }
 

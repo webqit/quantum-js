@@ -7,23 +7,23 @@ import Ref from './Ref.js';
 /**
  * @Path
  */
-export default class Unit extends Interactable( HTMLElement ) {
+export default class Contract extends Interactable( HTMLElement ) {
 
     bind( binding ) {
         Object.assign( this, binding );
         if ( !this.graph ) return;
         
-        if ( this.subUnits ) {
-            this.subUnits.forEach( subUnit => {
-                subUnit.replaceWith( ...subUnit.childNodes );
+        if ( this.subContracts ) {
+            this.subContracts.forEach( subContract => {
+                subContract.replaceWith( ...subContract.childNodes );
             } );
         }
-        this.subUnits = new Map;
+        this.subContracts = new Map;
         this._textNodes = this.getTextNodes();
-        for ( let unitId in this.graph.subUnits ) {
-            let graph = this.graph.subUnits[ unitId ];
-            let childInstance = this.createSubUnit( { ownerUnit: this, graph } );
-            this.subUnits.set( graph.id, childInstance );
+        for ( let contractId in this.graph.subContracts ) {
+            let graph = this.graph.subContracts[ contractId ];
+            let childInstance = this.createSubContract( { ownerContract: this, graph } );
+            this.subContracts.set( graph.id, childInstance );
         }
 
         this.effects = new Map;
@@ -38,7 +38,7 @@ export default class Unit extends Interactable( HTMLElement ) {
         this._textNodes = this.getTextNodes();
         const renderRefs = type => {
             for ( let referenceId in this.graph[ type ] ) {
-                let referenceInstance = this.createReference( { ownerUnit: this, ...this.graph[ type ][ referenceId ] } );
+                let referenceInstance = this.createReference( { ownerContract: this, ...this.graph[ type ][ referenceId ] } );
                 this[ type ].set( referenceId, referenceInstance );
             }
         };
@@ -62,23 +62,23 @@ export default class Unit extends Interactable( HTMLElement ) {
     }
 
     get program() {
-        if ( this.ownerUnit ) return this.ownerUnit.program;
+        if ( this.ownerContract ) return this.ownerContract.program;
         return this.runtime;
     }
 
     runThread( ...refs ) {
-        let runtimeUnit = this.program.locate( this.graph.lineage );
-        if ( !runtimeUnit ) return;
-        return runtimeUnit.thread( ...refs );
+        let runtimeContract = this.program.locate( this.graph.lineage );
+        if ( !runtimeContract ) return;
+        return runtimeContract.thread( ...refs );
     }
 
     observe( callback ) {
         return this.program.observe( this.graph.lineage, callback );
     }
 
-    createSubUnit( childBinding ) {
-        let childInstance = document.createElement( 'subscript-unit' );
-        this.insertNode( childInstance, childBinding.graph.loc, 'unit' );
+    createSubContract( childBinding ) {
+        let childInstance = document.createElement( 'subscript-contract' );
+        this.insertNode( childInstance, childBinding.graph.loc, 'contract' );
         childInstance.bind( childBinding );
         return childInstance;
     }
@@ -127,7 +127,7 @@ export default class Unit extends Interactable( HTMLElement ) {
         let [ startOffsetNode, startOffset ] = this.resolveOffset( start - ownLocStart ),
             [ endOffsetNode, endOffset ] = this.resolveOffset( end - ownLocStart, false );
         let range = new Range;
-        if ( type === 'unit' ) {
+        if ( type === 'contract' ) {
             if ( startOffset === 0 
             && startOffsetNode.parentNode.nodeName === 'SPAN'  ) {
                 range.setStartBefore( startOffsetNode.parentNode );
@@ -186,8 +186,8 @@ export default class Unit extends Interactable( HTMLElement ) {
     }
 
     setState( type, state, value, duration = 100 ) {
-        if ( value && this.ownerUnit ) {
-            this.ownerUnit.setState( type, state, false );
+        if ( value && this.ownerContract ) {
+            this.ownerContract.setState( type, state, false );
         }
         this.setStateCallback( type, state, value, duration, () => {
             if ( value ) {

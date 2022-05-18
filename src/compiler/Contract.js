@@ -11,13 +11,13 @@ import SignalReference from './SignalReference.js';
 import EffectReference from './EffectReference.js';
 import Node from './Node.js';
 
-export default class Unit extends Common {
+export default class Contract extends Common {
 
     constructor( ownerContext, id, def ) {
         super( id, def );
         this.ownerContext = ownerContext;
         // These derivations must be done here at constructor level
-        this.ownerUnit = ownerContext && ( ownerContext.currentUnit || ownerContext );
+        this.ownerContract = ownerContext && ( ownerContext.currentContract || ownerContext );
         this.ownerScope = ownerContext && ( ownerContext.currentScope || ownerContext.ownerScope );
         // Subscript identifers
         this.subscriptIdentifiers = {};
@@ -36,13 +36,13 @@ export default class Unit extends Common {
         this._nextIds = {};
         // Function-level flag
         this.sideEffects = [];
-        // Unit-level flag
+        // Contract-level flag
         this.$sideEffects = false;
     }
 
     get $params() {
         return this.params || (
-            this.ownerUnit && this.ownerUnit.$params
+            this.ownerContract && this.ownerContract.$params
         );
     }
 
@@ -56,13 +56,13 @@ export default class Unit extends Common {
     // ---------------
 
     closest( typeOrCallback = null, withLevel = false, prevLevel = -1 ) {
-        if ( !arguments.length ) return this.ownerUnit;
+        if ( !arguments.length ) return this.ownerContract;
         let currentLevel = prevLevel + 1;
         if ( typeof typeOrCallback === 'function' ? typeOrCallback( this, currentLevel ) : [].concat( typeOrCallback ).some( type => type === this.type ) ) {
             return withLevel ? { instance: this, level: currentLevel } : this;
         }
-        if ( this.ownerUnit ) {
-            return this.ownerUnit.closest( typeOrCallback, withLevel, currentLevel );
+        if ( this.ownerContract ) {
+            return this.ownerContract.closest( typeOrCallback, withLevel, currentLevel );
         }
     }
 
@@ -86,7 +86,7 @@ export default class Unit extends Common {
 
     getSubscriptIdentifier( id, globally = false ) {
         return this.subscriptIdentifiers[ id ] || (
-            globally && this.ownerUnit && this.ownerUnit.getSubscriptIdentifier( id, globally )
+            globally && this.ownerContract && this.ownerContract.getSubscriptIdentifier( id, globally )
         );
     }
 
@@ -110,7 +110,7 @@ export default class Unit extends Common {
                 });
             }
         }
-        this.ownerUnit && this.ownerUnit.subscriptIdentifiersNoConflict( identifier );
+        this.ownerContract && this.ownerContract.subscriptIdentifiersNoConflict( identifier );
     }
 
     // ---------------
@@ -209,8 +209,8 @@ export default class Unit extends Common {
         return this.entryStack.reduce( ( context, current ) => context || ( current instanceof Context ) && current, null );
     }
 
-    get currentUnit() {
-        return this.entryStack.reduce( ( effect, current ) => effect || ( current instanceof Unit ) && current, null );
+    get currentContract() {
+        return this.entryStack.reduce( ( effect, current ) => effect || ( current instanceof Contract ) && current, null );
     }
 
     get currentEntry() {
@@ -225,7 +225,7 @@ export default class Unit extends Common {
         this.entryStack.unshift( entry );
         let result = callback( entry );
         this.entryStack.shift();
-        if ( ( entry instanceof Unit ) && !entry.generatable() ) {
+        if ( ( entry instanceof Contract ) && !entry.generatable() ) {
             this.entries = this.entries.filter( _entry => _entry !== entry );
         }
         // Return callback result
@@ -249,8 +249,8 @@ export default class Unit extends Common {
         return this.pushEntry( instance, callback );
     }
 
-    defineUnit( def, callback ) {
-        let instance = new Unit( this, this.nextId( 'unit' ), def );
+    defineContract( def, callback ) {
+        let instance = new Contract( this, this.nextId( 'contract' ), def );
         return this.pushEntry( instance, callback );
     }
 
@@ -266,8 +266,8 @@ export default class Unit extends Common {
         let type = this.type, label, target;
         if ( ( this.ownerScope || {} ).label ) {
             ( { label: { name: label }, type: target } = this.ownerScope );
-        } else if ( type === 'Iteration' && this.ownerUnit.ownerScope.label ) {
-            ( { label: { name: label }, type: target } = this.ownerUnit.ownerScope );
+        } else if ( type === 'Iteration' && this.ownerContract.ownerScope.label ) {
+            ( { label: { name: label }, type: target } = this.ownerContract.ownerScope );
         };
         return { type, label, target, };
     }
@@ -285,7 +285,7 @@ export default class Unit extends Common {
     hoistAwaitKeyword() {
         if ( [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) return;
         this._hoistedAwaitKeyword = true;
-        this.ownerUnit && this.ownerUnit.hoistAwaitKeyword();
+        this.ownerContract && this.ownerContract.hoistAwaitKeyword();
     }
 
     hoistExitStatement( keyword, arg ) {
@@ -300,8 +300,8 @@ export default class Unit extends Common {
             }
         }
         this._hoistedExitStatements.set( keyword, arg );
-        if ( this.ownerUnit ) {
-            return this.ownerUnit.hoistExitStatement( keyword, arg );
+        if ( this.ownerContract ) {
+            return this.ownerContract.hoistExitStatement( keyword, arg );
         }
     }
 
@@ -314,36 +314,36 @@ export default class Unit extends Common {
     generate( expr, params = {} ) {
         if ( !expr || !this.generatable()  ) return expr;
         this.generated = true;
-        let subscript$unit = Node.identifier( this.ownerUnit.getSubscriptIdentifier( '$unit', true ) );
+        let subscript$contract = Node.identifier( this.ownerContract.getSubscriptIdentifier( '$contract', true ) );
 
         let callee, body;
-        if ( params.isFunctionUnit ) {
+        if ( params.isFunctionContract ) {
             callee = expr;
         } else if ( this.inSequence ) {
-            callee = Node.arrowFuncExpr( null, [ subscript$unit ], expr, this.hoistedAwaitKeyword, true /* expression */ );
+            callee = Node.arrowFuncExpr( null, [ subscript$contract ], expr, this.hoistedAwaitKeyword, true /* expression */ );
         } else {
             body = Array.isArray( expr ) ? Node.blockStmt( expr ) : Node.blockStmt( [ expr ] );
-            callee = Node.arrowFuncExpr( null, [ subscript$unit ], body, this.hoistedAwaitKeyword );
+            callee = Node.arrowFuncExpr( null, [ subscript$contract ], body, this.hoistedAwaitKeyword );
         }
 
         // Create the effect node
-        let unitArgs = [ Node.literal( this.id ), ...( params.args || [] ), callee ];
-        let unit = Node.callExpr( subscript$unit, unitArgs );
+        let contractArgs = [ Node.literal( this.id ), ...( params.args || [] ), callee ];
+        let contract = Node.callExpr( subscript$contract, contractArgs );
         if ( this.hoistedAwaitKeyword ) {
-            unit = Node.awaitExpr( unit );
+            contract = Node.awaitExpr( contract );
         }
         if ( this.inSequence || params.generateForArgument ) {
-            return unit;
+            return contract;
         }
 
         let _this = this;
-        unit = Node.exprStmt( unit );
-        unit.comments = [ {
+        contract = Node.exprStmt( contract );
+        contract.comments = [ {
             type: 'Line',
             value: { toString() { return _this.lineage; }, trim() { return this.toString(); } },
         } ];
         // The list of returned statements
-        let statements = [ unit ];
+        let statements = [ contract ];
         this.hookExpr = statements;
 
         // Complete exits handling
@@ -362,7 +362,7 @@ export default class Unit extends Common {
                     let label = arg.arg;
                     // This keyword meets its target
                     let exitCheck = Node.callExpr(
-                        Node.memberExpr( subscript$unit, Node.identifier( 'exiting' ) ),
+                        Node.memberExpr( subscript$contract, Node.identifier( 'exiting' ) ),
                         [ keyword, label ]
                     );
                     let exitAction = Node.exprStmt(
@@ -377,7 +377,7 @@ export default class Unit extends Common {
             if ( hoistedExits ) {
                 // But not inside
                 let exitCheck = Node.callExpr(
-                    Node.memberExpr( subscript$unit, Node.identifier( 'exiting' ) )
+                    Node.memberExpr( subscript$contract, Node.identifier( 'exiting' ) )
                 );
                 let exitAction = Node.exprStmt( Node.identifier( 'return' ) );
                 pushIf( exitCheck, exitAction );
@@ -388,8 +388,8 @@ export default class Unit extends Common {
     }
 
     get lineage() {
-        let lineage = this.ownerUnit && this.ownerUnit.lineage;
-        return this.ownerUnit && !this.generated ? lineage : `${ lineage ? lineage + '/' : '' }${ this.id }`;
+        let lineage = this.ownerContract && this.ownerContract.lineage;
+        return this.ownerContract && !this.generated ? lineage : `${ lineage ? lineage + '/' : '' }${ this.id }`;
     }
 
     // -----------------
@@ -404,7 +404,7 @@ export default class Unit extends Common {
             effects: {},
             sideEffects: this.sideEffects.length ? true : undefined,
             $sideEffects: this.$sideEffects === true ? true : undefined,
-            subUnits: {},
+            subContracts: {},
             conditions: {},
             hoistedAwaitKeyword: this.hoistedAwaitKeyword,
             loc: this.loc,
@@ -421,13 +421,13 @@ export default class Unit extends Common {
         } );
 
         let offset = this.lineage.split( '/' ).length;
-        let find = lineage => lineage.reduce( ( _json, id ) => _json.subUnits[ id ], json );
+        let find = lineage => lineage.reduce( ( _json, id ) => _json.subContracts[ id ], json );
         this.entries.slice( 0 ).reverse().forEach( entry => {
-            if ( ( entry instanceof Unit ) && entry.generated ) {
+            if ( ( entry instanceof Contract ) && entry.generated ) {
                 let target = find( entry.lineage.split( '/' ).slice( offset, -1 ) );
-                target.subUnits[ entry.id ] = entry.toJson( filter );
+                target.subContracts[ entry.id ] = entry.toJson( filter );
             } else if ( entry instanceof Condition ) {
-                let target = find( entry.ownerUnit.lineage.split( '/' ).slice( offset ) );
+                let target = find( entry.ownerContract.lineage.split( '/' ).slice( offset ) );
                 target.conditions[ entry.id ] = entry.toJson( filter );
             }
         } );
