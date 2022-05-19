@@ -687,8 +687,9 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Discussion Points
 
-+ **The syntax notation for Subscript Functions** - does the double star idea (`**`) work?
-+ (Additional points are acceptable via a PR.)
++ **The syntax notation for Subscript Functions** - does the double star idea (`**`) work here? (See [#3](https://github.com/webqit/subscript/discussions/3#discussion-4084380).)
++ **Subscript Functions VS functional reactive patterns across frameworks** - (Please see the (or ask in the) [Discussions](https://github.com/webqit/subscript/discussions) tab.)
++ **Other** - (Please see (or use) the [Discussions](https://github.com/webqit/subscript/discussions) tab.)
 
 ## Polyfill
 
