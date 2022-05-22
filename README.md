@@ -784,7 +784,7 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
     Wrap any piece of code with it... (or edit right in the UI.)
 
     ```html
-    <subscript-player automode="play">
+    <subscript-player auto-mode="play">
         let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
         console.log( count, doubleCount, quadCount );
     </subscript-player>
