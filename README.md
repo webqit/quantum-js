@@ -688,7 +688,7 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Discussion Points
 
-+ **The syntax notation for Subscript Functions** - does the double star idea (`**`) work here? (See [#3](https://github.com/webqit/subscript/discussions/3#discussion-4084380).)
++ **The syntax for Subscript Functions** - the double star (`**`) syntax and other conventions are open for discussion. (See [#5](https://github.com/webqit/subscript/discussions/5).)
 + **Subscript Functions vs "x"** - coming to Subscript Functions from a totally different background? Wondering how patterns compare between Subscript Functions and a certain framework? (Please see [#4](https://github.com/webqit/subscript/discussions/4).)
 + **Other** - (Please see (or use) the [Discussions](https://github.com/webqit/subscript/discussions) tab.)
 
