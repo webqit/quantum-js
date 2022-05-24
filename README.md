@@ -82,13 +82,14 @@ So, we want to be able to just say (`let a, b; a = 10, b = a * 2`) and have it b
 
 ### Overview
 
-*Subscript Function* is a proposed function primitive that provides this *reactive programming context* within JavaScript. It “keeps the contract" for the individual expressions and statements that go into its context! 
+We propose having a special function primitve *Subscript Function* provide this *reactive programming context* within JavaScript. The idea is to have this function “keep the contract" for the individual expressions and statements that go into its context! 
 
 These functions go with a notation as in below...
 
 ```js
 function** fn() {}
 // much like the syntax for generator functions - function* fn() {}
+// but this syntax is open for discussion ahead
 ```
 
 ...and the function body is any regular piece of code that needs to stay up to date with its dependencies *in fine-grained details*.
