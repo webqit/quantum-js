@@ -728,21 +728,29 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 
     ```js
     let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
+    let result = fn(10, 10); // 20
+    // result = fn.thread( ['a'] ); // 20
+    // result = fn.thread( ['b'] ); // 20
+    // result = fn.thread( ['a'], ['b'] ); // 20
     ```
 
     But the double star syntax is supported from within the function itself.
 
     ```js
+    let score = 100;
     let fn = new SubscriptFunction( `
         function** sum( a, b ) {
             return a + b;
         }
-        let result = sum( score, 100 );
-        // result = sum.thread();
+        let result = sum( score, 100 ); // 200
+        // result = sum.thread( ['a'] ); // 200
+        // result = sum.thread( ['b'] ); // 200
+        // result = sum.thread( ['a'], ['b'] ); // 200
     ` );
+    fn();
     ```
 
-+ Subscript Functions as class methods are currently only supported using a `SubscriptClass()` mixin.
++ *Subscript Functions as class methods* are currently only supported using a `SubscriptClass()` mixin.
 
     ```js
     class MyClass extends SubscriptClass() {
