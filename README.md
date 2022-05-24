@@ -816,8 +816,6 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 
 We'd be super excited to have you raise an issue, make a PR, or join in the discussion at [Subscript's Github Discussions](https://github.com/webqit/subscript/discussions).
 
-**And, wouldn't you give a star for this 🤨 ?**
-
 ### Issues
 
 To report bugs or request features, please submit an [issue](https://github.com/webqit/subscript/issues).
