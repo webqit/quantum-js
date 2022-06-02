@@ -319,12 +319,11 @@ let { username, profile: { [ profileProp ]: avatarUrl } } = candidate;
 
 <details>
     <summary>Heuristics and spread elements (updated)</summary>
-    <p><del>As another special-syntax case, <b>spread</b> expressions are bound to both the *spread element* itself and its sub elements.</del></p>
+    <p>As another special-syntax case, <b>spread</b> expressions are bound to both the *spread element* itself and its sub elements.</p>
     <pre><code>
     let candidateCopy = { …candidate };
     </code></pre>
-    <p><del>This means that the expression will re-evaluate when the *spread element* `candidate` changes, and when any of its direct properties change.</del></p>
-    <p><ins>The expression will re-evaluate ONLY when the <i>spread element</i> <code>candidate</code> changes.</ins></p>
+    <p>This means that the expression will re-evaluate when the *spread element* `candidate` changes, and when any of its direct properties change.</p>
 </details>
 
 #### Side Effects
