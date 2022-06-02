@@ -324,7 +324,7 @@ let { username, profile: { [ profileProp ]: avatarUrl } } = candidate;
     let candidateCopy = { …candidate };
     </code></pre>
     <p><del>This means that the expression will re-evaluate when the *spread element* `candidate` changes, and when any of its direct properties change.</del></p>
-    <p><ins>The expression will re-evaluate ONLY when the *spread element* `candidate` changes.</ins></p>
+    <p><ins>The expression will re-evaluate ONLY when the <i>spread element</i> <code>candidate</code> changes.</ins></p>
 </details>
 
 #### Side Effects
