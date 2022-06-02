@@ -317,13 +317,15 @@ let profileProp = ''avatar';
 let { username, profile: { [ profileProp ]: avatarUrl } } = candidate;
 ```
 
-As another special-syntax case, *spread* expressions are bound to both the *spread element* itself and its sub elements.
-
-```js
-let candidateCopy = { …candidate };
-```
-
-This means that the expression will re-evaluate when the *spread element* `candidate` changes, and when any of its direct properties change.
+<details>
+    <summary>Heuristics and spread elements (updated)</summary>
+    <p><del>As another special-syntax case, <b>spread</b> expressions are bound to both the *spread element* itself and its sub elements.</del></p>
+    <pre><code>
+    let candidateCopy = { …candidate };
+    </code></pre>
+    <p><del>This means that the expression will re-evaluate when the *spread element* `candidate` changes, and when any of its direct properties change.</del></p>
+    <p><ins>The expression will re-evaluate ONLY when the *spread element* `candidate` changes.</ins></p>
+</details>
 
 #### Side Effects
 
