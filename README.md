@@ -319,7 +319,7 @@ let { username, profile: { [ profileProp ]: avatarUrl } } = candidate;
 
 <details>
     <summary>Heuristics and spread elements</summary>
-    <p>As another special-syntax case, <b>spread</b> expressions are bound to both the *spread element* itself and its sub elements.</p>
+    <p>As another special-syntax case, <b>spread</b> expressions are bound to both the <i>spread element</i> itself and its sub elements.</p>
     <pre><code>
     let candidateCopy = { …candidate };
     </code></pre>
