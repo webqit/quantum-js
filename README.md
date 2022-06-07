@@ -40,15 +40,13 @@ let a, b; a = 10, b = a * 2;
 ```js
 // React:
 let [ valueA, setValueA ] = useState(10);
-let [ valueB, setValueB ] = useState();
-useEffect(() => setValueB(valueA() * 2));
+let valueB = useMemo(() => valueA * 2, [valueA]);
 ```
 
 ```js
 // Solid JS:
 let [ valueA, setValueA ] = createSignal(10);
-let [ valueB, setValueB ] = createSignal();
-createEffect(() => setValueB(valueA() * 2));
+let valueB = createMemo(() => valueA() * 2);
 ```
 
 ```js
