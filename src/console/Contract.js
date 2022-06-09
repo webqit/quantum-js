@@ -45,7 +45,7 @@ export default class Contract extends Interactable( HTMLElement ) {
         renderRefs( 'effects' );
         renderRefs( 'signals' );
 
-        this.setAttribute( 'title', this.graph.type );
+        this.setAttribute( 'title', this.graph.type + ' Contract' );
         this.on( 'mouseenter', () => {
             this.setState( 'block', 'hover', true, 0 );
         } ).on( 'mouseleave', () => {
