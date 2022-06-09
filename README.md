@@ -40,7 +40,7 @@ let a, b; a = 10, b = a * 2;
 ```js
 // React:
 let [ valueA, setValueA ] = useState(10);
-let valueB = useMemo(() => valueA * 2, [valueA]);
+let valueB = useMemo(() => valueA * 2, [ valueA ]);
 ```
 
 ```js
@@ -727,25 +727,26 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 + The current polyfill only supports the constructable form of Subscript Function.
 
     ```js
-    let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
-    let result = fn(10, 10); // 20
-    // result = fn.thread( ['a'] ); // 20
-    // result = fn.thread( ['b'] ); // 20
-    // result = fn.thread( ['a'], ['b'] ); // 20
+    var externalVar = 10;
+    let sum = new SubscriptFunction( `a`, `b`, `return a + b + externalVar;` );
+    let result = sum(10, 10); // 30
+    // result = sum.thread( [ 'externalVar' ] ); // 30
+    // result = sum.thread( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
+    // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't an external dependencies to sum()
     ```
 
     But the double star syntax is supported from within the function itself.
 
     ```js
-    let score = 100;
     let fn = new SubscriptFunction( `
+        var externalVar = 10;
         function** sum( a, b ) {
-            return a + b;
+            return a + b + externalVar;
         }
-        let result = sum( score, 100 ); // 200
-        // result = sum.thread( ['a'] ); // 200
-        // result = sum.thread( ['b'] ); // 200
-        // result = sum.thread( ['a'], ['b'] ); // 200
+        let result = sum( 10, 10 ); // 30
+        // result = sum.thread( [ 'externalVar' ] ); // 30
+        // result = sum.thread( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
+        // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't an external dependencies to sum()
     ` );
     fn();
     ```
@@ -763,7 +764,9 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
             return a + b;
         }
     }
-    ```
+    let myInstance = new MyClass();
+    typeof myInstance.sum.thread === 'function'; // true
+     ```
 
     ```js
     class MyClass extends SubscriptClass( HTMLElement ) {
@@ -775,6 +778,8 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
         render() {
         }
     }
+    let myInstance = new MyClass();
+    typeof myInstance.render.thread === 'function'; // true
     ```
 
 + *Watch the **issues** tab for new known issues*
@@ -808,6 +813,22 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
     ```html
     <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
     <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/inspector-element.js"></script>
+    ```
+
+    Create a custom element having at least one subscript method (using the SubscriptClass() mixin)...
+
+    ```js
+    import { SubscriptClass } from '@webqit/subscript';
+    customElements.define('my-counter', class MyCounter extends SubscriptClass( HTMLElement ) {
+
+        static get subscriptMethods() {
+            return [ 'render' ];
+        }
+
+        render() {
+        }
+
+    });
     ```
 
     Wrap your custom element markup with it...

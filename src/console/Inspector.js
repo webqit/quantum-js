@@ -24,6 +24,8 @@ export default class Inspector extends Base( HTMLElement ) {
                     if ( activeButton ) {
                         this.inspectFunction( activeButton );
                     }
+                } else {
+                    console.error(`No subscript element found.`);
                 }
             }, 0 );
         } );

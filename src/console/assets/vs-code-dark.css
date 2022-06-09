@@ -80,7 +80,7 @@ pre[class*="language-"] {
 .token.constant,
 .token.symbol,
 .token.inserted,
-.token.contract {
+.token.unit {
 	color: #b5cea8;
 }
 
