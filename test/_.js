@@ -3,16 +3,9 @@
  * @imports
  */
 import { _parse, _generate, _serialize } from './driver.js';
-import { SubscriptFunction } from '../src/index.js';
-globalThis.window = {};
-let r = await import('../dist/main.js');
-let rrr = window.WebQit.Subscript.SubscriptFunction;
-
-let fn = new rrr('return 10 + 1');
-console.log('-------------------------------------', fn(), rrr);
 
 let source = `
-let b = a && 1;
+foo.bar[keyThatMightChange].property = value;
 `;
 
 let ast = _parse( source );

@@ -558,7 +558,7 @@ export default class Compiler {
      * ------------
      */
     generateExpressionStatement( context, node ) {
-        let def = { type: node.type };
+        let def = { type: node.expression.type };
         return context.defineContract( def, contract => {
             this.setLocation( contract, node.expression );
             let [ expression ] = contract.signalReference( def, () => this.generateNodes( context, [ node.expression ] ) );
