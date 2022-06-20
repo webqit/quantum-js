@@ -732,7 +732,7 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
     let result = sum(10, 10); // 30
     // result = sum.thread( [ 'externalVar' ] ); // 30
     // result = sum.thread( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-    // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't an external dependencies to sum()
+    // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
     ```
 
     But the double star syntax is supported from within the function itself.
@@ -746,7 +746,7 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
         let result = sum( 10, 10 ); // 30
         // result = sum.thread( [ 'externalVar' ] ); // 30
         // result = sum.thread( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-        // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't an external dependencies to sum()
+        // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
     ` );
     fn();
     ```
