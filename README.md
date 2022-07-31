@@ -1,5 +1,5 @@
-# Reactive Contexts Proposal
-> a.k.a: Subscript Functions Proposal
+# Subscript Functions Proposal
+> a.k.a: Reactive Contexts Proposal
 
 This project proposes a new function primitive that lets us open a *reactive programming context* within JavaScript.
 
