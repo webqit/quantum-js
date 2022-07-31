@@ -694,7 +694,7 @@ Above, `render()` is called only once. Subsequent updates employ its `.thread()`
 
 ## Polyfill
 
-This Polyfill is a work in progress. But it is usable today.
+Subscript is usable today via this polyfill.
 
 <!-- BADGES/ -->
 
@@ -788,11 +788,11 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 
 + To visualize *dependency threads* in a live `.thread()` update, we've provided a custom element named `subscript-player`.
 
-    Simply include a pair of scripts in your page...
+    Simply include a pair of scripts in your page... in addition to Subscript itself...
 
     ```html
-    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
-    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/player-element.js"></script>
+    <script src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
+    <script src="https://unpkg.com/@webqit/subscript/dist/player-element.js"></script>
     ```
 
     Wrap any piece of code with it... (or edit right in the UI.)
@@ -808,11 +808,11 @@ const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
 
 + To inspect Subscript Methods and their *dependency threads* in a live custom element that you've designed, we've provided a custom element named `subscript-inspector`.
 
-    Simply include a pair of scripts in your page...
+    Simply include a pair of scripts in your page... in addition to Subscript itself...
 
     ```html
-    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
-    <script crossorigin defer src="https://unpkg.com/@webqit/subscript/dist/inspector-element.js"></script>
+    <script src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
+    <script src="https://unpkg.com/@webqit/subscript/dist/inspector-element.js"></script>
     ```
 
     Create a custom element having at least one subscript method (using the SubscriptClass() mixin)...
@@ -852,5 +852,3 @@ To report bugs or request features, please submit an [issue](https://github.com/
 ### License
 
 MIT.
-
-## Credits
