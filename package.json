@@ -30,7 +30,7 @@
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
-    "acorn": "^8.7.1",
+    "acorn": "^8.8.1",
     "astring": "^1.8.3"
   },
   "devDependencies": {

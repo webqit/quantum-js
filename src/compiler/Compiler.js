@@ -218,13 +218,15 @@ export default class Compiler {
         let def = { type: node.type, kind: node.kind };
         let assignmentRefactors = [];
         let exec = ( contract, declarator, isForLoopInit ) => {
+            this.setLocation( contract, declarator );
+            if ( node.kind === 'const' || !declarator.init ) {
+                return Node.varDeclarator( declarator.id, declarator.init );
+            }
             let initReference, [ init ] = contract.signalReference( def, reference => ( initReference = reference, this.generateNodes( context, [ declarator.init ] ) ) );
             let idReference, [ id ] = contract.effectReference( def, reference => ( idReference = reference, this.generateNodes( context, [ declarator.id ] ) ) );
             initReference.setAssignee( idReference );
-            this.setLocation( contract, declarator );
-            if ( isForLoopInit 
-                || node.kind === 'const' 
-                || !declarator.init 
+            if (
+                isForLoopInit
                 // note that we're not asking initReference.refs.size
                 || ( !this.params.devMode && !contract.references.filter( reference => reference instanceof SignalReference ).length )
             ) {

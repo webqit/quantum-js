@@ -84,12 +84,12 @@ describe( `Variable declarations`, function() {
             `
             let a, b = 2, c;
             // #/8
-            $x(8, $x => {
+            $x(6, $x => {
                 c = d;
             });
             let e;
             // #/12
-            $x(12, $x => {
+            $x(10, $x => {
                 e = f;
             });
             `
@@ -117,7 +117,7 @@ describe( `Assignment expressions`, function() {
         );
 
         add(
-            `assignments bound to references forms a reactive contract.`,
+            `assignments bound to references form a reactive contract.`,
             `
             e = f;
             `,
@@ -383,7 +383,7 @@ describe( `Conditional and logical expressions`, function() {
         );
 
         add(
-            `Do smae for nested Conditionals.`,
+            `Do same for nested Conditionals.`,
             `
             2 ? 0 : ( 3 ? 0 : 1 );
             `,
