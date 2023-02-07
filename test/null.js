@@ -6,7 +6,7 @@ import { SubscriptFunction } from '../src/index.js';
 import Observer from '../../observer/src/index.js';
 
 // -----------
-let source2 = `
+let source = `
 /*
 */
 
@@ -17,19 +17,26 @@ for ( let propertyName in entries ) {
 
 console.log( '-----------------------------------------------' );
 
-let l = list1;
-let v = 'length';
-let sum = async function** sum( param_1, param_2 ) {
-    return param_1 + await param_2;
+let sum = async function sum( param_1, param_2 ) {
+    return param_1 + (await param_2);
 }
+
+let l = list1;
+let propName = 'length';
 if ( 3 ) {
-    let { [ v ]: length } = 1 ? l : 4;
+    let { [ propName ]: length } = 1 ? l : 4;
     console.log( 'List1s length is:', length );
 }
+
+console.log( '-----------------------------------------------' );
+
 for ( let num of list1 ) {
     if ( num === 'four' ) break;
     console.log( 'item', num );
 }
+
+console.log( '-----------------------------------------------' );
+
 top: {
     l1: for ( let item1 of list1 ) {
         for ( let item2 of list2 ) {
@@ -39,61 +46,56 @@ top: {
         }
     }
 }
-switch( param3 ) {
+
+console.log( '-----------------------------------------------' );
+
+switch( funcTrigger ) {
     case 'sum':
-        return sum( param1, param2 );
+        return sum( funcParam1, funcParam2 );
     default:
         console.log( 'the end!' )
 }
 `;
 
-let source3 = `
-let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
-//console.log( count, doubleCount, quadCount );
-`;
-
-globalThis.a = '';
-
-
-let source4 = `
-let app = document.state;
-                        $(this.namespace.error).html(app.network?.error ? (app.network?.online ? 'Network Error - ' : "You're Offline - ") + app.network?.error : '404 - Not Found!');
-
-`;
-
-globalThis.d = undefined;
-
 
 SubscriptFunction.compilerParams.globalsNoObserve.push( 'console' );
-let subscriptFunction = new SubscriptFunction( 'param1', 'param2', 'param3', source4 );
-console.log( '.....................sideEffects', subscriptFunction.sideEffects );
-// -----------
-globalThis.someState = false;
-globalThis.tests = { a: true, b: false };
-globalThis.document = { state: { title: 'Hello from Subscript!' }, head: { meta1: 'Meta prop1' } };
-globalThis.list1 = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
-globalThis.list2 = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
-globalThis.entries = { one: { name: 'one' }, two: { name: 'two' } };
-globalThis.targetEntries = {};
-
-Observer.link( globalThis, 'tests', tests );
-Observer.link( globalThis, 'document', document );
-Observer.link( globalThis, 'list1', list1 );
-Observer.link( globalThis, 'list2', list2 );
-Observer.link( globalThis, 'entries', entries );
-
+let subscriptFunction = new SubscriptFunction( 'funcTrigger', 'funcParam1', 'funcParam2', source );
 Observer.observe( globalThis, mutations => {
     subscriptFunction.thread( ...mutations.map( mu => mu.path ) );
 }, { subtree: true } );
 
+console.log( '.....................sideEffects', subscriptFunction.sideEffects );
+
+globalThis.targetEntries = {};
+globalThis.entries = { one: { name: 'one' }, two: { name: 'two' } };
+Observer.link( globalThis, 'entries', entries );
+setTimeout(() => {
+    entries[ 'one' ] = { name: 'New one' };
+    subscriptFunction.thread( [ 'entries', 'one', 'name' ] );
+}, 4000);
+
+globalThis.list1 = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+globalThis.list2 = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
+Observer.link( globalThis, 'list1', list1 );
+Observer.link( globalThis, 'list2', list2 );
+setTimeout(() => {
+    Observer.set( list1, 0, 'new one' );
+}, 4500);
+
+console.log('');
+let result = subscriptFunction( 'sum', '55', '55' );
+console.log( '---result---->', await result );
+setTimeout(async () => {
+    console.log( '---thread---->', await subscriptFunction.thread( [ 'funcParam2' ] ) );
+}, 5000);
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-console.log( JSON.stringify( subscriptFunction.runtime.graph, null, 3 ) );
+//0console.log( JSON.stringify( subscriptFunction.runtime.graph, null, 3 ) );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-console.log( subscriptFunction.originalSource );
+//console.log( subscriptFunction.originalSource );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
@@ -102,31 +104,3 @@ console.log('');
 console.log('--------------------------------------------------');
 console.log('');
 
-//process.exit();
-
-let result;// = subscriptFunction( '55', '55', 'sum' );
-console.log( '------->', result );
-
-setTimeout(() => {
-    //someState = true;
-    //console.log( '------->', subscriptFunction.thread( [ 'someState' ] ) );
-    entries[ 'one' ] = { name: 'New one' };
-    subscriptFunction.thread( [ 'entries', 'one', 'name' ] );
-
-    /*
-    Observer.proxy( list1 ).push( 'eleven' );
-    //Observer.set( globalThis.document, 'title', {} );
-    //Observer.set( globalThis, 'globe', {} );
-    Observer.set( globalThis.tests, 'b', true );
-    setTimeout(() => {
-        //Observer.set( globalThis.document, 'title', {} );
-        //Observer.set( globalThis, 'globe', {} );
-        //Observer.set( globalThis.document, 'state', { title: 'NEW document title' } );
-        Observer.set( globalThis, 'tests', tests );
-        return;
-        setTimeout(() => {
-            Observer.set( list, 0, 'new one' );
-        }, 4000);
-    }, 4000);
-    */
-}, 4000);

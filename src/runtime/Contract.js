@@ -124,24 +124,24 @@ export default class Contract {
                 }
             }
         }
-        if ( !this.ownerContract || this.params.isFunctionContract ) {
-            let exitReturnValue = this.exits.get( 'return' );
-            this.exits.clear();
-            if ( exitReturnValue !== undefined ) {
-                returnValue = returnValue instanceof Promise ? returnValue.then( () => exitReturnValue ) : exitReturnValue;
+        return _await( returnValue, () => {
+            if ( !this.ownerContract || this.params.isFunctionContract ) {
+                let exitReturnValue = this.exits.get( 'return' );
+                this.exits.clear();
+                if ( exitReturnValue !== undefined ) return exitReturnValue;
             }
-        }
-        return returnValue;
+            return returnValue;
+        } );
     }
 
     iterate( keys = [] ) {
         if ( this.disposed ) return false;
-        if ( ![ 'ForOfStatement', 'ForInStatement'].includes( this.graph.type ) || this.subContracts.size !== 1 ) {
+        if ( ![ 'ForOfStatement', 'ForInStatement' ].includes( this.graph.type ) || this.subContracts.size !== 1 ) {
             throw new Error( `Contract ${ this.graph.lineage } is not an iterator.` );
         }
         let [ [ /* iterationContractId */, iterationInstances ] ] = this.subContracts;
-        let prev, _await = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
-        if ( !keys.length || ( keys.includes( 'length') && this.graph.type === 'ForOfStatement' ) ) {
+        let prev
+        if ( !keys.length || ( keys.includes( 'length' ) && this.graph.type === 'ForOfStatement' ) ) {
             for ( let [ /* iterationId */, iterationInstance ] of iterationInstances ) {
                 prev = _await( prev, () => iterationInstance.call() );
             }
@@ -181,7 +181,7 @@ export default class Contract {
             this.fire( entry.graph.lineage, 'executing', refs );
             return entry.call();
         };
-        let prev, entry, refs, _await = ( prev, callback ) => prev instanceof Promise ? prev.then( callback ) : callback();
+        let prev, entry, refs;
         while ( 
             ( entry = this.$thread.sequence.shift() ) 
             && ( refs = [ ...this.$thread.entries.get( entry ) ] ) 
@@ -431,3 +431,7 @@ export default class Contract {
     }
 
 }
+
+const _await = ( maybePromise, callback ) => (
+    maybePromise instanceof Promise ? maybePromise.then( callback ) : callback()
+);
