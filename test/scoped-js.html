@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="subscript-compiler-url" content="http://127.0.0.1:5500/subscript/dist/compiler.js" />
+        <script src="../dist/lite.js"></script>
+    </head>
+    <body>
+
+        <script type="module">
+            window.extVar = 2;
+            window._timeout = dur => new Promise( res => setTimeout( res, dur ) );
+            let sum = wq.SubscriptFunction( `a`, `b`, `return a + b;` );
+            let sum2 = wq.SubscriptFunction( `a2`, `b2`, `
+                let c = a2 * b2;
+                console.log('args', arguments);
+                return c * extVar;
+            `, { runtimeParams: { apiVersion: 2 } } );
+
+            console.log( `\n----------------------\n` );
+            console.log( `PROPS: `, await wq.SubscriptFunction.inspect( sum, 'properties' ) );
+            console.log( 'SOURCE: ', sum.toString() );
+            const result = await sum( 10, 5 );
+            console.log( 'RESULT: ', result );
+            
+            console.log( `\n----------------------\n` );
+            console.log( `PROPS: `, await wq.SubscriptFunction.inspect( sum2, 'properties' ) );
+            console.log( 'SOURCE: ', sum2.toString() );
+            const [ result2, sync ] = await sum2( 10, 50 );
+            console.log( 'RESULT: ', result2 );
+            setTimeout( () => {
+                console.log( 'RESULT2: ', sync( [ 'a2' ] ) );
+            }, 100 );
+        </script>
+
+    </body>
+</html>

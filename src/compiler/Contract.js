@@ -77,11 +77,13 @@ export default class Contract extends Common {
     // -----------------
 
     defineSubscriptIdentifier( id, whitelist, blacklist = [] ) {
-        this.subscriptIdentifiers[ id ] = {
-            whitelist,
-            blacklist,
-            toString() { return this.whitelist[ 0 ] },
-        };
+        const idObject = {};
+        Object.defineProperty( idObject, 'whitelist', { value: whitelist, writable: true } );
+        Object.defineProperty( idObject, 'blacklist', { value: blacklist, writable: true } );
+        Object.defineProperty( idObject, 'toString', { value: function() {
+            return this.whitelist[ 0 ];
+        } } );
+        this.subscriptIdentifiers[ id ] = idObject;
     }
 
     getSubscriptIdentifier( id, globally = false ) {
@@ -146,7 +148,7 @@ export default class Contract extends Common {
         let targetContext = this.closestContext();
         let targetScope = targetContext.currentScope || targetContext.ownerScope /* when an Iteration */;
         
-        if ( !reference.refs.size || ( resolveInScope && !targetScope.doSubscribe( reference ) ) ) {
+        if ( !reference.refs.size || ( this.type === 'VariableDeclaration' && this.kind === 'const' ) || ( resolveInScope && !targetScope.doSubscribe( reference ) ) ) {
             this.references = this.references.filter( _reference => _reference !== reference );
         }
 
@@ -274,12 +276,24 @@ export default class Contract extends Common {
 
     // ---------------
 
+    get hoistedArgumentsKeyword() {
+        return this._hoistedArgumentsKeyword;
+    }
+    
     get hoistedAwaitKeyword() {
         return this._hoistedAwaitKeyword;
     }
 
     get hoistedExitStatements() {
         return this._hoistedExitStatements;
+    }
+
+    hoistArgumentsKeyword() {
+        if ( [ 'FunctionDeclaration', 'FunctionExpression' ].includes( this.type ) ) {
+            this._hoistedArgumentsKeyword = true;
+            return;
+        }
+        this.ownerContract && this.ownerContract.hoistArgumentsKeyword();
     }
 
     hoistAwaitKeyword() {
@@ -338,10 +352,12 @@ export default class Contract extends Common {
 
         let _this = this;
         contract = Node.exprStmt( contract );
-        contract.comments = [ {
-            type: 'Line',
-            value: { toString() { return _this.lineage; }, trim() { return this.toString(); } },
-        } ];
+        const valueObject = {};
+        Object.defineProperty( valueObject, 'toString', { value: () => _this.lineage } );
+        Object.defineProperty( valueObject, 'trim', { value: function() {
+            return this.toString();
+        } } );
+        contract.comments = [ { type: 'Line', value: valueObject, } ];
         // The list of returned statements
         let statements = [ contract ];
         this.hookExpr = statements;
@@ -407,8 +423,11 @@ export default class Contract extends Common {
             subContracts: {},
             conditions: {},
             hoistedAwaitKeyword: this.hoistedAwaitKeyword,
+            hoistedArgumentsKeyword: this.hoistedArgumentsKeyword,
             loc: this.loc,
         };
+
+        if ( this.originalSource ) { json.originalSource = this.originalSource; }
 
         this.references.forEach( reference => {
             let target;

@@ -23,3 +23,20 @@ export  function normalizeTabs( rawSource, isFunc = false ) {
     }
     return rawSource;
 }
+
+export const _await = ( maybePromise, callback ) => (
+    maybePromise instanceof Promise ? maybePromise.then( callback ) : callback( maybePromise )
+);
+
+export  const _compare = ( a, b ) => {
+    if ( typeof a === 'object' && a && typeof b === 'object' && b ) return _deepEql( a, b );
+    if ( Array.isArray( a ) && Array.isArray( b ) && a.length === b.length ) return a.every( valueA => b.some( valueB => _compare( valueA, valueB ) ) );
+    return a === b;
+};
+
+export  const _deepEql = function( a, b ) {
+    for ( let key in a ) {
+        if ( !_compare( a[ key ], b[ key ] ) ) return false;
+    }
+    return true;
+};

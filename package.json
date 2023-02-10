@@ -23,7 +23,7 @@
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
-    "build": "esbuild main=src/browser-entry.js console-element=src/console/Console.js player-element=src/console/Player.js inspector-element=src/console/Inspector.js dev-elements=src/console/index.js --bundle --minify --sourcemap --outdir=dist",
+    "build": "esbuild main=src/targets.browser.js lite=src/targets.browser.lite.js compiler=src/targets.browser.compiler.js console-element=src/console/Console.js player-element=src/console/Player.js inspector-element=src/console/Inspector.js dev-elements=src/console/index.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
     "-preversion": "npm run test && npm run build && git add -A dist",
     "preversion": "npm run build && git add -A dist",
     "postversion": "npm publish",
