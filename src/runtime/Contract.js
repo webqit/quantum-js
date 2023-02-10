@@ -472,6 +472,7 @@ export default class Contract {
         inspection( _function, 'properties', _await( contract, _contract => {
             const graph = {
                 type: _contract.params.functionType || 'Program',
+                apiVersion: _contract.params.apiVersion || 1,
                 isSubscriptFunction: _contract.params.isSubscriptFunction,
                 sideEffects: _contract.graph.sideEffects || false,
             };
