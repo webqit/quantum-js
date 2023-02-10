@@ -21,7 +21,7 @@ export const compilerParams = {
     globalsNoObserve: [ 'globalThis', 'arguments', 'console', ],
     originalSource: true,
     globalsOnlyPaths: false,
-    locations: false,
+    locations: true,
     compact: 2,
 };
 export const runtimeParams = {

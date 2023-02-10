@@ -84,12 +84,12 @@ describe( `Variable declarations`, function() {
             `
             let a, b = 2, c;
             // #/8
-            $x(6, $x => {
+            $x(8, $x => {
                 c = d;
             });
             let e;
             // #/12
-            $x(10, $x => {
+            $x(12, $x => {
                 e = f;
             });
             `
