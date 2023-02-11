@@ -2,10 +2,10 @@
 /**
  * @imports
  */
-import Base from './Base.js';
+import Base from './src/Base.js';
 
 /**
- * @Console2
+ * @Inspector
  */
 export default class Inspector extends Base( HTMLElement ) {
 
@@ -17,33 +17,32 @@ export default class Inspector extends Base( HTMLElement ) {
         super.connectedCallback();
         this._contentSlot.addEventListener( 'slotchange', () => {
             setTimeout( () => { // Allow embedded subscript instances in slotted elements to manifest
-                let subscriptElement = this._contentSlot.assignedNodes().reduce( ( _subscriptElement, node ) => _subscriptElement || ( node.subscript instanceof Map ? node : null), null );
-                if ( subscriptElement ) {
-                    this.inspectElement( subscriptElement );
-                    let activeButton = this.getAttribute( 'active' );
-                    if ( activeButton ) {
-                        this.inspectFunction( activeButton );
-                    }
+                const hostElement = this._contentSlot.assignedNodes().reduce( ( _hostElement, node ) => _hostElement || ( node.subscript instanceof Map ? node : null), null );
+                if ( hostElement ) {
+                    this.inspectElement( hostElement );
+                    const activeButton = this.getAttribute( 'active' );
+                    if ( activeButton ) { this.inspectFunction( activeButton ); }
                 } else {
-                    console.error(`No subscript element found.`);
+                    visualizer.error(`No subscript element found.`);
                 }
             }, 0 );
         } );
     }
 
-    inspectElement( subscriptElement ) {
-        if ( this.consoleElement ) {
-            this.consoleElement.remove();
+    inspectElement( hostElement ) {
+        if ( this.visualizerElement ) {
+            this.visualizerElement.remove();
             this.controlsElement.remove();
         }
-        this.consoleElement = document.createElement( 'subscript-console' );
+        this.visualizerElement = document.createElement( 'cfunctions-visualizer' );
         this.controlsElement = document.createElement( 'div' );
         this.controlsElement.classList.add( 'controls-element' );
         // ----------------
-        this.shadowRoot.append( this.consoleElement, this.controlsElement );
+        this.shadowRoot.append( this.visualizerElement, this.controlsElement );
         // ----------------
         this.buttons = {};
-        subscriptElement.subscript.forEach( ( subscriptFunction, id ) => {
+        ( hostElement.scripts || [] ).forEach( ( script, id ) => {
+            if ( !script.contract ) return;
             let title = typeof id === 'number' ? `script:${ id }` : `${ id }()`;
             this.buttons[ id ] = this.controlsElement.appendChild( document.createElement( 'button' ) );
             this.buttons[ id ].setAttribute( 'script-id', id );
@@ -54,30 +53,26 @@ export default class Inspector extends Base( HTMLElement ) {
             let iconClasses = this.getAttribute( `data-icons` ) || `bi bi-${ typeof id === 'number' ? 'code' : 'braces' }`;
             iconClasses.split( ' ' ).map( str => str.trim() ).forEach( str => iconElement.classList.add( str ) );
             this.buttons[ id ].addEventListener( 'click', e => {
-                if ( this.active ) {
-                    this.active.classList.remove( 'active' );
-                }
+                if ( this.active ) { this.active.classList.remove( 'active' ); }
                 this.active = this.buttons[ id ];
                 this.active.classList.add( 'active' );
-                this.inspectFunction( subscriptFunction );
+                this.inspectFunction( script );
             } );
         } );
     }
 
-    inspectFunction( subscriptFunction ) {
-        if ( !subscriptFunction || typeof subscriptFunction === 'string' ) {
-            let buttinName = subscriptFunction;
-            if ( !subscriptFunction ) {
-                buttinName = Object.keys( this.buttons )[ 0 ];
-            }
+    inspectFunction( script ) {
+        if ( !script || typeof script === 'string' ) {
+            let buttinName = script;
+            if ( !script ) { buttinName = Object.keys( this.buttons )[ 0 ]; }
             if ( buttinName ) {
-                let button = this.buttons[ buttinName ];
-                let event = new MouseEvent( 'click', { view: window, } );
+                const button = this.buttons[ buttinName ];
+                const event = new MouseEvent( 'click', { view: window, } );
                 button.dispatchEvent( event );
             }
             return;
         };
-        this.consoleElement.bind( subscriptFunction );
+        this.visualizerElement.visualize( script );
     }
 
     /**
@@ -128,4 +123,4 @@ export default class Inspector extends Base( HTMLElement ) {
 /**
  * @define
  */
-customElements.define( 'subscript-inspector', Inspector );
+customElements.define( 'cfunctions-inspector', Inspector );

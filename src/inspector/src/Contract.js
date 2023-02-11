@@ -9,7 +9,7 @@ import Ref from './Ref.js';
  */
 export default class Contract extends Interactable( HTMLElement ) {
 
-    bind( binding ) {
+    visualize( binding ) {
         Object.assign( this, binding );
         if ( !this.graph ) return;
         
@@ -54,7 +54,7 @@ export default class Contract extends Interactable( HTMLElement ) {
         this.observe( ( event, refs ) => {
             this.setState( 'block', 'runtime-active', true, 100 );
             refs.forEach( ref => {
-                let referenceInstance = this.signals.get( ref.referenceId + '' );
+                const referenceInstance = this.signals.get( ref.referenceId + '' );
                 if ( !referenceInstance ) return;
                 referenceInstance.refs.get( ref.id ).setState( 'path', 'runtime-active', true, 100 );
             } );
@@ -67,7 +67,7 @@ export default class Contract extends Interactable( HTMLElement ) {
     }
 
     runThread( ...refs ) {
-        let runtimeContract = this.program.locate( this.graph.lineage );
+        const runtimeContract = this.program.locate( this.graph.lineage );
         if ( !runtimeContract ) return;
         return runtimeContract.thread( ...refs );
     }
@@ -77,9 +77,9 @@ export default class Contract extends Interactable( HTMLElement ) {
     }
 
     createSubContract( childBinding ) {
-        let childInstance = document.createElement( 'subscript-contract' );
+        let childInstance = document.createElement( 'cfunctions-contract' );
         this.insertNode( childInstance, childBinding.graph.loc, 'contract' );
-        childInstance.bind( childBinding );
+        childInstance.visualize( childBinding );
         return childInstance;
     }
 

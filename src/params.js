@@ -3,11 +3,13 @@
  * @exports
  */
 export function resolveParams( extensions = {} ) {
-    return {
+    const params = {
         runtimeParams: { ...runtimeParams, ...( extensions.runtimeParams || {} ) },
         compilerParams: { ...compilerParams, ...( extensions.compilerParams || {} ) },
         parserParams: { ...parserParams, ...( extensions.parserParams || {} ) },
-    }
+    };
+    if ( extensions.devMode ) { /* shortcut for devMode configs */ }
+    return params;
 }
 export const parserParams = {
     ecmaVersion: '2020',

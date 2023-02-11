@@ -2,23 +2,23 @@
 /**
  * @imports
  */
-import CodeBlock from './CodeBlock.js';
-import Contract from './Contract.js';
+import CodeBlock from './src/CodeBlock.js';
+import Contract from './src/Contract.js';
 
 /**
- * @Console
+ * @Visualizer
  */
-export default class Console extends CodeBlock( Contract ) {
+export default class Visualizer extends CodeBlock( Contract ) {
 
-    bind( subscriptFunction, autoRender = true ) {
+    Visualize( fn, autoRender = true ) {
         if ( autoRender ) {
             // Sets both textarea and codeBlock
-            this.innerHTML = subscriptFunction.originalSource;
+            this.innerHTML = fn.originalSource;
         }
         setTimeout( () => {
             if ( !this._codeBlock.textContent.length ) return;
-            let runtime = subscriptFunction.runtime;
-            super.bind( { runtime, graph: runtime.graph } );
+            let runtime = fn.runtime;
+            super.Visualize( { runtime, graph: runtime.graph } );
         }, 0 );
     }
 
@@ -88,6 +88,6 @@ export default class Console extends CodeBlock( Contract ) {
 /**
  * @define
  */
-customElements.define( 'subscript-codeblock', CodeBlock() );
-customElements.define( 'subscript-contract', Contract );
-customElements.define( 'subscript-console', Console );
+customElements.define( 'cfunctions-codeblock', CodeBlock() );
+customElements.define( 'cfunctions-contract', Contract );
+customElements.define( 'cfunctions-visualizer', Visualizer );
