@@ -3,6 +3,9 @@
 
 This project proposes a new function primitive that lets us open a *reactive programming context* within JavaScript.
 
+> **Warning**
+> <br>Major updates and improvements coming in the "next" branch!
+
 ## Table of Contents
 
 + [Background](#background)
