@@ -479,7 +479,7 @@ export default class Contract {
             if ( _contract.params.isSubscriptFunction ) {
                 graph.dependencies = [];
                 for ( const [ id, effect ] of Object.entries( _contract.graph.effects ) ) {
-                    graph.dependencies.push( ...effect.refs.map( ref => ref.path.map( s => s.name ) ) );
+                    graph.dependencies.push( ...effect.refs.map( ref => ref.path.map( s => !( 'name' in s ) ? Infinity : s.name ) ) );
                 }
             }
             return graph;
