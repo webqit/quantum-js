@@ -3,6 +3,7 @@
  * @imports
  */
 import { resolveParams } from './params.js';
+import { normalizeTabs } from './util.js';
 import { parse, compile, serialize } from './compiler/index.js';
 import Runtime from './runtime/Runtime.js';
 import inspect from './runtime/inspect.js';
