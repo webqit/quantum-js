@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import { normalizeTabs } from '../util.js';
+import { normalizeTabs } from '../../util.js';
 import Base from './Base.js';
-import './assets/prism.js';
+import '../assets/prism.js';
 
 /**
  * @CodeBlock
