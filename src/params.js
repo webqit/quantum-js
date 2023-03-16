@@ -3,10 +3,15 @@
  * @exports
  */
 export function resolveParams( extensions = {} ) {
+    const {
+        runtimeParams: _runtimeParams = {},
+        compilerParams: { globalsNoObserve = [], globalsOnlyPathsExcept = [], ..._compilerParams } = {},
+        parserParams: _parserParams = {},
+    } = extensions;
     const params = {
-        runtimeParams: { ...runtimeParams, ...( extensions.runtimeParams || {} ) },
-        compilerParams: { ...compilerParams, ...( extensions.compilerParams || {} ) },
-        parserParams: { ...parserParams, ...( extensions.parserParams || {} ) },
+        runtimeParams: { ...runtimeParams, ..._runtimeParams },
+        compilerParams: { ...compilerParams, globalsNoObserve: [ ...compilerParams.globalsNoObserve, ...globalsNoObserve ], globalsOnlyPathsExcept: [ ...compilerParams.globalsOnlyPathsExcept, ...globalsOnlyPathsExcept ], ..._compilerParams },
+        parserParams: { ...parserParams, ..._parserParams },
     };
     if ( extensions.devMode ) { /* shortcut for devMode configs */ }
     return params;
