@@ -24,8 +24,7 @@
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
     "build": "esbuild main=src/targets.browser.js lite=src/targets.browser.lite.js compiler=src/targets.browser.compiler.js inspector-element=src/inspector/Inspector.js sandbox-element=src/inspector/Sandbox.js visualizer-element=src/inspector/Visualizer.js dev-elements=src/inspector/index.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
-    "-preversion": "npm run test && npm run build && git add -A dist",
-    "preversion": "npm run build && git add -A dist",
+    "preversion": "npm run test && npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
   },
