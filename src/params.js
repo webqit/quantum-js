@@ -2,18 +2,21 @@
 /**
  * @exports
  */
-export function resolveParams( extensions = {} ) {
-    const {
-        runtimeParams: _runtimeParams = {},
-        compilerParams: { globalsNoObserve = [], globalsOnlyPathsExcept = [], ..._compilerParams } = {},
-        parserParams: _parserParams = {},
-    } = extensions;
-    const params = {
-        runtimeParams: { ...runtimeParams, ..._runtimeParams },
-        compilerParams: { ...compilerParams, globalsNoObserve: [ ...compilerParams.globalsNoObserve, ...globalsNoObserve ], globalsOnlyPathsExcept: [ ...compilerParams.globalsOnlyPathsExcept, ...globalsOnlyPathsExcept ], ..._compilerParams },
-        parserParams: { ...parserParams, ..._parserParams },
-    };
-    if ( extensions.devMode ) { /* shortcut for devMode configs */ }
+export function resolveParams( ...extensions ) {
+    let params = { runtimeParams, compilerParams, parserParams }, extension;
+    while( extension = extensions.shift() ) {
+        const {
+            runtimeParams: _runtimeParams = {},
+            compilerParams: { globalsNoObserve: _globalsNoObserve = [], globalsOnlyPathsExcept: _globalsOnlyPathsExcept = [], ..._compilerParams } = {},
+            parserParams: _parserParams = {},
+        } = extension;
+        params = {
+            runtimeParams: { ...params.runtimeParams, ..._runtimeParams },
+            compilerParams: { ...params.compilerParams, globalsNoObserve: [ ...params.compilerParams.globalsNoObserve, ..._globalsNoObserve ], globalsOnlyPathsExcept: [ ...params.compilerParams.globalsOnlyPathsExcept, ..._globalsOnlyPathsExcept ], ..._compilerParams },
+            parserParams: { ...params.parserParams, ..._parserParams },
+        };
+        if ( extensions.devMode ) { /* shortcut for devMode configs */ }
+    }
     return params;
 }
 export const parserParams = {
