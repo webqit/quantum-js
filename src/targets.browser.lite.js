@@ -5,5 +5,5 @@
 import SubscriptFunctionLite from './SubscriptFunctionLite.js';
 
 // As globals
-if ( !self.wq ) { self.wq = {}; }
-self.wq.SubscriptFunction = SubscriptFunctionLite;
+if ( !self.webqit ) { self.webqit = {}; }
+self.webqit.SubscriptFunction = SubscriptFunctionLite;
