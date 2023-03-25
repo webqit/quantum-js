@@ -24,12 +24,16 @@ export default function SubscriptFunctionLite( ...args ) {
         const ast = parse( source, params.parserParams );
         return createFunction( compile( ast, params.compilerParams ) );
     }
+    window.webqit = window.webqit || {};
     // Load and run SubscriptCompiler async - in the background?
-    if ( !window.webqit?.SubscriptCompilerWorker ) {
+    if ( !window.webqit.SubscriptCompilerWorker ) {
         const customUrl = document.querySelector( 'meta[name="subscript-compiler-url"]' );
-        const compilerUrl = customUrl?.content || `https://unpkg.com/@webqit/subscript/dist/compiler.js`;
+        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/subscript/dist/compiler.js' );
         const workerScriptText = `
-        importScripts( '${ compilerUrl }' );
+        const compilerUrls = [ '${ compilerUrls.join( `','` ) }' ];
+        ( function importScript() {
+            try { importScripts( compilerUrls.shift().trim() ) } catch( e ) { if ( compilerUrls.length ) { importScript(); } }
+        } )();
         const { parse, compile } = self.webqit.SubscriptCompiler;
         self.onmessage = e => {
             const { source, params } = e.data;
@@ -38,7 +42,6 @@ export default function SubscriptFunctionLite( ...args ) {
             compilation.identifier = compilation.identifier.toString();
             e.ports[ 0 ]?.postMessage( compilation );
         };`;
-        window.webqit = window.webqit || {};
         window.webqit.SubscriptCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
     }
     return createFunction( new Promise( res => {
