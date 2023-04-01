@@ -3,6 +3,10 @@
 
 This project proposes a new function primitive that lets us open a *reactive programming context* within JavaScript.
 
+> This is `@webqit/subscript@next` and the docs here is yet to be updated to reflect the few new changes.
+>
+> > `npm i @webqit/subscript@next`
+
 ## Table of Contents
 
 + [Background](#background)
