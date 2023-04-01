@@ -4,7 +4,7 @@
 This project proposes a new function primitive that lets us open a *reactive programming context* within JavaScript.
 
 > **Warning**<br>
-> Major updates and improvements coming in the [`next`](https://github.com/webqit/subscript/) branch! > `@webqit/subscript@next`
+> Major updates and improvements coming in the [`next`](https://github.com/webqit/subscript/tree/next) branch! > `@webqit/subscript@next`
 
 ## Table of Contents
 
