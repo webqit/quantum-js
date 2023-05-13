@@ -28,7 +28,7 @@ export const parserParams = {
     locations: false,
 };
 export const compilerParams = {
-    globalsNoObserve: [ 'globalThis', 'arguments', 'console', 'debugger', ],
+    globalsNoObserve: [ 'arguments', 'debugger', ],
     globalsOnlyPathsExcept: [],
     originalSource: true,
     locations: true,
