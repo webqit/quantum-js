@@ -144,7 +144,7 @@ There's a whole lot possible here  which is covered in [the docs](https://github
     + [Side Effects](https://github.com/webqit/contract/wiki#side-effects)
 + [API](https://github.com/webqit/contract/wiki#api)
     + [`ContractFunction`](https://github.com/webqit/contract/wiki#contractfunction)
-    + [`ContractFunction.inspect()`](https://github.com/webqit/contract/wiki#contractfunction-inspect)
+    + [`ContractFunction.inspect()`](https://github.com/webqit/contract/wiki#contractfunctioninspect)
 
 ### Examples
 
