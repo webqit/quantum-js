@@ -232,9 +232,9 @@ let sum = ContractFunction( `a`, `b`, `return a + b + externalVar;` );
 let [ result, reflect ] = sum(10, 10); // 30
 
 // Reflections
-result = reflect( [ 'externalVar' ] ); // 30
-result = reflect( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-result = reflect( [ 'a' ], [ 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
+result = reflect( 'externalVar' ); // 30
+result = reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
+result = reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 ```
 
 But the double star syntax is supported from within the function itself:
@@ -251,9 +251,9 @@ const contract = ContractFunction(`
   let [ result, reflect ] = sum( 10, 10 ); // 30
 
   // Reflections
-  result = reflect( [ 'externalVar' ] ); // 30
-  result = reflect( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-  result = reflect( [ 'a' ], [ 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
+  result = reflect( 'externalVar' ); // 30
+  result = reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
+  result = reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 `);
 contract();
 ```
@@ -308,9 +308,9 @@ let sum = ContractFunctionLite( `a`, `b`, `return a + b + externalVar;` );
 let [ result, reflect ] = await sum(10, 10); // 30
 
 // Reflections
-result = await reflect( [ 'externalVar' ] ); // 30
-result = await reflect( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-result = await reflect( [ 'a' ], [ 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
+result = await reflect( 'externalVar' ); // 30
+result = await reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
+result = await reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 ```
 
 But just for the fact that the Contract Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
