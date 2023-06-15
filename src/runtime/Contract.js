@@ -11,7 +11,7 @@ export default class Contract {
         this.ownerContract = ownerContract;
         this.graph = graph;
         this.callee = callee;
-        this.params = !ownerContract ? { ...params, isSubscriptFunction: true } : params;
+        this.params = !ownerContract ? { ...params, isContractFunction: true } : params;
         this.exits = exits || new Map;
         this.$thread = $thread || { entries: new Map, sequence: [], ownerContract: this };
         this.subContracts = new Map;
@@ -28,7 +28,7 @@ export default class Contract {
                 iterationId: arguments.length === 3 && arg1,
                 isFunctionContract: arguments.length === 4,
                 functionType: arguments.length === 4 && arg1,
-                isSubscriptFunction: arguments.length === 4 && arg2,
+                isContractFunction: arguments.length === 4 && arg2,
                 functionScope: ( this.params.isFunctionContract && this.graph.lineage ) || this.params.functionScope,
             };
 
@@ -453,7 +453,7 @@ export default class Contract {
         // -------------
         const execute = function( _contract, ...args ) {
             let _returnValue = _contract.call( this === undefined ? defaultThis : this, ...args );
-            if ( _contract.params.isSubscriptFunction && _contract.params.apiVersion > 1 ) {
+            if ( _contract.params.isContractFunction && _contract.params.apiVersion > 1 ) {
                 _returnValue = _await( _returnValue, __returnValue => [ __returnValue, _contract.thread.bind( _contract ), _contract ] );
                 // Replace global for next call
                 contract = createCallback( contract );
@@ -473,10 +473,10 @@ export default class Contract {
             const graph = {
                 type: _contract.params.functionType || 'Program',
                 apiVersion: _contract.params.apiVersion || 1,
-                isSubscriptFunction: _contract.params.isSubscriptFunction,
+                isContractFunction: _contract.params.isContractFunction,
                 sideEffects: _contract.graph.sideEffects || false,
             };
-            if ( _contract.params.isSubscriptFunction ) {
+            if ( _contract.params.isContractFunction ) {
                 graph.dependencies = [];
                 for ( const [ id, effect ] of Object.entries( _contract.graph.effects ) ) {
                     graph.dependencies.push( ...effect.refs.map( ref => ref.path.map( s => !( 'name' in s ) ? Infinity : s.name ) ) );
@@ -502,7 +502,7 @@ export default class Contract {
             length: contract.callee.length,
             toString: contract.callee.toString,
         };
-        if ( contract.params.isSubscriptFunction ) {
+        if ( contract.params.isContractFunction ) {
             if ( !( contract.params.apiVersion > 1 ) ) {
                 properties = {
                     ...properties,

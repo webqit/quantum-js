@@ -8,9 +8,9 @@ import Runtime from './runtime/Runtime.js';
 import inspect from './runtime/inspect.js';
 
 /**
- * @SubscriptFunctionLite
+ * @ContractFunctionLite
  */
-export default function SubscriptFunctionLite( ...args ) {
+export default function ContractFunctionLite( ...args ) {
     if ( typeof window !== 'object' ) throw new Error( `No window in context.` );
     // --------------------
     const params = resolveParams( typeof args[ args.length - 1 ] === 'object' ? args.pop() : {} );
@@ -18,23 +18,23 @@ export default function SubscriptFunctionLite( ...args ) {
     const parameters = args;
     const createFunction = compilation => Runtime.createFunction( undefined, compilation, parameters, params.runtimeParams, this, source );
     // --------------------
-    // SubscriptCompiler has been loaded sync?
-    if ( window.webqit?.SubscriptCompiler && !params.runtimeParams.async ) {
-        const { parse, compile } = window.webqit.SubscriptCompiler;
+    // ContractCompiler has been loaded sync?
+    if ( window.webqit?.ContractCompiler && !params.runtimeParams.async ) {
+        const { parse, compile } = window.webqit.ContractCompiler;
         const ast = parse( source, params.parserParams );
         return createFunction( compile( ast, params.compilerParams ) );
     }
     window.webqit = window.webqit || {};
-    // Load and run SubscriptCompiler async - in the background?
-    if ( !window.webqit.SubscriptCompilerWorker ) {
-        const customUrl = document.querySelector( 'meta[name="subscript-compiler-url"]' );
-        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/subscript/dist/compiler.js' );
+    // Load and run ContractCompiler async - in the background?
+    if ( !window.webqit.ContractCompilerWorker ) {
+        const customUrl = document.querySelector( 'meta[name="contract-compiler-url"]' );
+        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/contract/dist/compiler.js' );
         const workerScriptText = `
         const compilerUrls = [ '${ compilerUrls.join( `','` ) }' ];
         ( function importScript() {
             try { importScripts( compilerUrls.shift().trim() ) } catch( e ) { if ( compilerUrls.length ) { importScript(); } }
         } )();
-        const { parse, compile } = self.webqit.SubscriptCompiler;
+        const { parse, compile } = self.webqit.ContractCompiler;
         self.onmessage = e => {
             const { source, params } = e.data;
             const ast = parse( source, params.parserParams );
@@ -42,11 +42,11 @@ export default function SubscriptFunctionLite( ...args ) {
             compilation.identifier = compilation.identifier.toString();
             e.ports[ 0 ]?.postMessage( compilation );
         };`;
-        window.webqit.SubscriptCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
+        window.webqit.ContractCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
     }
     return createFunction( new Promise( res => {
         let messageChannel = new MessageChannel;
-        webqit.SubscriptCompilerWorker.postMessage( { source, params }, [ messageChannel.port2 ] );
+        webqit.ContractCompilerWorker.postMessage( { source, params }, [ messageChannel.port2 ] );
         messageChannel.port1.onmessage = e => res( e.data );
     } ) );
 }
@@ -54,4 +54,4 @@ export default function SubscriptFunctionLite( ...args ) {
 /**
  * @inspect
  */
-Object.defineProperty( SubscriptFunctionLite, 'inspect', { value: inspect } );
+Object.defineProperty( ContractFunctionLite, 'inspect', { value: inspect } );

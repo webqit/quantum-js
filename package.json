@@ -1,5 +1,5 @@
 {
-  "name": "@webqit/subscript",
+  "name": "@webqit/contract",
   "title": "Subscript",
   "description": "Customizable JavaScript runtime",
   "keywords": [
@@ -7,15 +7,15 @@
     "js-parser",
     "DSL"
   ],
-  "homepage": "https://webqit.io/tooling/subscript",
+  "homepage": "https://webqit.io/tooling/contract",
   "version": "2.1.41",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webqit/subscript.git"
+    "url": "git+https://github.com/webqit/contract.git"
   },
   "bugs": {
-    "url": "https://github.com/webqit/subscript/issues"
+    "url": "https://github.com/webqit/contract/issues"
   },
   "type": "module",
   "sideEffects": true,
@@ -57,9 +57,9 @@
     "config": {
       "patreonUsername": "ox_harris",
       "githubUsername": "webqit",
-      "githubRepository": "subscript",
-      "githubSlug": "webqit/subscript",
-      "npmPackageName": "@webqit/subscript"
+      "githubRepository": "contract",
+      "githubSlug": "webqit/contract",
+      "npmPackageName": "@webqit/contract"
     }
   }
 }

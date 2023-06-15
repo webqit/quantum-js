@@ -35,5 +35,5 @@ export const compilerParams = {
     compact: 2,
 };
 export const runtimeParams = {
-    apiVersion: 1,
+    apiVersion: 2,
 };

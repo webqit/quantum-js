@@ -2,8 +2,8 @@
 /**
  * @imports
  */
-import SubscriptFunctionLite from './SubscriptFunctionLite.js';
+import ContractFunctionLite from './ContractFunctionLite.js';
 
 // As globals
 if ( !self.webqit ) { self.webqit = {}; }
-self.webqit.SubscriptFunction = SubscriptFunctionLite;
+self.webqit.ContractFunction = ContractFunctionLite;

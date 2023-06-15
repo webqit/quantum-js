@@ -19,8 +19,8 @@ export default class Contract extends Common {
         // These derivations must be done here at constructor level
         this.ownerContract = ownerContext && ( ownerContext.currentContract || ownerContext );
         this.ownerScope = ownerContext && ( ownerContext.currentScope || ownerContext.ownerScope );
-        // Subscript identifers
-        this.subscriptIdentifiers = {};
+        // Runtime identifers
+        this.runtimeIdentifiers = {};
         // Reference
         this.references = [];
         this.referenceStack = [];
@@ -76,43 +76,43 @@ export default class Contract extends Common {
 
     // -----------------
 
-    defineSubscriptIdentifier( id, whitelist, blacklist = [] ) {
+    defineRuntimeIdentifier( id, whitelist, blacklist = [] ) {
         const idObject = {};
         Object.defineProperty( idObject, 'whitelist', { value: whitelist, writable: true } );
         Object.defineProperty( idObject, 'blacklist', { value: blacklist, writable: true } );
         Object.defineProperty( idObject, 'toString', { value: function() {
             return this.whitelist[ 0 ];
         } } );
-        this.subscriptIdentifiers[ id ] = idObject;
+        this.runtimeIdentifiers[ id ] = idObject;
     }
 
-    getSubscriptIdentifier( id, globally = false ) {
-        return this.subscriptIdentifiers[ id ] || (
-            globally && this.ownerContract && this.ownerContract.getSubscriptIdentifier( id, globally )
+    getRuntimeIdentifier( id, globally = false ) {
+        return this.runtimeIdentifiers[ id ] || (
+            globally && this.ownerContract && this.ownerContract.getRuntimeIdentifier( id, globally )
         );
     }
 
-    subscriptIdentifiersNoConflict( identifier ) {
+    runtimeIdentifiersNoConflict( identifier ) {
         if ( identifier.type !== 'Identifier' ) {
             throw new Error(`An implied Identifier is of type ${ identifier.type }`);
         }
-        for ( let id in this.subscriptIdentifiers ) {
-            let subscriptIdentifier = this.subscriptIdentifiers[ id ];
-            let i = subscriptIdentifier.whitelist.indexOf( identifier.name );
+        for ( let id in this.runtimeIdentifiers ) {
+            let runtimeIdentifier = this.runtimeIdentifiers[ id ];
+            let i = runtimeIdentifier.whitelist.indexOf( identifier.name );
             if ( i === -1 ) continue;
-            subscriptIdentifier.blacklist.push( subscriptIdentifier.whitelist.splice( i, 1 ) );
-            if ( !subscriptIdentifier.whitelist.length ) {
-                subscriptIdentifier.whitelist = subscriptIdentifier.blacklist.map( name => {
+            runtimeIdentifier.blacklist.push( runtimeIdentifier.whitelist.splice( i, 1 ) );
+            if ( !runtimeIdentifier.whitelist.length ) {
+                runtimeIdentifier.whitelist = runtimeIdentifier.blacklist.map( name => {
                     let newVar;
                     do {
                         let randChar = String.fromCharCode( 0 | Math.random() *26 +97 );
                         newVar = `${ name }${ randChar }`;
-                    } while ( subscriptIdentifier.blacklist.includes( newVar ) );
+                    } while ( runtimeIdentifier.blacklist.includes( newVar ) );
                     return newVar;
                 });
             }
         }
-        this.ownerContract && this.ownerContract.subscriptIdentifiersNoConflict( identifier );
+        this.ownerContract && this.ownerContract.runtimeIdentifiersNoConflict( identifier );
     }
 
     // ---------------
@@ -328,21 +328,21 @@ export default class Contract extends Common {
     generate( expr, params = {} ) {
         if ( !expr || !this.generatable()  ) return expr;
         this.generated = true;
-        let subscript$contract = Node.identifier( this.ownerContract.getSubscriptIdentifier( '$contract', true ) );
+        let id$contract = Node.identifier( this.ownerContract.getRuntimeIdentifier( '$contract', true ) );
 
         let callee, body;
         if ( params.isFunctionContract ) {
             callee = expr;
         } else if ( this.inSequence ) {
-            callee = Node.arrowFuncExpr( null, [ subscript$contract ], expr, this.hoistedAwaitKeyword, true /* expression */ );
+            callee = Node.arrowFuncExpr( null, [ id$contract ], expr, this.hoistedAwaitKeyword, true /* expression */ );
         } else {
             body = Array.isArray( expr ) ? Node.blockStmt( expr ) : Node.blockStmt( [ expr ] );
-            callee = Node.arrowFuncExpr( null, [ subscript$contract ], body, this.hoistedAwaitKeyword );
+            callee = Node.arrowFuncExpr( null, [ id$contract ], body, this.hoistedAwaitKeyword );
         }
 
         // Create the effect node
         let contractArgs = [ Node.literal( this.id ), ...( params.args || [] ), callee ];
-        let contract = Node.callExpr( subscript$contract, contractArgs );
+        let contract = Node.callExpr( id$contract, contractArgs );
         if ( this.hoistedAwaitKeyword ) {
             contract = Node.awaitExpr( contract );
         }
@@ -378,7 +378,7 @@ export default class Contract extends Common {
                     let label = arg.arg;
                     // This keyword meets its target
                     let exitCheck = Node.callExpr(
-                        Node.memberExpr( subscript$contract, Node.identifier( 'exiting' ) ),
+                        Node.memberExpr( id$contract, Node.identifier( 'exiting' ) ),
                         [ keyword, label ]
                     );
                     let exitAction = Node.exprStmt(
@@ -393,7 +393,7 @@ export default class Contract extends Common {
             if ( hoistedExits ) {
                 // But not inside
                 let exitCheck = Node.callExpr(
-                    Node.memberExpr( subscript$contract, Node.identifier( 'exiting' ) )
+                    Node.memberExpr( id$contract, Node.identifier( 'exiting' ) )
                 );
                 let exitAction = Node.exprStmt( Node.identifier( 'return' ) );
                 pushIf( exitCheck, exitAction );

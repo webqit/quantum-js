@@ -9,9 +9,9 @@ import Runtime from './runtime/Runtime.js';
 import inspect from './runtime/inspect.js';
 
 /**
- * @SubscriptFunction
+ * @ContractFunction
  */
-export default function SubscriptFunction( ...args ) {
+export default function ContractFunction( ...args ) {
     const params = resolveParams( typeof args[ args.length - 1 ] === 'object' ? args.pop() : {} );
     const source = normalizeTabs( args.pop() || '' );
     const parameters = args;
@@ -24,4 +24,4 @@ export default function SubscriptFunction( ...args ) {
 /**
  * @inspect
  */
-Object.defineProperty( SubscriptFunction, 'inspect', { value: inspect } );
+Object.defineProperty( ContractFunction, 'inspect', { value: inspect } );
