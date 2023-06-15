@@ -179,6 +179,7 @@ export default class Contract {
         for ( let referenceId in this.graph.effects ) {
             for ( let effectRef of this.graph.effects[ referenceId ].refs ) {
                 for ( let eventRef of eventRefs ) {
+                    eventRef = Array.isArray( eventRef ) ? eventRef : [ eventRef ];
                     let [ isMatch, remainder, computes ] = this.matchRefs( eventRef, effectRef );
                     if ( !isMatch ) continue;
                     this.buildThread( eventRef, effectRef, computes, remainder );
