@@ -18,8 +18,9 @@ export default class Compiler {
     }
 
     setLocation( runtimeObject, node ) {
-        if ( this.params.locations === false || !node ) /* such as case: null / default: */ return;
+        if ( !this.params.locations || !node ) /* such as case: null / default: */ return;
         let loc = [ node.start + this._locStart, node.end + this._locStart ];
+        if ( node.loc ) loc.push( node.loc );
         if ( this.params.locations === 'detached' ) {
             this.locations.push( loc );
             runtimeObject.loc = this.locations.length - 1;
@@ -38,16 +39,20 @@ export default class Compiler {
     generate( nodes ) {
         let def = { type: 'Global' };
         let globalContext = new Context( null, '#', { ...def, params: this.params, } );
-        globalContext.defineSubscriptIdentifier( '$contract', [ '$x' ] );
+        globalContext.defineRuntimeIdentifier( '$contract', [ '$x' ] );
         let [ ast ] = globalContext.createScope( def, () => this.generateNodes( globalContext, [ nodes ] ) );
         this.deferredTasks.forEach( task => task() );
-        return {
+        const compilation = {
             source: this.serialize( ast ),
             graph: globalContext.toJson( false ),
-            identifier: globalContext.getSubscriptIdentifier( '$contract' ),
+            identifier: globalContext.getRuntimeIdentifier( '$contract' ),
             locations: this.locations,
             ast,
         };
+        if ( this.params.originalSource === true ) {
+            compilation.graph.originalSource = this.serialize( nodes );
+        }
+        return compilation;
     }
 
     /**
@@ -142,7 +147,11 @@ export default class Compiler {
     generateFunction( generate, context, node ) {
         
         const generateId = ( id, context ) => !id ? [ id ] : context.effectReference( { type: node.type }, () => this.generateNodes( context, [ id ] ), false );
-        const generateFunction = ( id, params, body ) => context.defineContext( { type: node.type, isSubscriptFunction: node.isSubscriptFunction }, functionContract => {
+        const def = { type: node.type, isContractFunction: node.isContractFunction };
+        if ( this.params.originalSource === true ) {
+            def.originalSource = this.serialize( node );
+        }
+        const generateFunction = ( id, params, body ) => context.defineContext( def, functionContract => {
             return functionContract.createScope( { type: node.type }, () => {
                 // FunctionExpressions have their IDs in function scope
                 id = generateId( id, functionContract )[ 0 ];
@@ -167,12 +176,21 @@ export default class Compiler {
             } );
         } );
 
-        let subscript$contract = Node.identifier( context.getSubscriptIdentifier( '$contract', true ) );
-        let contractCreate = ( generate, functionContract, funcName, params, body ) => functionContract.generate(
-            generate.call( Node, funcName, [ subscript$contract ].concat( params ), body, node.async, node.expression, node.generator ), {
-                args: [ Node.literal( node.type ), Node.identifier( node.isSubscriptFunction ? 'true' : 'false' ) ],
+        const id$contract = Node.identifier( context.getRuntimeIdentifier( '$contract', true ) );
+        const spliceArgumentsObject = body => {
+            if ( !functionContract.hoistedArgumentsKeyword || node.type === 'ArrowFunctionExpression' ) return body;
+            const left = Node.memberExpr( id$contract, Node.identifier( 'args' ) );
+            const _right = Node.callExpr( Node.memberExpr( Node.identifier( 'Array' ), Node.identifier( 'from' ) ), [ Node.identifier( 'arguments' ) ] );
+            const right = Node.callExpr( Node.memberExpr( _right, Node.identifier( 'slice' ) ), [ Node.literal( 1 ) ] );
+            body.body.unshift( Node.exprStmt( Node.assignmentExpr( left, right ) ) );
+            return body;
+        };
+        
+        const contractCreate = ( generate, functionContract, funcName, params, body ) => functionContract.generate(
+            generate.call( Node, funcName, [ id$contract ].concat( params ), spliceArgumentsObject( body ), node.async, node.expression, node.generator ), {
+                args: [ Node.literal( node.type ), Node.identifier( node.isContractFunction ? 'true' : 'false' ) ],
                 isFunctionContract: true,
-                generateForArgument: true
+                generateForArgument: true,
             }
         );
 
@@ -181,13 +199,13 @@ export default class Compiler {
             // FunctionDeclarations have their IDs in current scope
             [ id ] = generateId( node.id, context );
             [ functionContract, , params, body ] = generateFunction( null, node.params, node.body );
-            resultNode = contractCreate( Node.funcExpr, functionContract, null, params, body );
+            resultNode = contractCreate( Node.funcExpr, functionContract, id, params, body );
             // We'll physically do hoisting
-            let definitionRef = Node.memberExpr( subscript$contract, Node.identifier( 'functions' ) );
+            let definitionRef = Node.memberExpr( id$contract, Node.identifier( 'functions' ) );
             let definitionCall = ( method, ...args ) => Node.callExpr( Node.memberExpr( definitionRef, Node.identifier( method ) ), [ id, ...args ] );
             // Generate now
             resultNode = [
-                Node.exprStmt( definitionCall( 'define', resultNode ) ),
+                Node.exprStmt( definitionCall( 'declaration', resultNode ) ),
                 generate.call( Node, id, params, Node.blockStmt( [
                     Node.returnStmt( Node.callExpr( Node.memberExpr( definitionCall( 'get' ), Node.identifier( 'call' ) ), [
                             Node.thisExpr(), Node.spreadElement( Node.identifier( 'arguments' ) )
@@ -219,14 +237,11 @@ export default class Compiler {
         let assignmentRefactors = [];
         let exec = ( contract, declarator, isForLoopInit ) => {
             this.setLocation( contract, declarator );
-            if ( node.kind === 'const' || !declarator.init ) {
-                return Node.varDeclarator( declarator.id, declarator.init );
-            }
             let initReference, [ init ] = contract.signalReference( def, reference => ( initReference = reference, this.generateNodes( context, [ declarator.init ] ) ) );
             let idReference, [ id ] = contract.effectReference( def, reference => ( idReference = reference, this.generateNodes( context, [ declarator.id ] ) ) );
             initReference.setAssignee( idReference );
             if (
-                isForLoopInit
+                isForLoopInit || node.kind === 'const' || !declarator.init
                 // note that we're not asking initReference.refs.size
                 || ( !this.params.devMode && !contract.references.filter( reference => reference instanceof SignalReference ).length )
             ) {
@@ -337,7 +352,7 @@ export default class Compiler {
         let def = { type: node.type };
         return context.defineContract( { type: node.type }, iteratorContract => {
             this.setLocation( iteratorContract, node );
-            iteratorContract.defineSubscriptIdentifier( '$counter', [ '$x_index' ] );
+            iteratorContract.defineRuntimeIdentifier( '$counter', [ '$x_index' ] );
             // A scope for variables declared in header
             return context.createScope( { type: 'Iteration' }, () => {
                 let createNodeCallback, init, test, update;
@@ -376,7 +391,7 @@ export default class Compiler {
         let iterationBody = [], contractBody = body.body.slice( 0 );
         // Counter?
         if ( !params.iterationId ) {
-            params.iterationId = Node.identifier( iterationContext.getSubscriptIdentifier( '$counter', true ) );
+            params.iterationId = Node.identifier( iterationContext.getRuntimeIdentifier( '$counter', true ) );
             let counterInit = Node.varDeclarator( Node.clone( params.iterationId ), Node.literal( -1 ) );
             let counterIncr = Node.updateExpr( '++', Node.clone( params.iterationId ), false );
             preIterationDeclarations.push( counterInit );
@@ -414,7 +429,7 @@ export default class Compiler {
         let def = { type: node.type };
         return context.defineContract( { type: node.type }, iteratorContract => {
             this.setLocation( iteratorContract, node );
-            iteratorContract.defineSubscriptIdentifier( '$counter', [ node.type === 'ForInStatement' ? '$x_key' : '$x_index' ] );
+            iteratorContract.defineRuntimeIdentifier( '$counter', [ node.type === 'ForInStatement' ? '$x_key' : '$x_index' ] );
             // A scope for variables declared in header
             return context.createScope( { type: 'Iteration' }, () => {
                 
@@ -445,7 +460,7 @@ export default class Compiler {
                             [ preIterationDeclarations, newBody ] = composeIterationWith( { iterationId } );
                         } else {
                             // Its a forIn statement with a destructuring left side
-                            let iteration$counter = Node.identifier( context.getSubscriptIdentifier( '$counter' ) );
+                            let iteration$counter = Node.identifier( context.getRuntimeIdentifier( '$counter' ) );
                             [ preIterationDeclarations, newBody ] = composeIterationWith( { iterationId: iteration$counter } );
                             // We'll use a plain Identifier as left
                             newLeft = Node.varDeclaration( 'let', [ Node.varDeclarator( Node.clone( iteration$counter ), null ) ] );
@@ -474,7 +489,7 @@ export default class Compiler {
      * ------------
      */
     generateLabeledStatement( context, node ) {
-        context.subscriptIdentifiersNoConflict( node.label );
+        context.runtimeIdentifiersNoConflict( node.label );
         let def = { type: node.type, label: node.label };
         if ( !node.body.type.endsWith( 'Statement' ) ) {
             return context.defineContract( def, contract => {
@@ -507,15 +522,15 @@ export default class Compiler {
         if ( nearestExitTarget && nearestExitTarget.type === 'SwitchStatement' && node.type === 'BreakStatement' && !node.label ) {
             return generate.call( Node, null );
         }
-        let subscript$contract = Node.identifier( context.getSubscriptIdentifier( '$contract', true ) );
+        let id$contract = Node.identifier( context.getRuntimeIdentifier( '$contract', true ) );
         let keyword = Node.literal( node.type === 'BreakStatement' ? 'break' : 'continue' );
         let label = node.label ? Node.literal( node.label.name ) : Node.identifier( 'null' );
         let exitCall = Node.exprStmt( 
-            Node.callExpr( Node.memberExpr( subscript$contract, Node.identifier( 'exit' ) ), [ keyword, label ] ),
+            Node.callExpr( Node.memberExpr( id$contract, Node.identifier( 'exit' ) ), [ keyword, label ] ),
         );
         // Break / continue statement hoisting
         context.currentContract.hoistExitStatement( keyword, label );
-        // contract.subscriptIdentifiersNoConflict() wont be necessary
+        // contract.runtimeIdentifiersNoConflict() wont be necessary
         // as the label definition would have had the same earlier
         return [ exitCall, Node.returnStmt() ];
     }
@@ -529,11 +544,11 @@ export default class Compiler {
         let def = { type: node.type };
         return context.defineContract( def, contract => {
             let [ argument ] = contract.signalReference( def, () => this.generateNodes( context, [ node.argument ] ) );
-            let subscript$contract = Node.identifier( context.getSubscriptIdentifier( '$contract', true ) );
+            let id$contract = Node.identifier( context.getRuntimeIdentifier( '$contract', true ) );
             let keyword = Node.literal( 'return' );
             let arg = argument || Node.identifier( 'undefined' );
             let exitCall = Node.exprStmt(
-                Node.callExpr( Node.memberExpr( subscript$contract, Node.identifier( 'exit' ) ), [ keyword, arg ] ),
+                Node.callExpr( Node.memberExpr( id$contract, Node.identifier( 'exit' ) ), [ keyword, arg ] ),
             );
             // Return statement hoisting
             contract.hoistExitStatement( keyword, Node.identifier( 'true' ) );
@@ -737,25 +752,27 @@ export default class Compiler {
      */
     generateThisExpression( context, node ) { return this.generateIdentifier( ...arguments ); }
     generateIdentifier( context, node ) {
-        let createNode = () => node.type === 'Identifier' ? Node.identifier( node.name ) : Node.thisExpr();
-        // How we'll know Identifiers within script
-        if ( node.type === 'Identifier' ) {
-            context.subscriptIdentifiersNoConflict( node );
-        }
         let $identifier = {
-            name: node.type === 'Identifier' ? node.name : 'this',
+            name: node.type !== 'Identifier' ? 'this' : node.name,
         };
         this.setLocation( $identifier, node );
         const closestFunction = context.closestFunction();
         let reference = ( context.currentContract || context ).currentReference;
         if ( reference ) {
             do {
-                if ( !closestFunction || closestFunction.isSubscriptFunction || ( reference instanceof EffectReference ) ) {
+                if ( !closestFunction || closestFunction.isContractFunction || ( reference instanceof EffectReference ) ) {
                     reference.addRef().unshift( $identifier );
                 }
             } while( reference = reference.contextReference );
         }
-        return createNode();
+        if ( node.type !== 'Identifier' ) return Node.thisExpr();
+        // How we'll know Identifiers within script
+        context.runtimeIdentifiersNoConflict( node );
+        // Substituting the keyword: arguments
+        const id$contract = Node.identifier( context.getRuntimeIdentifier( '$contract', true ) );
+        return node.name === 'arguments'
+            ? ( context.currentContract.hoistArgumentsKeyword(), Node.memberExpr( id$contract, Node.identifier( 'args' ) ) )
+            : Node.identifier( node.name );
     }
 
     /**

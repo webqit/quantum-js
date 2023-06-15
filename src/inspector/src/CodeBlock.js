@@ -2,9 +2,9 @@
 /**
  * @imports
  */
-import { normalizeTabs } from '../util.js';
+import { normalizeTabs } from '../../util.js';
 import Base from './Base.js';
-import './assets/prism.js';
+import '../assets/prism.js';
 
 /**
  * @CodeBlock
@@ -206,8 +206,8 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
 
     get css() {
         return [
-            `https://unpkg.com/@webqit/subscript/src/console/assets/prism.css`,
-            `https://unpkg.com/@webqit/subscript/src/console/assets/vs-code-dark.css`,
+            `https://unpkg.com/@webqit/contract/src/console/assets/prism.css`,
+            `https://unpkg.com/@webqit/contract/src/console/assets/vs-code-dark.css`,
             `
             * {
                 -webkit-box-sizing: border-box;

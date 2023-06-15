@@ -5,7 +5,7 @@
 import { group, add } from './driver.js';
 
 /**
- * The add() methods below decribe what the Subscript compiler would take and generate, respectively.
+ * The add() methods below decribe what the Contract compiler would take and generate, respectively.
  * A quick way to see compiler results for an expression/statement is via ./_.js
  * @see ./_.js
  */
@@ -84,12 +84,12 @@ describe( `Variable declarations`, function() {
             `
             let a, b = 2, c;
             // #/8
-            $x(6, $x => {
+            $x(8, $x => {
                 c = d;
             });
             let e;
             // #/12
-            $x(10, $x => {
+            $x(12, $x => {
                 e = f;
             });
             `
@@ -503,7 +503,7 @@ describe( `Functions`, function() {
     // Coming soon
 } );
 
-describe( `Subscript Functions`, function() {
+describe( `Contract Functions`, function() {
     // Coming soon
 } );
 

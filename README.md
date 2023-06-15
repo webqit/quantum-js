@@ -1,643 +1,154 @@
-# Subscript Functions Proposal
-> a.k.a: Reactive Contexts Proposal
+# Contract Functions
 
-This project proposes a new function primitive that lets us open a *reactive programming context* within JavaScript.
+<!-- BADGES/ -->
 
-> **Warning**<br>
-> Major updates and improvements coming in the [`next`](https://github.com/webqit/subscript/tree/next) branch! > `@webqit/subscript@next`
 
-## Table of Contents
+<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/subscript.svg" alt="NPM version" /></a></span> <span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/subscript.svg" alt="NPM downloads" /></a></span>
 
-+ [Background](#background)
-+ [What We Propose](#what-we-propose)
-    + [Overview](#overview)
-    + [Formal Syntax](#formal-syntax)
-    + [Dependency Threads](#dependency-threads)
-    + [Heuristics](#heuristics)
-    + [Conditionals And Logic](#conditionals-and-logic)
-    + [Loops](#loops)
-+ [Example Usecase](#example-usecase)
-+ [Design Goals](#design-goals)
-+ [Non-Goals](#non-goals)
-+ [Discussion Points](#discussion-points)
-+ [Polyfill](#polyfill)
-    + [Download](#download)
-    + [Playground](#playground)
-    + [Getting Involved](#getting-involved)
-    + [Issues](#issues)
-    + [License](#license)
-+ [Credits](#credits)
+<!-- /BADGES --> 
 
-## Background
+**[Motivation](#motivation) • [Overview](#an-overview) • [Polyfill](#the-polyfill) • [Design Discussion](#design-discussion) • [Getting Involved](#getting-involved) • [License](#license)**
 
-Reactive programming has become one of the most exciting programming paradigms of modern frontend development! While there continues to be varying opinions (and a high degree of polarization) as to what it is and what implementation makes the most sense, you'd realize that everyone is converging on one idea: **an automated approach to keeping something (b) in sync with something else (a), such that the expression `b = a` is held as a contract throughout the lifetime of the program**.
+Contract Functions are a proposed new type of JavaScript function that enable fine-grained Reactive Programming in the *imperative* form and *linear* flow of the language, where every logic expressed is maintained as a "contract" throughout the lifetime of the program! (By this, we introduce Imperative Reactive Programming (IRP) in JavaScript!)
 
-**Problem is:** in the real world, the concept of “contract" isn't in the design of literal assignment expressions as we have in theory above (nor does it exist in any other imperative operation). **One must have to model the equivalent of an imperative expression in functional programming - to have a chance to ensure that the “contract" is kept!**
+Contract Functions is an upcoming proposal!
 
-Consider how the following theoretical reactive code would be constructed across a selection of frameworks (ignoring completeness and perfectionism):
+## Motivation
+
+Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, and yet requires much manual plumbing and a fundamental paradigm shift in how we build applications. Everything together yet eats away at the idiomatic use of the language, takes a toll on performance, and fiendishly messes with our brain with tricky runtime behaviours!
+
+This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/on-the-language-of-reactivity-part-1-and-introducing-the-observer-api-pkn-temp-slug-2525455?preview=74f1766eb6ae03dff8a4ceee33c4b1b534dc2fb007ddfc9e651e6e03ef59394d784f84e98d50cc7f1b48584585153af5fb1516c3d2555a80510d77d9)<sup>draft</sup>
+
+We realized that we could solve the "Language of Reactivity" down to being just "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Contract Functions" as a native language feature!
+
+## An Overview
+
+Contract Functions have a distinguishing syntax: a double star notation.
 
 ```js
-let a, b; a = 10, b = a * 2;
-```
-
-```js
-// React:
-let [ valueA, setValueA ] = useState(10);
-let valueB = useMemo(() => valueA * 2, [ valueA ]);
-```
-
-```js
-// Solid JS:
-let [ valueA, setValueA ] = createSignal(10);
-let valueB = createMemo(() => valueA() * 2);
-```
-
-```js
-// Vue:
-let a = ref(10);
-let b = ref();
-watchEffect(() => b.value = a.value * 2);
-```
-
-```js
-// Svelte (with equivalent constructs hidden behind a compiler):
-let a = 10;
-$: b = a * 2;
-```
-
-```js
-// etc
-```
-
-Where does it hurt? Why, everywhere!
-+ We've continued to ship libraries and frameworks to users to enable a universal idea for all of the time!
-+ Plus, we're guaranteed to keep sitting at one level of abstraction or the other in all of our means to it, with developers consequently slaving over a slew of functional APIs, or unconventional syntaxes and their compile step!
-
-## What We Propose
-
-Having reactivity as a native language feature - this time, reactivity in the literal, imperative form of the language!
-
-You'd realize that as the language engine, we aren't subject to the same userland constraints that hang reactivity at an abstraction. We operate at the root and can conveniently solve for the lowest common denominator.
-
-So, we want to be able to just say (`let a, b; a = 10, b = a * 2`) and have it binding - but **specifically in a reactive programming context**!
-
-### Overview
-
-We propose having a special function primitve *Subscript Function* provide this *reactive programming context* within JavaScript. The idea is to have this function “keep the contract" for the individual expressions and statements that go into its context! 
-
-These functions go with a notation as in below...
-
-```js
-function** fn() {}
-// much like the syntax for generator functions - function* fn() {}
-// but this syntax is open for discussion ahead
-```
-
-...and the function body is any regular piece of code that needs to stay up to date with its dependencies *in fine-grained details*.
-
-```js
-let var1 = 10;
-function** fn() {
-    console.log(var1);
+function** calculate() {
+  // Function body
 }
 ```
 
-It is, in every way, like a regular function, and can be called any number of times.
+> See [Formal Syntax](wiki#formal-syntax) for details.
+
+Function body is any regular piece of code that needs to be automatically maintained as a "contract" with its dependencies:
 
 ```js
-fn();
-// prints: 10
-```
-
-But it also exposes a `.thread()` method that specifically lets us keep it in sync with one or more of its *outer* dependencies - whenever those change.
-
-```js
-var1 = 20
-fn.thread( [ 'var1' ] );
-// prints: 20
-```
-
-This method passes a list of outer references for which a selection of dependent expressions or statements within the program are rerun - in the order they appear.
-
-```js
-let var1 = 10, var2 = 0;
-function** fn() {
-    let localVar1 = var1 * 2;
-    let localVar2 = var2 * 2;
-    console.log(localVar1);
-    console.log(localVar2);
+let count = 10; // External dependency
+function** calculate(factor) {
+  // Reactive expressions
+  let doubled = count * factor;
+  console.log(doubled);
 }
 ```
 
-```js
-var2 = 11;
-fn.thread( [ 'var2' ] );
-// prints: 22
-```
-
-So, calling the `.thread()` method in the example above moves the function's control directly to its second statement, and next to its fourth statement - as this has `localVar2` as a dependency. Local state is changed until next time. Statements 1 and 3 are left in the same state as from the last time they were touched.
-
-Now, in logical terms, a `.thread()` update follows the implicit *dependency graph* of the expressions and statements in the function body. This means nothing is ever overrun or underrun throughout the lifetime of the program! (And you're right! Now, it gets harder for applications to not be performant!)
-
-### Formal Syntax
-
-A reactive programming context must be explicitly designated. So we propose using a double star (`**`) on the function syntax <a href="#discussion-points"><sup><small>Discussion Point 1</small></sup></a>. (And this would be just one star extra on the standard syntax for [Generator Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) `function* gen() {}`.)
+Return value is a two-part array that contains both the function's actual return value and a special `reflect` function for getting the contract to reflect updates:
 
 ```js
-// As function declaration
-function** fn( a, b ) {
-    return a + b;
-}
+let [ returnValue, reflect ] = calculate(2);
+console.log(returnValue); // undefined
 ```
 
-```js
-// As function expression
-let fn = function**( a, b ) {
-    return a + b;
-}
-```
+<details><summary>Console</summary>
 
-```js
-// As function constructor
-// A one-on-one equivalent of the standard function constructor (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function)
-let fn = new SubscriptFunction( `a`, `b`, `return a + b;` );
-```
+| doubled | returnValue |
+| ------- | ----------- |
+| `20`    | `undefined` |
 
-Now, being function-based lets us have this everywhere:
-
-```js
-// As property
-let myObject = {
-    fn: function**( a, b ) {
-        return a + b;
-    }
-}
-```
-
-```js
-// As method
-let myObject = {
-    **fn( a, b ) {
-        return a + b;
-    }
-}
-```
-
-```js
-// As class method
-class MyClass {
-    **fn( a, b ) {
-        return a + b;
-    }
-}
-```
-
-#### The `subscrFunction.thread()` Method
-
-The `.thread()` method is the reactivity API in Subscript Functions. It constitutes one clear interaction point and enables a one-liner approach to fine-grained reactivity.
-
-It passes a list of the outside variables or properties that have changed; each as an array path.
-
-##### Syntax:
-
-```js
-let returnValue = subscrFunction.thread( path1, ... pathN );
-```
-
-**Parameters**
-
-+ `path1, ... pathN` - An array path representing each variable, or object property, that has changed.
-
-**Return Value**
-
-The return value of this method depends on the return value of the dependency thread it initiates within the function body.
-
-##### Example
-
-```js
-// Outer dependencies
-var a = 10;
-var b = 2;
-
-// A function with two possible return values
-let sum = function**() {
-    if ( a > 10 ) {
-        return Promise.resolve( a + b );
-    }
-    return a + b;
-}
-```
-
-```js
-// Run normally
-console.log( sum() );
-< 12
-```
-
-```js
-// Run a thread with a different return value
-a = 20;
-console.log( sum.thread( [ 'a' ] ) );
-< Promise { 22 }
-```
-
-### Dependency Threads
-
-Expressions and statements in Subscript Function contexts maintain a binding to their dependencies.
-
-For example, variable declarations, with *let* and *var*, and assignment expressions, are bound to any references on their right-hand side. (*const* declarations are an exception as they're designed to be immutable.)
-
-```js
-var tense = score > 50 ? 'passed' : 'failed';
-```
-
-So, above, the assignment expression is bound to an external reference `score`; and thus responds to an update event for `score`.
-
-Where an expression or statement depends on a previous one, a *dependency thread* is formed, and updates are executed along this thread.
-
-Thus, any subsequent statement, like the one below, having the `tense` variable itself as a dependency is updated next...
-
-```js
-let message = `Hi ${ candidate.firstName }, you ${ tense } this test!`;
-```
-
-And the update continues to include any subsequent dependents of the `message` variable itself... and on to dependents of those dependents... until the end of the dependency thread.
-
-```js
-// This. (Having the “message" variable as a dependency.)
-let fullMessage = [ message, ' ', 'Thank you!' ].join( '' );
-```
-
-```js
-// This. (Having the “fullMessage" variable as a dependency, in addition to the “candidate.username" property.)
-let broadcast = { [ candidate.username ]: fullMessage };
-```
-
-```js
-// These two. (Having the “broadcast" variable as a dependency.)
-let broadcastInstance = new BroadcastMessage( broadcast );
-console.log( broadcast );
-```
-
-### Heuristics
-
-Subscript Functions employ a mix of compile-time and runtime heuristics to deliver fine-grained reactivity. This lets us enjoy the full range of language features without “loosing" reactivity or trading performance.
-
-For example, expressions that reference deep object properties are bound to updates that actually happen along those paths.
-
-```js
-let username = candidate.username;
-let avatarUrl = candidate.profile.avatar;
-```
-
-So, above, the first expression responds only when the `candidate.username` property is updated or deleted, or when the root object `candidate` is changed. And the second expression responds only when the `candidate.profile.avatar` property or the parent path `candidate.profile` is updated or deleted, or when the root object `candidate` is changed.
-
-The above holds even with a dynamic syntax.
-
-```js
-let username = candidate[1 ? 'username' : 'name'];.
-let avatarUrl = (1 ? candidate : {}).profile?.avatar;
-```
-
-Also, the two expressions continue to be treated individually - as two distinct contracts - even when combined in one declaration.
-
-```js
-let username = candidate.username, avatarUrl = candidate.profile.avatar;
-```
-
-Heuristics make it all work with all of ES6+ syntax niceties. Thus, they continue to be two distinct contracts (and reactivity remains fine-grained) even with a destructuring syntax.
-
-```js
-let { username, profile: { avatar: avatarUrl } } = candidate;
-```
-
-And even when so dynamically destructured.
-
-```js
-let profileProp = ''avatar';
-let { username, profile: { [ profileProp ]: avatarUrl } } = candidate;
-```
-
-<details>
-    <summary>Heuristics and spread elements</summary>
-    <p>As another special-syntax case, <b>spread</b> expressions are bound to both the <i>spread element</i> itself and its sub elements.</p>
-    <pre><code>
-    let candidateCopy = { …candidate };
-    </code></pre>
-    <p>This means that the expression will re-evaluate when the <i>spread element</i> <code>candidate</code> changes, and when any of its direct properties change.</p>
 </details>
 
-#### Side Effects
-
-Powerful heuristics make it possible to pick up side effects - indirect mutations - made by inner functions within the Subscript Function context itself.
+The `reflect()` function takes just the string representation of the external dependencies that have changed and need to be reflected in the contract:
 
 ```js
-function** fn() {
-    function sum( a, b ) {
-        callCount ++;
-        return a + b;
-    }
-    let callCount = 0;
-    let result = sum( score, 100 );
-    console.log( 'Number of times we\'ve summed:', callCount );
-}
-fn();
+count = 20;
+reflect('count');
 ```
 
-Above, a side effect happens whenever `sum()` is called. Although the `console.log()` expression isn't directly dependent on the `result = sum()` expression, it is directly dependent on the side effect - `callCount` - of `sum()`. So, with an update event for `score`, the `result = sum()` expression runs, and the `console.log()` expression runs next.
+<details><summary>Console</summary>
 
-If these two expressions were to appear in reverse order, as in below…
+| doubled |
+| ------- |
+| `40`    |
+
+</details>
+
+Path dependencies are expressed in array notation. And multiple dependencies can be reflected at once, if they changed at once:
 
 ```js
-console.log( 'Number of times we\'ve summed:', callCount );
-let result = sum( score, 100 );
+count++;
+object.property = value;
+reflect('count', [ 'object', 'property' ]);
 ```
 
-…an update event for `score` would run only the `result = sum()` expression, because, following the runtime's *stack-based execution model*, the side effect on `callCount` would have happened after `console.log()` got a chance to run.
+### Change Propagation
 
-### Conditionals And Logic
+Reactivity exists with Contract Functions where there are dependencies "up" the scope to respond to! And here's the mental model for that:
 
-When the "test" expression of an "if/else" statement, "switch" statement, or other logical expression contains references, the statement or logical expression is bound to those references. This lets us have conditionals and logic as a contract.
+`┌─` a change *happens outside* function scope
 
-#### "If/else" Statements
+`└─` is *propagated into* function, then *self-propagates down* `─┐`
 
-An "if/else" statement is bound to references in its "test" expression.
+Changes within the function body itself is *self-propagation* all the way, going "top-down" the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
 
-```js
-if ( testExpr ) {
-    // consequentBlock
-} else {
-    // alternateBlock
-}
-```
-
-Above, the "if/else" construct is bound to any references in `testExpr`. An update event for any of these gets the construct evaluated again to keep the contract. So, the "test" expression (`testExpr`) is run, then, the body of the appropriate branch of the construct is executed as a block.
-
-An “else/if" block is taken as a standalone contract nested within the “else" block of a parent “if/else" contract. In other words, the two forms below are functionally equivalent.
+Below is a good way to see that: a Contract Function having `score` as an external dependency, with lines having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
 ```js
-if ( testExpr1 ) {
-    // consequentBlock1
-} else if ( testExpr2 ) {
-    // consequentBlock2
-} else {
-    // alternateBlock
-}
+let score = 40;
 ```
 
 ```js
-if ( testExpr1 ) {
-    // consequentBlock1
-} else {
-    if ( testExpr2 ) {
-        // consequentBlock2
-    } else {
-        // alternateBlock
-    }
-}
-```
+function** ui() {
+  let divElement = document.createElement('div');
+  // >>─────────┐
+  let tense = score > 50 ? 'passed' : 'failed';
+  //    └─>────────────────────────────────────┐
+  let message = `Hi ${ p.firstName }, you ${ tense } this test!`;
+  //    │
+  let sp│anElement = document.createElement('span');
+  //    └─>──────────────┐
+  let fullMessage = [ message, ' ', 'Thank you!' ].join( '' );
+  //    └─>─────────────────────────────┐
+  let broadcast = { [ p.username ]: fullMessage };
+  //    │
+  let se│ctionElement = document.createElement('section');
+  //    ├─>─────────────────────────────────────────┐
+  let br│oadcastInstance = new BroadcastMessage( broadcast );
+  //    └─>───────┐ └─>──────────┐
+  console.log( broadcast, broadcastInstance );
 
-#### "Switch" Statements
-
-A "switch" statement is bound to references in its "switch/case" conditions.
-
-```js
-switch( operandExpr ) {
-    case caseExpr1:
-        // consequentBlock1
-        break;
-    case caseExpr2:
-        // consequentBlock2
-        break;
-    default:
-        // defaultBlock
-}
-```
-
-Above, the "switch" construct is bound to any references in `operandExpr`, `caseExpr1` and `caseExpr2`. An update event for any of these gets the construct evaluated again to keep the contract. So, the "switch/case" conditions (`operandExpr === caseExpr1` | `operandExpr === caseExpr2` | `operandExpr === null`) are run, then, the body of the appropriate branch of the construct is executed as a block.
-
-#### Logical And Ternary Expressions
-
-Expressions with logical and ternary operators also work as conditional contracts. These expressions are bound to references in their “test" expression.
-
-```js
-// Logical expression
-let result = testExpr && consequentExpr || alternateExpr;
-```
-
-```js
-// Ternary expression
-let result = testExpr ? consequentExpr : alternateExpr;
-```
-
-#### Fine-Grained Updates Within Conditional Contexts
-
-In all conditional constructs above, the contract is that updates to the “test" expressions themselves result in the rerun of the appropriate branch of the construct. The selected branch is rerun *as a block*, not in *fine-grained* execution mode.
-
-```js
-if ( testExpr ) {
-    addBadge( candidate );
-    console.log('You\'ve got a badge');
-} else {
-    removeAllBadges( candidate );
-    console.log('You\'ve lost all badges');
-}
-```
-
-So, above, an update to `testExpr` runs the selected branch as a block - involving its two statements.
-
-But being each a contract of their own, individual expressions and statements inside a conditional context also respond to update events in isolation. This time, the conditions in context have to be “true" for the expression or statement to rerun.
-
-So, above, the `addBadge()` and `removeAllBadges()` expressions are both bound to the reference `candidate`. But on an update to `candidate`, only one of these expressions is run depending on the state of the condition in context - `testExpr`.
-
-In a nested conditional context…
-
-```js
-if ( parentTestExpr ) {
-    if ( testExpr ) {
-    }
-}
-```
-
-…all conditions in context (`parentTestExpr` >> `testExpr`) have to be “true" for an update to take place.
-
-In all cases, the "state" of *all conditions in context* are determined via *memoization*, and no re-evaluation ever takes place on the “test" expressions.
-
-“Switch" statements and logical and ternary expressions have this fine-grained behaviour in their own way.
-
-### Loops
-
-When the parameters of a loop ("for" loop, "while" and "do … while" loop) contain references, the loop is bound to those references. This lets us have loops as a contract.
-
-#### A “for" Loop, “while" And “do … while" Loop
-
-A "for" loop is bound to references in its 3-statement definition.
-
-```js
-for (initStatement; testStatement; incrementStatement) {
-    // Loop block
-}
-```
-
-So, in the loop above, an update event for any references in `initStatement`; `testStatement`; `incrementStatement` reruns the loop to keep the contract.
-
-As with a "for" loop, a "while" and "do ... while" loop are bound to references in their "test" expression.
-
-```js
-while (testExpr) {
-     // Loop block
+  document.body.append(divElement, spanElement, sectionElement);
 }
 ```
 
 ```js
-do {
-     // Loop block
-} while (testExpr);
+let [ returnValue, reflect ] = ui();
 ```
 
-So, in each case above, an update event for any references in `testExpr` reruns the loop to keep the contract.
+It turns out, it's the same mental model you would have drawn as you set out to think about your code! And that's the whole algorithm around change propagation: **being just how anyone would *predict* it**!
 
-#### A "for ... of" And “for … in" Loop
+Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
-These loops are bound to references in their *iteratee*.
+### Documentation
 
-```js
-for (let value of iteratee) {
-    // Loop body
-}
-```
+There's a whole lot possible here  which is covered in [the docs](wiki).
 
-```js
-for (let key in iteratee) {
-    // Loop body
-}
-```
++ [Formal Syntax](https://github.com/webqit/contract/wiki#formal-syntax)
++ [Change Propagation](https://github.com/webqit/contract/wiki#change-propagation)
++ [Heuristics](https://github.com/webqit/contract/wiki#heuristics)
++ [Flow Control](https://github.com/webqit/contract/wiki#flow-control)
+    + [Conditionals](https://github.com/webqit/contract/wiki#conditionals)
+    + [Loops](https://github.com/webqit/contract/wiki#loops)
++ [Functions](https://github.com/webqit/contract/wiki#functions)
+    + [Side Effects](https://github.com/webqit/contract/wiki#side-effects)
++ [API](https://github.com/webqit/contract/wiki#api)
+    + [`ContractFunction`](wiki#contractfunction)
+    + [`ContractFunction.inspect()`](wiki#contractfunction-inspect)
 
-So, in each case above, an update event for any references in `iteratee` reruns the loop to keep the contract.
+### Examples
 
-#### Fine-Grained Updates Within A Loop
-
-In all loop constructs above, the contract is that updates to the iteration parameters themselves result in the restart of the loop. The loop body, in each iteration, is run *as a block*, not in *fine-grained* execution mode.
-
-```js
-var start = 0;
-var items = [ 'one', 'two', 'three', 'four', 'five' ];
-var targetItems = [];
-var prefix = '';
-function** fn() {
-    for ( let index = start; index < items.length; index ++ ) {
-        console.log( `Current iteration index is: ${ index }, and value is: '${ items[ index ] }'` );
-        targetItems[ index ] = prefix + items[ index ];
-    }
-}
-fn();
-```
-
-So, above, an update to any of `start`, `items`, and `items.length` gets the loop restarted…
-
-```js
-start = 2;
-fn.thread( [ 'start' ] );
-```
-
-```js
-items.unshift( 'zero' );
-fn.thread( [ 'items', 'length' ] );
-```
-
-…with each iteration running the loop body as a block - involving its two statements.
-
-But being each a contract of their own, individual expressions and statements in the body of a loop also respond to update events in isolation. This time, an update happens *in-place in each of the previously-made iterations of the loop*.
-
-So, above, on updating the reference `prefix`, the second statement (specifically) in each existing round of the loop responds to keep their contract. Thus, each entry in `targetItems` gets updated with prefixed values.
-
-```js
-prefix = 'updated-';
-fn.thread( [ 'prefix' ] );
-```
-
-A “for … of, for … in" loop further has the unique characteristic where each round of the loop maintains a direct relationship with its corresponding key in the *iteratee*. Now, on updating the value of a key in `iteratee` in-place, the associate round (specifically) also runs in-place to keep its contract.
-
-```js
-var items = [ { name: 'one' }, { name: 'two' }, { name: 'three' }, { name: 'four' }, { name: 'five' } ];
-function** fn() {
-    for ( let entry of items ) {
-        let index = items.indexOf( entry );
-        console.log( `Current iteration index is: ${ index }, and name is: '${ entry.name }'.` );
-        targetItems[ index ] = items[ index ].name;
-    }
-}
-fn();
-```
-
-```js
-entries[ 2 ] = { name: 'new three' };
-fn.thread( [ 'items', 2 ] );
-```
-
-Now, the console reports…
-
-```js
-Current iteration index is: 2, and name is: 'new three'.
-```
-
-…and index 2 of `targetEntries` is updated. 
-
-If we mutate the `name` property of the above entry in-place, then it gets even more fine-grained: only the dependent `console.log()` expression in that round runs to keep its contact.
-
-```js
-entries[ 2 ].name = 'new three';
-fn.thread( [ 'items', 2, 'name' ] );
-```
-
-Now, the console reports…
-
-```js
-Current iteration index is: 2, and name is: 'new three'.
-```
-
-This granular reactivity makes it often pointless to trigger a full rerun of a loop, offering multiple opportunities to deliver unmatched performance.
-
-##### Handling Labeled `Break` And `Continue` Statements
-
-Fine-grained updates observe `break` and `continue` statements, even when these redirect control to a parent block using *labels*.
-
-```js
-let  entries = { one: { name: 'one' }, two: { name: 'two' } };
-function** fn() {
-    parentLoop: for ( let propertyName in entries ) {
-        childLoop: for ( let subPropertyName in entries[ propertyName ] ) {
-            If ( propertyName === 'two' ) {
-                break parentLoop;
-            }
-            console.log( propertyName, subPropertyName );
-        }
-    }
-}
-fn();
-```
-
-So, above, on updating the `entries` object, the nested loops run as expected, and the child loop effectively *breaks* the parent loop at the appropriate point.
-
-```js
-fn.thread( [ 'entries' ] );
-```
-
-If we mutated the object in-place to make just the child loop rerun…
-
-```js
-fn.thread( [ 'entries', 'two' ] );
-```
-
-…the `break` directive in the child loop would be pointing to a parent loop that isn't running, but this would be harmless. The child loop would simply exit as it would if the parent were to actually break at this point.
-
-But if we did the above with a `continue` directive, the child loop would also exit as it would if the parent were to actually receive control back at this point, without control actually moving to a non-running parent.
-
-## Example Usecase
-
-> A Custom Element Example
-
-This custom element has it's `render()` method as a Subscript Function.
+**--> Example 1:** Below is a custom element that has Contract Function as its `render()` method. The `render()` method has only been called once, and subsequent updates are just a fine-grained reflection.
 
 ```js
 // Outer dependency
@@ -645,213 +156,185 @@ let count = 10;
 ```
 
 ```js
-customElements.define( 'click-counter', class extends HTMLElement {
-      
-    connectedCallback() {
-        // Full rendering at connected time
-        // The querySelector() calls below are run
-        this.render();
+customElements.define('click-counter', class extends HTMLElement {
+  connectedCallback() {
+    // Full rendering at connected time
+    // The querySelector() calls below are run
+    let [ , reflect ] = this.render();
 
-        // Fine-grained rendering at click time
-        // The querySelector() calls below don't run again
-        this.addEventListener( 'click', () => {
-            count ++;
-            this.render.thread( [ 'count' ] );
-        } );
-    }
-
-    **render() {
-        let countElement = document.querySelector( '#count' );
-        countElement.innerHTML = count;
-        
-        let doubleCount = count * 2;
-        let doubleCountElement = document.querySelector( '#double-count' );
-        doubleCountElement.innerHTML = doubleCount;
-        
-        let quadCount = doubleCount * 2;
-        let quadCountElement = document.querySelector( '#quad-count' );
-        quadCountElement.innerHTML = quadCount;
-    }
-
-} );
+    // Fine-grained rendering at click time
+    // The querySelector() calls below don't run again
+    this.addEventListener('click', () => {
+      count ++;
+      treflect('count');
+    });
+  }
+  **render() {
+    let countElement = document.querySelector( '#count' );
+    countElement.innerHTML = count;
+    
+    let doubleCount = count * 2;
+    let doubleCountElement = document.querySelector( '#double-count' );
+    doubleCountElement.innerHTML = doubleCount;
+    
+    let quadCount = doubleCount * 2;
+    let quadCountElement = document.querySelector( '#quad-count' );
+    quadCountElement.innerHTML = quadCount;
+  }
+});
 ```
 
-Above, `render()` is called only once. Subsequent updates employ its `.thread()` method to update just the relevant contracts in the block. Fine-grained reactivity and optimal performance is gained.
+> Note that the above syntax isn't supported as-is by the polyfill. You may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin useful in this regard.
 
-## Design Goals
+## The Polyfill
 
-1. Enable reactivity directly *at the program flow level* - with commands, operators, control flow and other language constructs literally compiling as “contracts", as against the alternative of painstakingly remodeling same in functional programming or other syntaxes.
-2. Keep the business of change detection *out of scope* (that is, don't be concerned with how changes are observed); simply accept change events from the outer scope.
-3. Implement Subscript Function as an extension of standard JavaScript functions, such that either can be used interchangeably, or where necessary, code can be easily ported between function types.
-4. Stay conservative with syntax! By no means adopt imitation syntaxes for the same language constructs and operators!
+Contract Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Contract Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](wiki).
 
-## Non-Goals
-
-1. Feature "x" in framework "x". No, the idea with Subscript Functions is to enable reactivity at the lowest level but leave the higher-level details - syntax sugars and additional DX - to userland implementation. This time, tooling that's with just a tiny footprint.
-
-## Discussion Points
-
-+ **The syntax for Subscript Functions** - the double star (`**`) syntax and other conventions are open for discussion. (See [#5](https://github.com/webqit/subscript/discussions/5).)
-+ **Subscript Functions vs "x"** - coming to Subscript Functions from a totally different background? Wondering how patterns compare between Subscript Functions and a certain framework? (Please see [#4](https://github.com/webqit/subscript/discussions/4).)
-+ **Other** - (Please see (or use) the [Discussions](https://github.com/webqit/subscript/discussions) tab.)
-
-## Polyfill
-
-Subscript is usable today via this polyfill.
-
-<!-- BADGES/ -->
-
-<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/subscript.svg" alt="NPM version" /></a></span>
-
-<!-- /BADGES -->
-
-### Download
-
-\> Install via npm
-
-```cmd
-npm i @webqit/subscript
-```
-```js
-import { SubscriptFunction, SubscriptClass } from '@webqit/subscript';
-```
-
-\> Include from a CDN
+<details><summary>Load from a CDN</summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/subscript/dist/main.js"></script>
+<script src="https://unpkg.com/@webqit/contract/dist/main.js"></script>
 ```
+
+> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+
+> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/contract)
+
 ```js
-const { SubscriptFunction, SubscriptClass } = WebQit.Subscript;
+// Destructure from the webqit namespace
+const { ContractFunction } = window.webqit;
 ```
 
-### Usage
+</details>
 
-+ The current polyfill only supports the constructable form of Subscript Function.
+<details><summary>Install from a NPM</summary>
 
-    ```js
-    var externalVar = 10;
-    let sum = new SubscriptFunction( `a`, `b`, `return a + b + externalVar;` );
-    let result = sum(10, 10); // 30
-    // result = sum.thread( [ 'externalVar' ] ); // 30
-    // result = sum.thread( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-    // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
-    ```
+```js
+// npm install
+npm i @webqit/contract
+```
 
-    But the double star syntax is supported from within the function itself.
+```js
+// Import API
+import { ContractFunction } from '@webqit/contract';
+```
 
-    ```js
-    let fn = new SubscriptFunction( `
-        var externalVar = 10;
-        function** sum( a, b ) {
-            return a + b + externalVar;
-        }
-        let result = sum( 10, 10 ); // 30
-        // result = sum.thread( [ 'externalVar' ] ); // 30
-        // result = sum.thread( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
-        // result = sum.thread( [ 'a', 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
-    ` );
-    fn();
-    ```
+</details>
 
-+ *Subscript Functions as class methods* are currently only supported using a `SubscriptClass()` mixin.
+The current polyfill only supports the constructable form of Contract Functions:
 
-    ```js
-    class MyClass extends SubscriptClass() {
+```js
+// External dependency
+globalThis.externalVar = 10;
 
-        static get subscriptMethods() {
-            return [ 'sum' ];
-        }
+// Initial run
+let sum = ContractFunction( `a`, `b`, `return a + b + externalVar;` );
+let [ result, reflect ] = sum(10, 10); // 30
 
-        sum( a, b ) {
-            return a + b;
-        }
-    }
-    let myInstance = new MyClass();
-    typeof myInstance.sum.thread === 'function'; // true
-     ```
+// Reflections
+result = reflect( [ 'externalVar' ] ); // 30
+result = reflect( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
+result = reflect( [ 'a' ], [ 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
+```
 
-    ```js
-    class MyClass extends SubscriptClass( HTMLElement ) {
+But the double star syntax is supported from within the function itself:
 
-        static get subscriptMethods() {
-            return [ 'render' ];
-        }
+```js
+const contract = ContractFunction(`
+  // External dependency
+  let externalVar = 10;
 
-        render() {
-        }
-    }
-    let myInstance = new MyClass();
-    typeof myInstance.render.thread === 'function'; // true
-    ```
+  // Initial run
+  function** sum( a, b ) {
+    return a + b + externalVar;
+  }
+  let [ result, reflect ] = sum( 10, 10 ); // 30
 
-+ *Watch the **issues** tab for new known issues*
+  // Reflections
+  result = reflect( [ 'externalVar' ] ); // 30
+  result = reflect( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
+  result = reflect( [ 'a' ], [ 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
+`);
+contract();
+```
 
-### Playground
+### Contract Functions Lite
 
-+ To visualize *dependency threads* in a live `.thread()` update, we've provided a custom element named `subscript-player`.
+It is possible to use a lighter version of Contract Functions where the bundle size of the main build above will impact *initial* application loading. The *Lite* version initially comes without the compiler and yet let's you work with Contract Functions ahead of that.
 
-    Simply include a pair of scripts in your page... in addition to Subscript itself...
+This lazy-loading strategy **also means that the Contract Functions API will *only* be available in [*async* mode](wiki#async-mode)**! (This *async* mode is what makes it possible to load the compiler lazily!) And it comes with an additional perk: the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations are able to happen off the main thread!
 
-    ```html
-    <script src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
-    <script src="https://unpkg.com/@webqit/subscript/dist/player-element.js"></script>
-    ```
+<details><summary>Load from a CDN</summary>
 
-    Wrap any piece of code with it... (or edit right in the UI.)
+```html
+<script src="https://unpkg.com/@webqit/contract/dist/lite.js"></script>
+```
 
-    ```html
-    <subscript-player auto-mode="play">
-        let count = 10, doubleCount = count * 2, quadCount = doubleCount * 2;
-        console.log( count, doubleCount, quadCount );
-    </subscript-player>
-    ```
+> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-    Then click on local varaibles to see their dependency threads.
+<!--
+> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/contract/dist/lite.js)
+-->
 
-+ To inspect Subscript Methods and their *dependency threads* in a live custom element that you've designed, we've provided a custom element named `subscript-inspector`.
+```js
+// Destructure from the webqit namespace
+const { ContractFunction: ContractFunctionLite } = window.webqit;
+```
 
-    Simply include a pair of scripts in your page... in addition to Subscript itself...
+</details>
 
-    ```html
-    <script src="https://unpkg.com/@webqit/subscript/dist/console-element.js"></script>
-    <script src="https://unpkg.com/@webqit/subscript/dist/inspector-element.js"></script>
-    ```
+<details><summary>Install from a NPM</summary>
 
-    Create a custom element having at least one subscript method (using the SubscriptClass() mixin)...
+```js
+// npm install
+npm i @webqit/contract
+```
 
-    ```js
-    import { SubscriptClass } from '@webqit/subscript';
-    customElements.define('my-counter', class MyCounter extends SubscriptClass( HTMLElement ) {
+```js
+// Import Lite API
+import { ContractFunctionLite } from '@webqit/contract';
+```
 
-        static get subscriptMethods() {
-            return [ 'render' ];
-        }
+</details>
 
-        render() {
-        }
+Contract Functions Lite comes this way in *async* mode:
 
-    });
-    ```
+```js
+// External dependency
+globalThis.externalVar = 10;
 
-    Wrap your custom element markup with it...
+// Initial run
+let sum = ContractFunctionLite( `a`, `b`, `return a + b + externalVar;` );
+let [ result, reflect ] = await sum(10, 10); // 30
 
-    ```html
-    <subscript-inspector>
-        <my-counter></my-counter>
-    </subscript-inspector>
-    ```
+// Reflections
+result = await reflect( [ 'externalVar' ] ); // 30
+result = await reflect( [ 'b' ] ); // no effect; "a" isn't an external dependency to sum()
+result = await reflect( [ 'a' ], [ 'b' ] ); // no effect; "a" and "b" aren't external dependencies to sum()
+```
 
-    Then inspect each Subscript Method while you interact with your element. (See [this REPL](https://replit.com/@WebQit/Dependency-Thread-Demo-3-Counts-Button) for an example.)
+But just for the fact that the Contract Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
 
-### Getting Involved
+```html
+<head>
+  <script src="https://unpkg.com/@webqit/contract/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+  <script src="https://unpkg.com/@webqit/contract/dist/main.js"></script>
+</head>
+```
 
-We'd be super excited to have you raise an issue, make a PR, or join in the discussion at [Subscript's Github Discussions](https://github.com/webqit/subscript/discussions).
+## Design Discussion
 
-### Issues
+*[TODO]*
 
-To report bugs or request features, please submit an [issue](https://github.com/webqit/subscript/issues).
+## Getting Involved
 
-### License
+All forms of contributions are welcome at this time. For example, syntax and other implementation details are all up for discussion. Also, help is needed with more formal documentation. And here are specific links:
+
++ [Project](https://github.com/webqit/contract)
++ [Documentation](https://github.com/webqit/contract/wiki)
++ [Discusions](https://github.com/webqit/contract/discussions)
++ [Issues](https://github.com/webqit/contract/issues)
+
+## License
 
 MIT.

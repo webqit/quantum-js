@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import { SubscriptFunction } from '../src/index.js';
+import ContractFunction from '../src/ContractFunction.js';
 import Observer from '../../observer/src/index.js';
 
 // -----------
@@ -10,16 +10,30 @@ let source = `
 /*
 */
 
+
 for ( let propertyName in entries ) {
 	console.log( \`Current property name is: \${ propertyName }, and its alias name is: '\${ entries[ propertyName ].name }'\` );
 	console.log( ':::::::::::', targetEntries[ propertyName ] = entries[ propertyName ] );
 }
 
+//const ff = console.log( '-----------------<<--->>---------------------------', arguments );
 console.log( '-----------------------------------------------' );
-
-let sum = async function sum( param_1, param_2 ) {
-    return param_1 + (await param_2);
+function fun0(a, b) {
 }
+
+let fun00 = (a) => {a};
+
+let sumCount = 0;
+let sum = async function sum( $x, param_2 ) {
+    sumCount ++;
+    if ( Array ) {
+        
+    }
+    return $x + (await param_2);
+}
+
+console.log( '-------------------->>---------------------------', fun0.length, fun0.toString() );
+console.log( '-----------------------------------------------' );
 
 let l = list1;
 let propName = 'length';
@@ -28,7 +42,6 @@ if ( 3 ) {
     console.log( 'List1s length is:', length );
 }
 
-console.log( '-----------------------------------------------' );
 
 for ( let num of list1 ) {
     if ( num === 'four' ) break;
@@ -51,27 +64,29 @@ console.log( '-----------------------------------------------' );
 
 switch( funcTrigger ) {
     case 'sum':
-        return sum( funcParam1, funcParam2 );
+        let result = sum( funcParam1, funcParam2 );
+        console.log( 'sumCount', sumCount );
+        return result;
     default:
         console.log( 'the end!' )
 }
 `;
 
 
-SubscriptFunction.compilerParams.globalsNoObserve.push( 'console' );
-let subscriptFunction = new SubscriptFunction( 'funcTrigger', 'funcParam1', 'funcParam2', source );
+//ContractFunction.compilerParams.globalsNoObserve.push( 'console' );
+const contractFunction = new ContractFunction( 'funcTrigger', 'funcParam1', 'funcParam2', source, { runtimeParams: { apiVersion: 2 } } );
 Observer.observe( globalThis, mutations => {
-    subscriptFunction.thread( ...mutations.map( mu => mu.path ) );
+    sync( ...mutations.map( mu => mu.path ) );
 }, { subtree: true } );
 
-console.log( '.....................sideEffects', subscriptFunction.sideEffects );
+console.log( '.....................sideEffects', contractFunction.sideEffects );
 
 globalThis.targetEntries = {};
 globalThis.entries = { one: { name: 'one' }, two: { name: 'two' } };
 Observer.link( globalThis, 'entries', entries );
 setTimeout(() => {
     entries[ 'one' ] = { name: 'New one' };
-    subscriptFunction.thread( [ 'entries', 'one', 'name' ] );
+    sync( [ 'entries', 'one', 'name' ] );
 }, 4000);
 
 globalThis.list1 = [ 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten' ];
@@ -83,24 +98,33 @@ setTimeout(() => {
 }, 4500);
 
 console.log('');
-let result = subscriptFunction( 'sum', '55', '55' );
-console.log( '---result---->', await result );
-setTimeout(async () => {
-    console.log( '---thread---->', await subscriptFunction.thread( [ 'funcParam2' ] ) );
-}, 5000);
+let result, sync = contractFunction.thread;
+[ result, sync ] = await contractFunction( 'sum', '55', '55' );
+//result = await contractFunction( 'sum', '55', '55' );
+console.log( '---result---->', typeof sync, result );
+setTimeout( async () => {
+    console.log( '---thread---->', await sync( [ 'funcParam2' ] ) );
+}, 5000 );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-//0console.log( JSON.stringify( subscriptFunction.runtime.graph, null, 3 ) );
+//console.log( JSON.stringify( contractFunction.runtime.graph, null, 3 ) );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-//console.log( subscriptFunction.originalSource );
+//console.log( contractFunction.originalSource );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-console.log( subscriptFunction.subscriptSource );
+//console.log( contractFunction.length, contractFunction.toString(true) );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
 
+
+/*
+Now that can we revisit the problems 
+Back to the HTML kind of problems! but this is really all the way back to where we left off a decade ago!
+We were just ... but dropped plans! Can we revisit those ideas?
+Since progress in the language has stalled, we will not have to meet it where we left off!
+*/

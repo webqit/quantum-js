@@ -87,8 +87,10 @@ export default class Scope extends Common {
     }
 
     canObserveGlobal( ref ) {
-        return ( !this.ownerContext.$params.globalsOnlyPaths || ref.path.length > 1 )
-        && !( this.ownerContext.$params.globalsNoObserve || [] ).includes( ref.path[ 0 ].name );
+        return (
+            !this.ownerContext.$params.globalsOnlyPathsExcept?.length || ref.path.length > 1
+            || ( this.ownerContext.$params.globalsOnlyPathsExcept || [] ).includes( ref.path[ 0 ].name )
+        ) && !( this.ownerContext.$params.globalsNoObserve || [] ).includes( ref.path[ 0 ].name );
     }
 
 }

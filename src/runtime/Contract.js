@@ -2,6 +2,8 @@
 /**
  * @imports
  */
+import { _await } from '../util.js';
+import inspection from './inspect.js';
 
 export default class Contract {
 
@@ -9,10 +11,11 @@ export default class Contract {
         this.ownerContract = ownerContract;
         this.graph = graph;
         this.callee = callee;
-        this.params = params;
+        this.params = !ownerContract ? { ...params, isContractFunction: true } : params;
         this.exits = exits || new Map;
         this.$thread = $thread || { entries: new Map, sequence: [], ownerContract: this };
         this.subContracts = new Map;
+        this.observers = [];
         this.contract = function( contractId, arg1, arg2 = null, arg3 = null ) {
             if ( !this.graph.subContracts[ contractId ] ) {
                 throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Graph not found for child contract ${ contractId }.` );
@@ -25,7 +28,7 @@ export default class Contract {
                 iterationId: arguments.length === 3 && arg1,
                 isFunctionContract: arguments.length === 4,
                 functionType: arguments.length === 4 && arg1,
-                isSubscriptFunction: arguments.length === 4 && arg2,
+                isContractFunction: arguments.length === 4 && arg2,
                 functionScope: ( this.params.isFunctionContract && this.graph.lineage ) || this.params.functionScope,
             };
 
@@ -56,23 +59,38 @@ export default class Contract {
 
             if ( subParams.isFunctionContract ) {
                 // Function contracts
-                callee = arg3, returnValue = subContract = new Contract( this, subGraph, callee, subParams );
+                callee = arg3;
+                const createCallback = () => new Contract( this, subGraph, callee, subParams );
                 if ( subParams.functionType !== 'FunctionDeclaration' ) {
-                    returnValue = callee instanceof ( async () => {} ).constructor
-                        ? async function() { return subContract.call( this, ...arguments ); }
-                        : function() { return subContract.call( this, ...arguments ); };
-                    bindFunctionToRuntime( returnValue, subContract );
+                    returnValue = this.createFunction( createCallback );
+                } else {
+                    let subContract = createCallback();
+                    if ( subParams.apiVersion > 1 ) {
+                        returnValue = function( ...args ) {
+                            let _returnValue = subContract.call( this, ...args );
+                            _returnValue = _await( _returnValue, __returnValue => [ _returnValue, subContract.thread.bind( subContract ), subContract ] );
+                            subContract = createCallback();
+                            return _returnValue;
+                        }
+                        returnValue.target = subContract;
+                    } else {
+                        returnValue = subContract;
+                    }
                 }
             } else {
                 // Regular contracts
                 callee = arg1, subContract = new Contract( this, subGraph, callee, subParams, this.$thread, this.exits );
+                this.subContracts.set( contractId, subContract );
                 returnValue = subContract.call();
             }
 
-            this.subContracts.set( contractId, subContract );
             return returnValue;
         }.bind( this );
+        // ---------------------------
         this.contract.memo = Object.create( null );
+        if ( this.ownerContract && ![ 'FunctionDeclaration', 'FunctionExpression' ].includes( this.graph.type ) ) {
+            this.contract.args = this.ownerContract.contract.args;
+        }
         // ---------------------------
         this.contract.exiting = function( keyword, arg ) {
             if ( !arguments.length ) return this.exits.size;
@@ -86,34 +104,34 @@ export default class Contract {
         }.bind( this );
         // ---------------------------
         this.contract.functions = new Map;
-        this.contract.functions.define = ( functionDeclaration, contractInstance ) => {
-            this.contract.functions.set( functionDeclaration, contractInstance );
-            bindFunctionToRuntime( functionDeclaration, contractInstance, true );
-        }
-        const bindFunctionToRuntime = ( _function, runtime, isDeclaration = false ) => {
-            if ( !isDeclaration ) {
-                Object.defineProperty( _function, 'length', { configurable: true, value: runtime.callee.length - 1 } );
-                Object.defineProperty( _function, 'name', { configurable: true, value: runtime.callee.name } );
-            }
-            if ( runtime.params.isSubscriptFunction ) {
-                _function.thread = runtime.thread.bind( runtime );
-                _function.dispose = runtime.dispose.bind( runtime );
-                Object.defineProperty( _function, 'runtime', { value: runtime } );
-                Object.defineProperty( _function, 'sideEffects', { configurable: true, value: runtime.graph.sideEffects || '' } );
-                Object.defineProperty( _function, 'subscriptSource', { configurable: true, value: runtime.graph.subscriptSource || '' } );
-                Object.defineProperty( _function, 'originalSource', { configurable: true, value: runtime.graph.originalSource || '' } );
-            };
+        this.contract.functions.declaration = ( functionDeclaration, callTarget ) => {
+            this.contract.functions.set( functionDeclaration, callTarget );
+            this.applyReflection( functionDeclaration, typeof callTarget === 'function' ? callTarget.target : callTarget );
         }
     }
 
     fire( contractUrl, event, refs ) {
         if ( !this.ownerContract ) return;
-        return this.ownerContract.fire( contractUrl, event, refs );
+        const ret = this.ownerContract.fire( contractUrl, event, refs );
+        this.observers.forEach( observer => {
+            if ( observer.contractUrl !== contractUrl ) return;
+            observer.callback( event, refs );
+        } );
+        return ret;
+    }
+
+    observe( contractUrl, callback ) {
+        if ( !this.params.isFunctionContract ) return;
+        this.observers.push( { contractUrl, callback } );
     }
 
     call( $this, ...$arguments ) {
         if ( this.disposed ) {
             throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Instance not runable after having been disposed.` );
+        }
+        if ( !this.ownerContract ) {
+            this.contract.args = $arguments;
+            Object.defineProperty( this.contract.args, Symbol.toStringTag, { value: 'Arguments' } );
         }
         let returnValue = this.callee.call( $this, this.contract, ...$arguments );
         if ( this.graph.$sideEffects ) {
@@ -161,6 +179,7 @@ export default class Contract {
         for ( let referenceId in this.graph.effects ) {
             for ( let effectRef of this.graph.effects[ referenceId ].refs ) {
                 for ( let eventRef of eventRefs ) {
+                    eventRef = Array.isArray( eventRef ) ? eventRef : [ eventRef ];
                     let [ isMatch, remainder, computes ] = this.matchRefs( eventRef, effectRef );
                     if ( !isMatch ) continue;
                     this.buildThread( eventRef, effectRef, computes, remainder );
@@ -429,9 +448,74 @@ export default class Contract {
         delete this.contract.memo;
         this.disposed = true;
     }
+    
+    createFunction( createCallback, defaultThis = undefined ) {
+        let contract = createCallback();
+        // -------------
+        const execute = function( _contract, ...args ) {
+            let _returnValue = _contract.call( this === undefined ? defaultThis : this, ...args );
+            if ( _contract.params.isContractFunction && _contract.params.apiVersion > 1 ) {
+                _returnValue = _await( _returnValue, __returnValue => [ __returnValue, _contract.thread.bind( _contract ), _contract ] );
+                // Replace global for next call
+                contract = createCallback( contract );
+            }
+            return _returnValue;
+        };
+        // -------------
+        const _function = ( contract instanceof Promise ) || ( contract.callee instanceof ( async function() {} ).constructor )
+            ? async function() { return _await( contract, _contract => execute.call( this, _contract, ...arguments ) ); } 
+            : function() { return execute.call( this, contract, ...arguments ); };
+        // -------------
+        _await( contract, _contract => {
+            this.applyReflection( _function, _contract );
+        } );
+        // -------------
+        inspection( _function, 'properties', _await( contract, _contract => {
+            const graph = {
+                type: _contract.params.functionType || 'Program',
+                apiVersion: _contract.params.apiVersion || 1,
+                isContractFunction: _contract.params.isContractFunction,
+                sideEffects: _contract.graph.sideEffects || false,
+            };
+            if ( _contract.params.isContractFunction ) {
+                graph.dependencies = [];
+                for ( const [ id, effect ] of Object.entries( _contract.graph.effects ) ) {
+                    graph.dependencies.push( ...effect.refs.map( ref => ref.path.map( s => !( 'name' in s ) ? Infinity : s.name ) ) );
+                }
+            }
+            return graph;
+        } ) );
+        // -------------
+        return _function;
+    }
+
+    applyReflection( _function, contract ) {
+        // Hide implementation details on callee
+        Object.defineProperty( contract.callee, 'length', { configurable: true, value: contract.callee.length - 1 } );
+        const compiledSourceNeat = contract.callee.toString()//.replace( /\(\$[\w]+\,([\s]*)?/, '(' );
+        Object.defineProperty( contract.callee, 'toString', { configurable: true, value: ( compiledSource = false ) => {
+            if ( !compiledSource && contract.graph.originalSource ) { return contract.graph.originalSource; }
+            return compiledSourceNeat;
+        } } );
+        // Hide implementation details on main
+        let properties = {
+            name: contract.callee.name,
+            length: contract.callee.length,
+            toString: contract.callee.toString,
+        };
+        if ( contract.params.isContractFunction ) {
+            if ( !( contract.params.apiVersion > 1 ) ) {
+                properties = {
+                    ...properties,
+                    thread: contract.thread.bind( contract ),
+                    dispose: contract.dispose.bind( contract ),
+                    runtime: contract,
+                };
+            }
+        }
+        Object.keys( properties ).forEach( name => {
+            Object.defineProperty( _function, name, { configurable: true, value: properties[ name ] } );
+        } );
+    }
 
 }
-
-const _await = ( maybePromise, callback ) => (
-    maybePromise instanceof Promise ? maybePromise.then( callback ) : callback()
-);

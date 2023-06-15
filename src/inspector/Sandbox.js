@@ -2,17 +2,17 @@
 /**
  * @imports
  */
-import SubscriptFunction from '../SubscriptFunction.js';
-import Base from './Base.js';
+import ContractFunction from '../ContractFunctionLite.js';
+import Base from './src/Base.js';
 
 /**
  * @Console2
  */
-export default class Player extends Base( HTMLElement ) {
+export default class Sandbox extends Base( HTMLElement ) {
 
     connectedCallback() {
         this.autoMode = this.getAttribute( 'auto-mode' );
-        this.consoleElement = document.createElement( 'subscript-console' );
+        this.visualizerElement = document.createElement( 'cfunctions-visualizer' );
         this.controlsElement = document.createElement( 'div' );
         this.controlsElement.classList.add( 'controls-element' );
         this.buttons = {};
@@ -39,39 +39,34 @@ export default class Player extends Base( HTMLElement ) {
         this.buttons.play.addEventListener( 'click', e => this.switchEditable( false ) );
 
         // ----------------
-        this.shadowRoot.append( this.controlsElement, this.consoleElement );
+        this.shadowRoot.append( this.controlsElement, this.visualizerElement );
         // ----------------
         super.connectedCallback();
         setTimeout( () => {
-            this.consoleElement.innerHTML = this.innerHTML;
+            this.visualizerElement.innerHTML = this.innerHTML;
             setTimeout( () => {
                 this.loadConsole();
-                if ( this.autoMode ) {
-                    this.buttons[ this.autoMode ].dispatchEvent( new MouseEvent( 'click' ) );
-                }
+                if ( !this.autoMode ) return;
+                this.buttons[ this.autoMode ].dispatchEvent( new MouseEvent( 'click' ) );
             }, 0 );
         }, 0 );
     }
 
     loadConsole() {
-        let devMode = { devMode: true };
-        let params = { compiler: devMode, runtime: devMode };
-        this.program = SubscriptFunction( this.consoleElement.source /* innerHTML normalized */, params );
-        this.consoleElement.bind( this.program, false );
+        this.fn = ContractFunction( this.visualizerElement.source /* innerHTML normalized */, { devMode: true } );
+        this.visualizerElement.visualize( this.fn, false );
     }
 
     switchEditable( editable ) {
-        this.consoleElement.editable = editable;
+        this.visualizerElement.editable = editable;
         if ( editable ) {
-            if ( this.program ) {
-                this.program.dispose();
-                this.program = null;
+            if ( this.fn ) {
+                this.fn.dispose();
+                this.fn = null;
             }
         } else {
-            if ( !this.program ) {
-                this.loadConsole();
-            }
-            this.program();
+            if ( !this.fn ) { this.loadConsole(); }
+            this.fn();
         }
     }
 
@@ -119,7 +114,7 @@ export default class Player extends Base( HTMLElement ) {
                     display: flex;
                     display: -webkit-flex;
                 }
-                :host(.layout2) subscript-console {
+                :host(.layout2) cfunctions-visualizer {
                     flex-grow: 1;
                 }
                 :host(.layout2) .controls-element {
@@ -147,4 +142,4 @@ export default class Player extends Base( HTMLElement ) {
 /**
  * @define
  */
-customElements.define( 'subscript-player', Player );
+customElements.define( 'cfunctions-sandbox', Sandbox );
