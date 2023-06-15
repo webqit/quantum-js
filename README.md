@@ -31,7 +31,7 @@ function** calculate() {
 }
 ```
 
-> See [Formal Syntax](wiki#formal-syntax) for details.
+> See [Formal Syntax](https://github.com/webqit/contract/wiki#formal-syntax) for details.
 
 Function body is any regular piece of code that needs to be automatically maintained as a "contract" with its dependencies:
 
@@ -132,7 +132,7 @@ Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivi
 
 ### Documentation
 
-There's a whole lot possible here  which is covered in [the docs](wiki).
+There's a whole lot possible here  which is covered in [the docs](https://github.com/webqit/contract/wiki).
 
 + [Formal Syntax](https://github.com/webqit/contract/wiki#formal-syntax)
 + [Change Propagation](https://github.com/webqit/contract/wiki#change-propagation)
@@ -143,8 +143,8 @@ There's a whole lot possible here  which is covered in [the docs](wiki).
 + [Functions](https://github.com/webqit/contract/wiki#functions)
     + [Side Effects](https://github.com/webqit/contract/wiki#side-effects)
 + [API](https://github.com/webqit/contract/wiki#api)
-    + [`ContractFunction`](wiki#contractfunction)
-    + [`ContractFunction.inspect()`](wiki#contractfunction-inspect)
+    + [`ContractFunction`](https://github.com/webqit/contract/wiki#contractfunction)
+    + [`ContractFunction.inspect()`](https://github.com/webqit/contract/wiki#contractfunction-inspect)
 
 ### Examples
 
@@ -188,7 +188,7 @@ customElements.define('click-counter', class extends HTMLElement {
 
 ## The Polyfill
 
-Contract Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Contract Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](wiki).
+Contract Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Contract Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/contract/wiki).
 
 <details><summary>Load from a CDN</summary>
 
@@ -262,7 +262,7 @@ contract();
 
 It is possible to use a lighter version of Contract Functions where the bundle size of the main build above will impact *initial* application loading. The *Lite* version initially comes without the compiler and yet let's you work with Contract Functions ahead of that.
 
-This lazy-loading strategy **also means that the Contract Functions API will *only* be available in [*async* mode](wiki#async-mode)**! (This *async* mode is what makes it possible to load the compiler lazily!) And it comes with an additional perk: the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations are able to happen off the main thread!
+This lazy-loading strategy **also means that the Contract Functions API will *only* be available in [*async* mode](https://github.com/webqit/contract/wiki#async-mode)**! (This *async* mode is what makes it possible to load the compiler lazily!) And it comes with an additional perk: the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations are able to happen off the main thread!
 
 <details><summary>Load from a CDN</summary>
 
