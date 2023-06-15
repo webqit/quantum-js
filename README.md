@@ -15,11 +15,11 @@ Contract Functions is an upcoming proposal!
 
 ## Motivation
 
-Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, and yet requires much manual plumbing and a fundamental paradigm shift in how we build applications. Everything together yet eats away at the idiomatic use of the language, takes a toll on performance, and fiendishly messes with our brain with tricky runtime behaviours!
+Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, and requires much manual plumbing and a fundamental paradigm shift in how we build applications. Everything together yet eats away at the idiomatic use of the language, takes a toll on performance, and fiendishly messes with our brain with tricky runtime behaviours!
 
 This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/on-the-language-of-reactivity-part-1-and-introducing-the-observer-api-pkn-temp-slug-2525455?preview=74f1766eb6ae03dff8a4ceee33c4b1b534dc2fb007ddfc9e651e6e03ef59394d784f84e98d50cc7f1b48584585153af5fb1516c3d2555a80510d77d9)<sup>draft</sup>
 
-We realized that we could solve the "Language of Reactivity" down to being just "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Contract Functions" as a native language feature!
+We realized that we could solve the "Language of Reactivity" down to plain "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Contract Functions" as a potential native language feature!
 
 ## An Overview
 
