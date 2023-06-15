@@ -1,4 +1,4 @@
-# OOHTML
+# Contract Functions
 
 <!-- BADGES/ -->
 
@@ -133,15 +133,15 @@ Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivi
 
 There's a whole lot possible here  which is covered in [the docs](wiki).
 
-+ [Formal Syntax](https://github.com/webqit/subscript/wiki#formal-syntax)
-+ [Change Propagation](https://github.com/webqit/subscript/wiki#change-propagation)
-+ [Heuristics](https://github.com/webqit/subscript/wiki#heuristics)
-+ [Flow Control](https://github.com/webqit/subscript/wiki#flow-control)
-    + [Conditionals](https://github.com/webqit/subscript/wiki#conditionals)
-    + [Loops](https://github.com/webqit/subscript/wiki#loops)
-+ [Functions](https://github.com/webqit/subscript/wiki#functions)
-    + [Side Effects](https://github.com/webqit/subscript/wiki#side-effects)
-+ [API](https://github.com/webqit/subscript/wiki#api)
++ [Formal Syntax](https://github.com/webqit/contract/wiki#formal-syntax)
++ [Change Propagation](https://github.com/webqit/contract/wiki#change-propagation)
++ [Heuristics](https://github.com/webqit/contract/wiki#heuristics)
++ [Flow Control](https://github.com/webqit/contract/wiki#flow-control)
+    + [Conditionals](https://github.com/webqit/contract/wiki#conditionals)
+    + [Loops](https://github.com/webqit/contract/wiki#loops)
++ [Functions](https://github.com/webqit/contract/wiki#functions)
+    + [Side Effects](https://github.com/webqit/contract/wiki#side-effects)
++ [API](https://github.com/webqit/contract/wiki#api)
     + [`ContractFunction`](wiki#contractfunction)
     + [`ContractFunction.inspect()`](wiki#contractfunction-inspect)
 
@@ -192,12 +192,12 @@ Contract Functions is being developed as something to be used today - via a poly
 <details><summary>Load from a CDN</summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/subscript/dist/main.js"></script>
+<script src="https://unpkg.com/@webqit/contract/dist/main.js"></script>
 ```
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/subscript)
+> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/contract)
 
 ```js
 // Destructure from the webqit namespace
@@ -210,12 +210,12 @@ const { ContractFunction } = window.webqit;
 
 ```js
 // npm install
-npm i @webqit/subscript
+npm i @webqit/contract
 ```
 
 ```js
 // Import API
-import { ContractFunction } from '@webqit/subscript';
+import { ContractFunction } from '@webqit/contract';
 ```
 
 </details>
@@ -266,13 +266,13 @@ This lazy-loading strategy **also means that the Contract Functions API will *on
 <details><summary>Load from a CDN</summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/subscript/dist/lite.js"></script>
+<script src="https://unpkg.com/@webqit/contract/dist/lite.js"></script>
 ```
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
 <!--
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/subscript/dist/lite.js)
+> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/contract/dist/lite.js)
 -->
 
 ```js
@@ -286,12 +286,12 @@ const { ContractFunction: ContractFunctionLite } = window.webqit;
 
 ```js
 // npm install
-npm i @webqit/subscript
+npm i @webqit/contract
 ```
 
 ```js
 // Import Lite API
-import { ContractFunctionLite } from '@webqit/subscript';
+import { ContractFunctionLite } from '@webqit/contract';
 ```
 
 </details>
@@ -316,8 +316,8 @@ But just for the fact that the Contract Functions Compiler is designed as a mova
 
 ```html
 <head>
-  <script src="https://unpkg.com/@webqit/subscript@next/dist/compiler.js"></script> <!-- Must come before the polyfil -->
-  <script src="https://unpkg.com/@webqit/subscript/dist/main.js"></script>
+  <script src="https://unpkg.com/@webqit/contract/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+  <script src="https://unpkg.com/@webqit/contract/dist/main.js"></script>
 </head>
 ```
 
@@ -329,10 +329,10 @@ But just for the fact that the Contract Functions Compiler is designed as a mova
 
 All forms of contributions are welcome at this time. For example, syntax and other implementation details are all up for discussion. Also, help is needed with more formal documentation. And here are specific links:
 
-+ [Project](https://github.com/webqit/subscript)
-+ [Documentation](https://github.com/webqit/subscript/wiki)
-+ [Discusions](https://github.com/webqit/subscript/discussions)
-+ [Issues](https://github.com/webqit/subscript/issues)
++ [Project](https://github.com/webqit/contract)
++ [Documentation](https://github.com/webqit/contract/wiki)
++ [Discusions](https://github.com/webqit/contract/discussions)
++ [Issues](https://github.com/webqit/contract/issues)
 
 ## License
 
