@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import ContractFunction from '../ContractFunctionLite.js';
+import ReflexFunction from '../ReflexFunctionLite.js';
 import Base from './src/Base.js';
 
 /**
@@ -53,7 +53,7 @@ export default class Sandbox extends Base( HTMLElement ) {
     }
 
     loadConsole() {
-        this.fn = ContractFunction( this.visualizerElement.source /* innerHTML normalized */, { devMode: true } );
+        this.fn = ReflexFunction( this.visualizerElement.source /* innerHTML normalized */, { devMode: true } );
         this.visualizerElement.visualize( this.fn, false );
     }
 

@@ -9,9 +9,9 @@ import Runtime from './runtime/Runtime.js';
 import inspect from './runtime/inspect.js';
 
 /**
- * @ContractFunction
+ * @ReflexFunction
  */
-export default function ContractFunction( ...args ) {
+export default function ReflexFunction( ...args ) {
     const params = resolveParams( typeof args[ args.length - 1 ] === 'object' ? args.pop() : {} );
     const source = normalizeTabs( args.pop() || '' );
     const parameters = args;
@@ -24,4 +24,4 @@ export default function ContractFunction( ...args ) {
 /**
  * @inspect
  */
-Object.defineProperty( ContractFunction, 'inspect', { value: inspect } );
+Object.defineProperty( ReflexFunction, 'inspect', { value: inspect } );

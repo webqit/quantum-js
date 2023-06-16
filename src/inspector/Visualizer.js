@@ -3,12 +3,12 @@
  * @imports
  */
 import CodeBlock from './src/CodeBlock.js';
-import Contract from './src/Contract.js';
+import Reflex from './src/Reflex.js';
 
 /**
  * @Visualizer
  */
-export default class Visualizer extends CodeBlock( Contract ) {
+export default class Visualizer extends CodeBlock( Reflex ) {
 
     Visualize( fn, autoRender = true ) {
         if ( autoRender ) {
@@ -67,8 +67,8 @@ export default class Visualizer extends CodeBlock( Contract ) {
                 color: lightgreen;
             }
 
-            subscript-contract.block-hover,
-            subscript-contract.block-runtime-active {
+            subscript-reflex.block-hover,
+            subscript-reflex.block-runtime-active {
                 outline: 1px dashed gray;
                 outline-offset: 0.1rem;
                 border-radius: 0.1rem;
@@ -76,7 +76,7 @@ export default class Visualizer extends CodeBlock( Contract ) {
                 background-color: darkblue;
                 */
             }
-            subscript-contract.block-runtime-active {
+            subscript-reflex.block-runtime-active {
                 background-color: rgba(100, 100, 100, 0.35);
             }
             `
@@ -89,5 +89,5 @@ export default class Visualizer extends CodeBlock( Contract ) {
  * @define
  */
 customElements.define( 'cfunctions-codeblock', CodeBlock() );
-customElements.define( 'cfunctions-contract', Contract );
+customElements.define( 'cfunctions-reflex', Reflex );
 customElements.define( 'cfunctions-visualizer', Visualizer );

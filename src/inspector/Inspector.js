@@ -42,7 +42,7 @@ export default class Inspector extends Base( HTMLElement ) {
         // ----------------
         this.buttons = {};
         ( hostElement.scripts || [] ).forEach( ( script, id ) => {
-            if ( !script.contract ) return;
+            if ( !script.reflex ) return;
             let title = typeof id === 'number' ? `script:${ id }` : `${ id }()`;
             this.buttons[ id ] = this.controlsElement.appendChild( document.createElement( 'button' ) );
             this.buttons[ id ].setAttribute( 'script-id', id );

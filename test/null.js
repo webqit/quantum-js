@@ -2,7 +2,7 @@
 /**
  * @imports
  */
-import ContractFunction from '../src/ContractFunction.js';
+import ReflexFunction from '../src/ReflexFunction.js';
 import Observer from '../../observer/src/index.js';
 
 // -----------
@@ -73,13 +73,13 @@ switch( funcTrigger ) {
 `;
 
 
-//ContractFunction.compilerParams.globalsNoObserve.push( 'console' );
-const contractFunction = new ContractFunction( 'funcTrigger', 'funcParam1', 'funcParam2', source, { runtimeParams: { apiVersion: 2 } } );
+//ReflexFunction.compilerParams.globalsNoObserve.push( 'console' );
+const reflexFunction = new ReflexFunction( 'funcTrigger', 'funcParam1', 'funcParam2', source, { runtimeParams: { apiVersion: 2 } } );
 Observer.observe( globalThis, mutations => {
     sync( ...mutations.map( mu => mu.path ) );
 }, { subtree: true } );
 
-console.log( '.....................sideEffects', contractFunction.sideEffects );
+console.log( '.....................sideEffects', reflexFunction.sideEffects );
 
 globalThis.targetEntries = {};
 globalThis.entries = { one: { name: 'one' }, two: { name: 'two' } };
@@ -98,9 +98,9 @@ setTimeout(() => {
 }, 4500);
 
 console.log('');
-let result, sync = contractFunction.thread;
-[ result, sync ] = await contractFunction( 'sum', '55', '55' );
-//result = await contractFunction( 'sum', '55', '55' );
+let result, sync = reflexFunction.thread;
+[ result, sync ] = await reflexFunction( 'sum', '55', '55' );
+//result = await reflexFunction( 'sum', '55', '55' );
 console.log( '---result---->', typeof sync, result );
 setTimeout( async () => {
     console.log( '---thread---->', await sync( [ 'funcParam2' ] ) );
@@ -108,15 +108,15 @@ setTimeout( async () => {
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-//console.log( JSON.stringify( contractFunction.runtime.graph, null, 3 ) );
+//console.log( JSON.stringify( reflexFunction.runtime.graph, null, 3 ) );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-//console.log( contractFunction.originalSource );
+//console.log( reflexFunction.originalSource );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');
-//console.log( contractFunction.length, contractFunction.toString(true) );
+//console.log( reflexFunction.length, reflexFunction.toString(true) );
 console.log('');
 console.log('--------------------------------------------------');
 console.log('');

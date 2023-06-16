@@ -10,13 +10,13 @@ export default class Ref extends Common {
     constructor( ownerReference, id, def ) {
         super( id, def );
         this.ownerReference = ownerReference;
-        this.condition = this.ownerContract.currentCondition;
+        this.condition = this.ownerReflex.currentCondition;
         this.path = [];
         this.isDotSafe = true;
     }
 
-    get ownerContract() {
-        return this.ownerReference.ownerContract;
+    get ownerReflex() {
+        return this.ownerReference.ownerReflex;
     }
 
     push( ...identifiers ) {

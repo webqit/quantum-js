@@ -5,135 +5,135 @@
 import { _await } from '../util.js';
 import inspection from './inspect.js';
 
-export default class Contract {
+export default class Reflex {
 
-    constructor( ownerContract, graph, callee, params = {}, $thread = null, exits = null ) {
-        this.ownerContract = ownerContract;
+    constructor( ownerReflex, graph, callee, params = {}, $thread = null, exits = null ) {
+        this.ownerReflex = ownerReflex;
         this.graph = graph;
         this.callee = callee;
-        this.params = !ownerContract ? { ...params, isContractFunction: true } : params;
+        this.params = !ownerReflex ? { ...params, isReflexFunction: true } : params;
         this.exits = exits || new Map;
-        this.$thread = $thread || { entries: new Map, sequence: [], ownerContract: this };
-        this.subContracts = new Map;
+        this.$thread = $thread || { entries: new Map, sequence: [], ownerReflex: this };
+        this.subReflexes = new Map;
         this.observers = [];
-        this.contract = function( contractId, arg1, arg2 = null, arg3 = null ) {
-            if ( !this.graph.subContracts[ contractId ] ) {
-                throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Graph not found for child contract ${ contractId }.` );
+        this.reflex = function( reflexId, arg1, arg2 = null, arg3 = null ) {
+            if ( !this.graph.subReflexes[ reflexId ] ) {
+                throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Graph not found for child reflex ${ reflexId }.` );
             }
 
-            let subGraph = this.graph.subContracts[ contractId ];
+            let subGraph = this.graph.subReflexes[ reflexId ];
             let subParams = {
                 ...this.params,
-                isIterationContract: arguments.length === 3,
+                isIterationReflex: arguments.length === 3,
                 iterationId: arguments.length === 3 && arg1,
-                isFunctionContract: arguments.length === 4,
+                isFunctionReflex: arguments.length === 4,
                 functionType: arguments.length === 4 && arg1,
-                isContractFunction: arguments.length === 4 && arg2,
-                functionScope: ( this.params.isFunctionContract && this.graph.lineage ) || this.params.functionScope,
+                isReflexFunction: arguments.length === 4 && arg2,
+                functionScope: ( this.params.isFunctionReflex && this.graph.lineage ) || this.params.functionScope,
             };
 
-            if ( subParams.isIterationContract ) {
-                // This is an iteration contract
+            if ( subParams.isIterationReflex ) {
+                // This is an iteration reflex
                 let callee = arg2;
                 // Create iteration
-                let iterationInstanceContract = new Contract( this, subGraph, callee, subParams, this.$thread, this.exits );
+                let iterationInstanceReflex = new Reflex( this, subGraph, callee, subParams, this.$thread, this.exits );
                 // Add iteration
-                let iterations = this.subContracts.get( contractId );
+                let iterations = this.subReflexes.get( reflexId );
                 if ( !iterations ) {
                     iterations = new Map;
-                    this.subContracts.set( contractId, iterations );
+                    this.subReflexes.set( reflexId, iterations );
                 }
                 // Dispose all existing
                 if ( iterations.has( subParams.iterationId ) ) {
                     iterations.get( subParams.iterationId ).dispose();
                 }
-                iterations.set( subParams.iterationId, iterationInstanceContract );
-                return iterationInstanceContract.call();
+                iterations.set( subParams.iterationId, iterationInstanceReflex );
+                return iterationInstanceReflex.call();
             }
 
-            let callee, subContract, returnValue;
+            let callee, subReflex, returnValue;
             // Dispose existing
-            if ( this.subContracts.has( contractId ) ) {
-                this.subContracts.get( contractId ).dispose();
+            if ( this.subReflexes.has( reflexId ) ) {
+                this.subReflexes.get( reflexId ).dispose();
             }
 
-            if ( subParams.isFunctionContract ) {
-                // Function contracts
+            if ( subParams.isFunctionReflex ) {
+                // Function reflexes
                 callee = arg3;
-                const createCallback = () => new Contract( this, subGraph, callee, subParams );
+                const createCallback = () => new Reflex( this, subGraph, callee, subParams );
                 if ( subParams.functionType !== 'FunctionDeclaration' ) {
                     returnValue = this.createFunction( createCallback );
                 } else {
-                    let subContract = createCallback();
+                    let subReflex = createCallback();
                     if ( subParams.apiVersion > 1 ) {
                         returnValue = function( ...args ) {
-                            let _returnValue = subContract.call( this, ...args );
-                            _returnValue = _await( _returnValue, __returnValue => [ _returnValue, subContract.thread.bind( subContract ), subContract ] );
-                            subContract = createCallback();
+                            let _returnValue = subReflex.call( this, ...args );
+                            _returnValue = _await( _returnValue, __returnValue => [ _returnValue, subReflex.thread.bind( subReflex ), subReflex ] );
+                            subReflex = createCallback();
                             return _returnValue;
                         }
-                        returnValue.target = subContract;
+                        returnValue.target = subReflex;
                     } else {
-                        returnValue = subContract;
+                        returnValue = subReflex;
                     }
                 }
             } else {
-                // Regular contracts
-                callee = arg1, subContract = new Contract( this, subGraph, callee, subParams, this.$thread, this.exits );
-                this.subContracts.set( contractId, subContract );
-                returnValue = subContract.call();
+                // Regular reflexes
+                callee = arg1, subReflex = new Reflex( this, subGraph, callee, subParams, this.$thread, this.exits );
+                this.subReflexes.set( reflexId, subReflex );
+                returnValue = subReflex.call();
             }
 
             return returnValue;
         }.bind( this );
         // ---------------------------
-        this.contract.memo = Object.create( null );
-        if ( this.ownerContract && ![ 'FunctionDeclaration', 'FunctionExpression' ].includes( this.graph.type ) ) {
-            this.contract.args = this.ownerContract.contract.args;
+        this.reflex.memo = Object.create( null );
+        if ( this.ownerReflex && ![ 'FunctionDeclaration', 'FunctionExpression' ].includes( this.graph.type ) ) {
+            this.reflex.args = this.ownerReflex.reflex.args;
         }
         // ---------------------------
-        this.contract.exiting = function( keyword, arg ) {
+        this.reflex.exiting = function( keyword, arg ) {
             if ( !arguments.length ) return this.exits.size;
             let exitMatch = this.exits.get( keyword ) === arg;
             if ( exitMatch ) this.exits.clear();
             return exitMatch;
         }.bind( this );
         // ---------------------------
-        this.contract.exit = function( keyword, arg ) {
+        this.reflex.exit = function( keyword, arg ) {
             this.exits.set( keyword, arg );
         }.bind( this );
         // ---------------------------
-        this.contract.functions = new Map;
-        this.contract.functions.declaration = ( functionDeclaration, callTarget ) => {
-            this.contract.functions.set( functionDeclaration, callTarget );
+        this.reflex.functions = new Map;
+        this.reflex.functions.declaration = ( functionDeclaration, callTarget ) => {
+            this.reflex.functions.set( functionDeclaration, callTarget );
             this.applyReflection( functionDeclaration, typeof callTarget === 'function' ? callTarget.target : callTarget );
         }
     }
 
-    fire( contractUrl, event, refs ) {
-        if ( !this.ownerContract ) return;
-        const ret = this.ownerContract.fire( contractUrl, event, refs );
+    fire( reflexUrl, event, refs ) {
+        if ( !this.ownerReflex ) return;
+        const ret = this.ownerReflex.fire( reflexUrl, event, refs );
         this.observers.forEach( observer => {
-            if ( observer.contractUrl !== contractUrl ) return;
+            if ( observer.reflexUrl !== reflexUrl ) return;
             observer.callback( event, refs );
         } );
         return ret;
     }
 
-    observe( contractUrl, callback ) {
-        if ( !this.params.isFunctionContract ) return;
-        this.observers.push( { contractUrl, callback } );
+    observe( reflexUrl, callback ) {
+        if ( !this.params.isFunctionReflex ) return;
+        this.observers.push( { reflexUrl, callback } );
     }
 
     call( $this, ...$arguments ) {
         if ( this.disposed ) {
             throw new Error( `[${ this.graph.type }:${ this.graph.lineage }]: Instance not runable after having been disposed.` );
         }
-        if ( !this.ownerContract ) {
-            this.contract.args = $arguments;
-            Object.defineProperty( this.contract.args, Symbol.toStringTag, { value: 'Arguments' } );
+        if ( !this.ownerReflex ) {
+            this.reflex.args = $arguments;
+            Object.defineProperty( this.reflex.args, Symbol.toStringTag, { value: 'Arguments' } );
         }
-        let returnValue = this.callee.call( $this, this.contract, ...$arguments );
+        let returnValue = this.callee.call( $this, this.reflex, ...$arguments );
         if ( this.graph.$sideEffects ) {
             for ( let referenceId in this.graph.effects ) {
                 for ( let effectRef of this.graph.effects[ referenceId ].refs ) {
@@ -143,7 +143,7 @@ export default class Contract {
             }
         }
         return _await( returnValue, () => {
-            if ( !this.ownerContract || this.params.isFunctionContract ) {
+            if ( !this.ownerReflex || this.params.isFunctionReflex ) {
                 let exitReturnValue = this.exits.get( 'return' );
                 this.exits.clear();
                 if ( exitReturnValue !== undefined ) return exitReturnValue;
@@ -154,10 +154,10 @@ export default class Contract {
 
     iterate( keys = [] ) {
         if ( this.disposed ) return false;
-        if ( ![ 'ForOfStatement', 'ForInStatement' ].includes( this.graph.type ) || this.subContracts.size !== 1 ) {
-            throw new Error( `Contract ${ this.graph.lineage } is not an iterator.` );
+        if ( ![ 'ForOfStatement', 'ForInStatement' ].includes( this.graph.type ) || this.subReflexes.size !== 1 ) {
+            throw new Error( `Reflex ${ this.graph.lineage } is not an iterator.` );
         }
-        let [ [ /* iterationContractId */, iterationInstances ] ] = this.subContracts;
+        let [ [ /* iterationReflexId */, iterationInstances ] ] = this.subReflexes;
         let prev
         if ( !keys.length || ( keys.includes( 'length' ) && this.graph.type === 'ForOfStatement' ) ) {
             for ( let [ /* iterationId */, iterationInstance ] of iterationInstances ) {
@@ -192,7 +192,7 @@ export default class Contract {
     runThread() {
         let execute = ( entry, refs ) => {
             if ( [ 'ForOfStatement', 'ForInStatement' ].includes( entry.graph.type ) 
-            && refs.every( ref => ref.executionPlan.isIterationContractTarget ) ) {
+            && refs.every( ref => ref.executionPlan.isIterationReflexTarget ) ) {
                 let targets = refs.map( ref => ref.executionPlan.iterationTarget );
                 this.fire( entry.graph.lineage, 'iterating', refs );
                 return entry.iterate( targets );
@@ -231,7 +231,7 @@ export default class Contract {
 
     buildThread( eventRef, effectRef, computes, remainder = 0, isSideEffect = false ) {
         let shouldMatchEventRef = remainder > 0;
-        if ( this.ownerContract ) {
+        if ( this.ownerReflex ) {
             // IMPORTANT: effectRef at global level are not supposed to be checked for computes and condition
             if ( !this.compute( computes ) ) return;
             if ( effectRef.condition !== undefined && !this.assert( effectRef.condition ) ) return;
@@ -241,13 +241,13 @@ export default class Contract {
         let subscriptionsObject = isSideEffect ? effectRef.$subscriptions : effectRef.subscriptions;
         // First we assert the conditions for the effectRef before moving on
         Object.keys( subscriptionsObject ).forEach( fullReferenceUrl => {
-            let [ contractUrl, referenceId ] = fullReferenceUrl.split( ':' );
+            let [ reflexUrl, referenceId ] = fullReferenceUrl.split( ':' );
             let selectRefs = _subscriberInstance => {
                 if ( !_subscriberInstance ) return;
                 _subscriberInstance.selectRefs( referenceId, subscriptionsObject[ fullReferenceUrl ], shouldMatchEventRef ? eventRef : null );
             }
             // We find the subscriber instance
-            let subscriberInstance = this.locate( contractUrl );
+            let subscriberInstance = this.locate( reflexUrl );
             if ( Array.isArray( subscriberInstance ) ) {
                 subscriberInstance.forEach( selectRefs );
             } else {
@@ -324,12 +324,12 @@ export default class Contract {
             }
             if ( remainder_b === 1 && this.graph.type === 'ForOfStatement' ) {
                 // An iteration item was changed or the length property of the list was changed
-                selectRef( ref, computes_b, { isIterationContractTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
+                selectRef( ref, computes_b, { isIterationReflexTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
                 continue;
             }
             if ( remainder_b === 1 && this.graph.type === 'ForInStatement' ) {
                 // An iteration property was changed
-                selectRef( ref, computes_b, { isIterationContractTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
+                selectRef( ref, computes_b, { isIterationReflexTarget: true, iterationTarget: eventRef_balance[ 0 ] } );
                 continue;
             }
         }
@@ -383,41 +383,41 @@ export default class Contract {
         ];
     }
 
-    locate( contractUrl ) {
+    locate( reflexUrl ) {
         let ownLineage_ = this.graph.lineage + '/';
-        let contractUrl_ = contractUrl + '/';
-        if ( contractUrl_ === ownLineage_ ) return this;
-        if ( contractUrl_.startsWith( ownLineage_ ) ) {
-            let postLineage = contractUrl.slice( ownLineage_.length ).split( '/' );
-            let subContract = this.subContracts.get( parseInt( postLineage.shift() ) );
+        let reflexUrl_ = reflexUrl + '/';
+        if ( reflexUrl_ === ownLineage_ ) return this;
+        if ( reflexUrl_.startsWith( ownLineage_ ) ) {
+            let postLineage = reflexUrl.slice( ownLineage_.length ).split( '/' );
+            let subReflex = this.subReflexes.get( parseInt( postLineage.shift() ) );
             if ( postLineage.length) {
-                if ( subContract instanceof Map ) {
-                    return Array.from( subContract ).reduce( ( subContracts, [ key, _subContract ] ) => {
-                        return subContracts.concat( _subContract.locate( contractUrl ) );
+                if ( subReflex instanceof Map ) {
+                    return Array.from( subReflex ).reduce( ( subReflexes, [ key, _subReflex ] ) => {
+                        return subReflexes.concat( _subReflex.locate( reflexUrl ) );
                     }, [] );
                 }
-                if ( subContract ) {
-                    return subContract.locate( contractUrl );
+                if ( subReflex ) {
+                    return subReflex.locate( reflexUrl );
                 }
             }
-            return subContract;
+            return subReflex;
         }
-        if ( this.ownerContract ) {
-            return this.ownerContract.locate( contractUrl );
+        if ( this.ownerReflex ) {
+            return this.ownerReflex.locate( reflexUrl );
         }
     }
 
     compute( computes ) {
-        return !computes.some( compute => compute( this.contract.memo ) === false );
+        return !computes.some( compute => compute( this.reflex.memo ) === false );
     }
 
     assert( condition ) {
         if ( typeof condition === 'string' && condition.includes( ':' ) ) {
-            let [ contractUrl, _condition ] = condition.split( ':' );
-            return this.locate( contractUrl ).assert( _condition );
+            let [ reflexUrl, _condition ] = condition.split( ':' );
+            return this.locate( reflexUrl ).assert( _condition );
         }
         let conditionDef = this.graph.conditions[ condition ];
-        let memo = this.contract.memo;
+        let memo = this.reflex.memo;
         if ( typeof conditionDef.parent !== 'undefined'  && !this.assert( conditionDef.parent ) ) return false;
         if ( typeof conditionDef.switch !== 'undefined' ) {
             return conditionDef.cases.some( _case => memo[ _case ] === memo[ conditionDef.switch ] );
@@ -432,54 +432,55 @@ export default class Contract {
     }
 
     dispose() {
-        if ( this.params.isFunctionContract ) return;
-        this.subContracts.forEach( ( subContract, contractId ) => {
-            if ( subContract instanceof Map ) {
-                subContract.forEach( subContract => subContract.dispose() );
-                subContract.clear();
+        if ( this.params.isFunctionReflex ) return;
+        this.subReflexes.forEach( ( subReflex, reflexId ) => {
+            if ( subReflex instanceof Map ) {
+                subReflex.forEach( subReflex => subReflex.dispose() );
+                subReflex.clear();
             } else {
-                subContract.dispose();
+                subReflex.dispose();
             }
         } );
-        this.subContracts.clear();
-        delete this.ownerContract;
+        this.subReflexes.clear();
+        delete this.ownerReflex;
         delete this.callee;
         delete this.params;
-        delete this.contract.memo;
+        delete this.reflex.memo;
         this.disposed = true;
     }
     
     createFunction( createCallback, defaultThis = undefined ) {
-        let contract = createCallback();
+        let instance = createCallback();
         // -------------
-        const execute = function( _contract, ...args ) {
-            let _returnValue = _contract.call( this === undefined ? defaultThis : this, ...args );
-            if ( _contract.params.isContractFunction && _contract.params.apiVersion > 1 ) {
-                _returnValue = _await( _returnValue, __returnValue => [ __returnValue, _contract.thread.bind( _contract ), _contract ] );
+        const execute = function( _instance, ...args ) {
+            let _returnValue = _instance.call( this === undefined ? defaultThis : this, ...args );
+            if ( _instance.params.isReflexFunction && _instance.params.apiVersion > 1 ) {
+                _returnValue = _await( _returnValue, __returnValue => [ __returnValue, _instance.thread.bind( _instance ), _instance ] );
                 // Replace global for next call
-                contract = createCallback( contract );
+                instance = createCallback( instance );
             }
             return _returnValue;
         };
         // -------------
-        const _function = ( contract instanceof Promise ) || ( contract.callee instanceof ( async function() {} ).constructor )
-            ? async function() { return _await( contract, _contract => execute.call( this, _contract, ...arguments ) ); } 
-            : function() { return execute.call( this, contract, ...arguments ); };
+        const _function = ( instance instanceof Promise ) || ( instance.callee instanceof ( async function() {} ).constructor )
+            ? async function() { return _await( instance, _instance => execute.call( this, _instance, ...arguments ) ); } 
+            : function() { return execute.call( this, instance, ...arguments ); };
         // -------------
-        _await( contract, _contract => {
-            this.applyReflection( _function, _contract );
+        _await( instance, _instance => {
+            this.applyReflection( _function, _instance );
         } );
         // -------------
-        inspection( _function, 'properties', _await( contract, _contract => {
+        inspection( _function, _await( instance, _instance => {
             const graph = {
-                type: _contract.params.functionType || 'Program',
-                apiVersion: _contract.params.apiVersion || 1,
-                isContractFunction: _contract.params.isContractFunction,
-                sideEffects: _contract.graph.sideEffects || false,
+                type: _instance.params.functionType || 'Program',
+                apiVersion: _instance.params.apiVersion || 1,
+                isReflexFunction: _instance.params.isReflexFunction,
+                sideEffects: _instance.graph.sideEffects || false,
+                locations: _instance.graph.locations || [],
             };
-            if ( _contract.params.isContractFunction ) {
+            if ( _instance.params.isReflexFunction ) {
                 graph.dependencies = [];
-                for ( const [ id, effect ] of Object.entries( _contract.graph.effects ) ) {
+                for ( const [ id, effect ] of Object.entries( _instance.graph.effects ) ) {
                     graph.dependencies.push( ...effect.refs.map( ref => ref.path.map( s => !( 'name' in s ) ? Infinity : s.name ) ) );
                 }
             }
@@ -489,27 +490,27 @@ export default class Contract {
         return _function;
     }
 
-    applyReflection( _function, contract ) {
+    applyReflection( _function, instance ) {
         // Hide implementation details on callee
-        Object.defineProperty( contract.callee, 'length', { configurable: true, value: contract.callee.length - 1 } );
-        const compiledSourceNeat = contract.callee.toString()//.replace( /\(\$[\w]+\,([\s]*)?/, '(' );
-        Object.defineProperty( contract.callee, 'toString', { configurable: true, value: ( compiledSource = false ) => {
-            if ( !compiledSource && contract.graph.originalSource ) { return contract.graph.originalSource; }
+        Object.defineProperty( instance.callee, 'length', { configurable: true, value: instance.callee.length - 1 } );
+        const compiledSourceNeat = instance.callee.toString()//.replace( /\(\$[\w]+\,([\s]*)?/, '(' );
+        Object.defineProperty( instance.callee, 'toString', { configurable: true, value: ( compiledSource = false ) => {
+            if ( !compiledSource && instance.graph.originalSource ) { return instance.graph.originalSource; }
             return compiledSourceNeat;
         } } );
         // Hide implementation details on main
         let properties = {
-            name: contract.callee.name,
-            length: contract.callee.length,
-            toString: contract.callee.toString,
+            name: instance.callee.name,
+            length: instance.callee.length,
+            toString: instance.callee.toString,
         };
-        if ( contract.params.isContractFunction ) {
-            if ( !( contract.params.apiVersion > 1 ) ) {
+        if ( instance.params.isReflexFunction ) {
+            if ( !( instance.params.apiVersion > 1 ) ) {
                 properties = {
                     ...properties,
-                    thread: contract.thread.bind( contract ),
-                    dispose: contract.dispose.bind( contract ),
-                    runtime: contract,
+                    thread: instance.thread.bind( instance ),
+                    dispose: instance.dispose.bind( instance ),
+                    runtime: instance,
                 };
             }
         }

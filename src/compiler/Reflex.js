@@ -11,16 +11,16 @@ import SignalReference from './SignalReference.js';
 import EffectReference from './EffectReference.js';
 import Node from './Node.js';
 
-export default class Contract extends Common {
+export default class Reflex extends Common {
 
     constructor( ownerContext, id, def ) {
         super( id, def );
         this.ownerContext = ownerContext;
         // These derivations must be done here at constructor level
-        this.ownerContract = ownerContext && ( ownerContext.currentContract || ownerContext );
+        this.ownerReflex = ownerContext && ( ownerContext.currentReflex || ownerContext );
         this.ownerScope = ownerContext && ( ownerContext.currentScope || ownerContext.ownerScope );
         // Runtime identifers
-        this.runtimeIdentifiers = {};
+        this.reflexIdentifiers = {};
         // Reference
         this.references = [];
         this.referenceStack = [];
@@ -36,13 +36,13 @@ export default class Contract extends Common {
         this._nextIds = {};
         // Function-level flag
         this.sideEffects = [];
-        // Contract-level flag
+        // Reflex-level flag
         this.$sideEffects = false;
     }
 
     get $params() {
         return this.params || (
-            this.ownerContract && this.ownerContract.$params
+            this.ownerReflex && this.ownerReflex.$params
         );
     }
 
@@ -56,13 +56,13 @@ export default class Contract extends Common {
     // ---------------
 
     closest( typeOrCallback = null, withLevel = false, prevLevel = -1 ) {
-        if ( !arguments.length ) return this.ownerContract;
+        if ( !arguments.length ) return this.ownerReflex;
         let currentLevel = prevLevel + 1;
         if ( typeof typeOrCallback === 'function' ? typeOrCallback( this, currentLevel ) : [].concat( typeOrCallback ).some( type => type === this.type ) ) {
             return withLevel ? { instance: this, level: currentLevel } : this;
         }
-        if ( this.ownerContract ) {
-            return this.ownerContract.closest( typeOrCallback, withLevel, currentLevel );
+        if ( this.ownerReflex ) {
+            return this.ownerReflex.closest( typeOrCallback, withLevel, currentLevel );
         }
     }
 
@@ -76,43 +76,43 @@ export default class Contract extends Common {
 
     // -----------------
 
-    defineRuntimeIdentifier( id, whitelist, blacklist = [] ) {
+    defineReflexIdentifier( id, whitelist, blacklist = [] ) {
         const idObject = {};
         Object.defineProperty( idObject, 'whitelist', { value: whitelist, writable: true } );
         Object.defineProperty( idObject, 'blacklist', { value: blacklist, writable: true } );
         Object.defineProperty( idObject, 'toString', { value: function() {
             return this.whitelist[ 0 ];
         } } );
-        this.runtimeIdentifiers[ id ] = idObject;
+        this.reflexIdentifiers[ id ] = idObject;
     }
 
-    getRuntimeIdentifier( id, globally = false ) {
-        return this.runtimeIdentifiers[ id ] || (
-            globally && this.ownerContract && this.ownerContract.getRuntimeIdentifier( id, globally )
+    getReflexIdentifier( id, globally = false ) {
+        return this.reflexIdentifiers[ id ] || (
+            globally && this.ownerReflex && this.ownerReflex.getReflexIdentifier( id, globally )
         );
     }
 
-    runtimeIdentifiersNoConflict( identifier ) {
+    reflexIdentifiersNoConflict( identifier ) {
         if ( identifier.type !== 'Identifier' ) {
             throw new Error(`An implied Identifier is of type ${ identifier.type }`);
         }
-        for ( let id in this.runtimeIdentifiers ) {
-            let runtimeIdentifier = this.runtimeIdentifiers[ id ];
-            let i = runtimeIdentifier.whitelist.indexOf( identifier.name );
+        for ( let id in this.reflexIdentifiers ) {
+            let reflexIdentifier = this.reflexIdentifiers[ id ];
+            let i = reflexIdentifier.whitelist.indexOf( identifier.name );
             if ( i === -1 ) continue;
-            runtimeIdentifier.blacklist.push( runtimeIdentifier.whitelist.splice( i, 1 ) );
-            if ( !runtimeIdentifier.whitelist.length ) {
-                runtimeIdentifier.whitelist = runtimeIdentifier.blacklist.map( name => {
+            reflexIdentifier.blacklist.push( reflexIdentifier.whitelist.splice( i, 1 ) );
+            if ( !reflexIdentifier.whitelist.length ) {
+                reflexIdentifier.whitelist = reflexIdentifier.blacklist.map( name => {
                     let newVar;
                     do {
                         let randChar = String.fromCharCode( 0 | Math.random() *26 +97 );
                         newVar = `${ name }${ randChar }`;
-                    } while ( runtimeIdentifier.blacklist.includes( newVar ) );
+                    } while ( reflexIdentifier.blacklist.includes( newVar ) );
                     return newVar;
                 });
             }
         }
-        this.ownerContract && this.ownerContract.runtimeIdentifiersNoConflict( identifier );
+        this.ownerReflex && this.ownerReflex.reflexIdentifiersNoConflict( identifier );
     }
 
     // ---------------
@@ -211,8 +211,8 @@ export default class Contract extends Common {
         return this.entryStack.reduce( ( context, current ) => context || ( current instanceof Context ) && current, null );
     }
 
-    get currentContract() {
-        return this.entryStack.reduce( ( effect, current ) => effect || ( current instanceof Contract ) && current, null );
+    get currentReflex() {
+        return this.entryStack.reduce( ( effect, current ) => effect || ( current instanceof Reflex ) && current, null );
     }
 
     get currentEntry() {
@@ -227,7 +227,7 @@ export default class Contract extends Common {
         this.entryStack.unshift( entry );
         let result = callback( entry );
         this.entryStack.shift();
-        if ( ( entry instanceof Contract ) && !entry.generatable() ) {
+        if ( ( entry instanceof Reflex ) && !entry.generatable() ) {
             this.entries = this.entries.filter( _entry => _entry !== entry );
         }
         // Return callback result
@@ -251,8 +251,8 @@ export default class Contract extends Common {
         return this.pushEntry( instance, callback );
     }
 
-    defineContract( def, callback ) {
-        let instance = new Contract( this, this.nextId( 'contract' ), def );
+    defineReflex( def, callback ) {
+        let instance = new Reflex( this, this.nextId( 'reflex' ), def );
         return this.pushEntry( instance, callback );
     }
 
@@ -268,8 +268,8 @@ export default class Contract extends Common {
         let type = this.type, label, target;
         if ( ( this.ownerScope || {} ).label ) {
             ( { label: { name: label }, type: target } = this.ownerScope );
-        } else if ( type === 'Iteration' && this.ownerContract.ownerScope.label ) {
-            ( { label: { name: label }, type: target } = this.ownerContract.ownerScope );
+        } else if ( type === 'Iteration' && this.ownerReflex.ownerScope.label ) {
+            ( { label: { name: label }, type: target } = this.ownerReflex.ownerScope );
         };
         return { type, label, target, };
     }
@@ -293,13 +293,13 @@ export default class Contract extends Common {
             this._hoistedArgumentsKeyword = true;
             return;
         }
-        this.ownerContract && this.ownerContract.hoistArgumentsKeyword();
+        this.ownerReflex && this.ownerReflex.hoistArgumentsKeyword();
     }
 
     hoistAwaitKeyword() {
         if ( [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) return;
         this._hoistedAwaitKeyword = true;
-        this.ownerContract && this.ownerContract.hoistAwaitKeyword();
+        this.ownerReflex && this.ownerReflex.hoistAwaitKeyword();
     }
 
     hoistExitStatement( keyword, arg ) {
@@ -314,8 +314,8 @@ export default class Contract extends Common {
             }
         }
         this._hoistedExitStatements.set( keyword, arg );
-        if ( this.ownerContract ) {
-            return this.ownerContract.hoistExitStatement( keyword, arg );
+        if ( this.ownerReflex ) {
+            return this.ownerReflex.hoistExitStatement( keyword, arg );
         }
     }
 
@@ -328,38 +328,38 @@ export default class Contract extends Common {
     generate( expr, params = {} ) {
         if ( !expr || !this.generatable()  ) return expr;
         this.generated = true;
-        let id$contract = Node.identifier( this.ownerContract.getRuntimeIdentifier( '$contract', true ) );
+        let id$reflex = Node.identifier( this.ownerReflex.getReflexIdentifier( '$reflex', true ) );
 
         let callee, body;
-        if ( params.isFunctionContract ) {
+        if ( params.isFunctionReflex ) {
             callee = expr;
         } else if ( this.inSequence ) {
-            callee = Node.arrowFuncExpr( null, [ id$contract ], expr, this.hoistedAwaitKeyword, true /* expression */ );
+            callee = Node.arrowFuncExpr( null, [ id$reflex ], expr, this.hoistedAwaitKeyword, true /* expression */ );
         } else {
             body = Array.isArray( expr ) ? Node.blockStmt( expr ) : Node.blockStmt( [ expr ] );
-            callee = Node.arrowFuncExpr( null, [ id$contract ], body, this.hoistedAwaitKeyword );
+            callee = Node.arrowFuncExpr( null, [ id$reflex ], body, this.hoistedAwaitKeyword );
         }
 
         // Create the effect node
-        let contractArgs = [ Node.literal( this.id ), ...( params.args || [] ), callee ];
-        let contract = Node.callExpr( id$contract, contractArgs );
+        let reflexArgs = [ Node.literal( this.id ), ...( params.args || [] ), callee ];
+        let reflex = Node.callExpr( id$reflex, reflexArgs );
         if ( this.hoistedAwaitKeyword ) {
-            contract = Node.awaitExpr( contract );
+            reflex = Node.awaitExpr( reflex );
         }
         if ( this.inSequence || params.generateForArgument ) {
-            return contract;
+            return reflex;
         }
 
         let _this = this;
-        contract = Node.exprStmt( contract );
+        reflex = Node.exprStmt( reflex );
         const valueObject = {};
         Object.defineProperty( valueObject, 'toString', { value: () => _this.lineage } );
         Object.defineProperty( valueObject, 'trim', { value: function() {
             return this.toString();
         } } );
-        contract.comments = [ { type: 'Line', value: valueObject, } ];
+        reflex.comments = [ { type: 'Line', value: valueObject, } ];
         // The list of returned statements
-        let statements = [ contract ];
+        let statements = [ reflex ];
         this.hookExpr = statements;
 
         // Complete exits handling
@@ -378,7 +378,7 @@ export default class Contract extends Common {
                     let label = arg.arg;
                     // This keyword meets its target
                     let exitCheck = Node.callExpr(
-                        Node.memberExpr( id$contract, Node.identifier( 'exiting' ) ),
+                        Node.memberExpr( id$reflex, Node.identifier( 'exiting' ) ),
                         [ keyword, label ]
                     );
                     let exitAction = Node.exprStmt(
@@ -393,7 +393,7 @@ export default class Contract extends Common {
             if ( hoistedExits ) {
                 // But not inside
                 let exitCheck = Node.callExpr(
-                    Node.memberExpr( id$contract, Node.identifier( 'exiting' ) )
+                    Node.memberExpr( id$reflex, Node.identifier( 'exiting' ) )
                 );
                 let exitAction = Node.exprStmt( Node.identifier( 'return' ) );
                 pushIf( exitCheck, exitAction );
@@ -404,8 +404,8 @@ export default class Contract extends Common {
     }
 
     get lineage() {
-        let lineage = this.ownerContract && this.ownerContract.lineage;
-        return this.ownerContract && !this.generated ? lineage : `${ lineage ? lineage + '/' : '' }${ this.id }`;
+        let lineage = this.ownerReflex && this.ownerReflex.lineage;
+        return this.ownerReflex && !this.generated ? lineage : `${ lineage ? lineage + '/' : '' }${ this.id }`;
     }
 
     // -----------------
@@ -420,7 +420,7 @@ export default class Contract extends Common {
             effects: {},
             sideEffects: this.sideEffects.length ? true : undefined,
             $sideEffects: this.$sideEffects === true ? true : undefined,
-            subContracts: {},
+            subReflexes: {},
             conditions: {},
             hoistedAwaitKeyword: this.hoistedAwaitKeyword,
             hoistedArgumentsKeyword: this.hoistedArgumentsKeyword,
@@ -440,13 +440,13 @@ export default class Contract extends Common {
         } );
 
         let offset = this.lineage.split( '/' ).length;
-        let find = lineage => lineage.reduce( ( _json, id ) => _json.subContracts[ id ], json );
+        let find = lineage => lineage.reduce( ( _json, id ) => _json.subReflexes[ id ], json );
         this.entries.slice( 0 ).reverse().forEach( entry => {
-            if ( ( entry instanceof Contract ) && entry.generated ) {
+            if ( ( entry instanceof Reflex ) && entry.generated ) {
                 let target = find( entry.lineage.split( '/' ).slice( offset, -1 ) );
-                target.subContracts[ entry.id ] = entry.toJson( filter );
+                target.subReflexes[ entry.id ] = entry.toJson( filter );
             } else if ( entry instanceof Condition ) {
-                let target = find( entry.ownerContract.lineage.split( '/' ).slice( offset ) );
+                let target = find( entry.ownerReflex.lineage.split( '/' ).slice( offset ) );
                 target.conditions[ entry.id ] = entry.toJson( filter );
             }
         } );

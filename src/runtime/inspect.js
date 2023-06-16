@@ -1,17 +1,17 @@
+/**
+ * @imports
+ */
+import { _await } from '../util.js';
 
 /**
  * @exports
  */
 const store = new Map;
-export default function( _function, property, value = undefined ) {
-    let insp = store.get( _function );
-    if ( arguments.length > 2 ) {
-        if ( !insp ) {
-            insp = new Map;
-            store.set( _function, insp );
-        }
-        insp.set( property, value );
+export default function( _function, arg ) {
+    if ( typeof arg === 'object' && arg ) {
+        store.set( _function, arg );
         return;
     }
-    return insp && insp.get( property );
+    const insp = store.get( _function );
+    return _await( insp, _insp => _insp && ( arg ? _insp[ arg ] : _insp ) );
 }

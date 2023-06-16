@@ -1,17 +1,16 @@
-# Contract Functions
+# Reflex Functions
 
 <!-- BADGES/ -->
 
-
-<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/subscript.svg" alt="NPM version" /></a></span> <span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/subscript" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/subscript.svg" alt="NPM downloads" /></a></span>
+<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/reflex-functions" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/reflex-functions.svg" alt="NPM version" /></a></span> <span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/reflex-functions" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/reflex-functions.svg" alt="NPM downloads" /></a></span>
 
 <!-- /BADGES --> 
 
 **[Motivation](#motivation) • [Overview](#an-overview) • [Polyfill](#the-polyfill) • [Design Discussion](#design-discussion) • [Getting Involved](#getting-involved) • [License](#license)**
 
-Contract Functions are a proposed new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form and *linear* flow of the language, where every logic expressed is maintained as a "contract" throughout the lifetime of the program! (By this, we introduce Imperative Reactive Programming (IRP) in JavaScript!)
+Reflex Functions are a proposed new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form and *linear* flow of the language, where every logic expressed is maintained as a "reflex" throughout the lifetime of the program! (By this, we introduce Imperative Reactive Programming (IRP) in JavaScript!)
 
-Contract Functions is an upcoming proposal!
+Reflex Functions is an upcoming proposal!
 
 ## Motivation
 
@@ -19,11 +18,11 @@ Reactivity has hostorically relied on a lot of runtime techniques and compiler m
 
 This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/on-the-language-of-reactivity-part-1-and-introducing-the-observer-api-pkn-temp-slug-2525455?preview=74f1766eb6ae03dff8a4ceee33c4b1b534dc2fb007ddfc9e651e6e03ef59394d784f84e98d50cc7f1b48584585153af5fb1516c3d2555a80510d77d9)<sup>draft</sup>
 
-We realized that we could solve the "Language of Reactivity" down to just plain "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Contract Functions" as a potential native language feature!
+We realized that we could solve the "Language of Reactivity" down to just plain "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Reflex Functions" as a potential native language feature!
 
 ## An Overview
 
-Contract Functions have a distinguishing syntax: a double star notation.
+Reflex Functions have a distinguishing syntax: a double star notation.
 
 ```js
 function** calculate() {
@@ -31,9 +30,9 @@ function** calculate() {
 }
 ```
 
-> See [Formal Syntax](https://github.com/webqit/contract/wiki#formal-syntax) for details.
+> See [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax) for details.
 
-Function body is any regular piece of code that needs to be automatically maintained as a "contract" with its dependencies:
+Function body is any regular piece of code that needs to be automatically maintained as a "reflex" with its dependencies:
 
 ```js
 let count = 10; // External dependency
@@ -44,7 +43,7 @@ function** calculate(factor) {
 }
 ```
 
-Return value is a two-part array that contains both the function's actual return value and a special `reflect` function for getting the contract to reflect updates:
+Return value is a two-part array that contains both the function's actual return value and a special `reflect` function for getting the reflex to reflect updates:
 
 ```js
 let [ returnValue, reflect ] = calculate(2);
@@ -59,7 +58,7 @@ console.log(returnValue); // undefined
 
 </details>
 
-The `reflect()` function takes just the string representation of the external dependencies that have changed and need to be reflected in the contract:
+The `reflect()` function takes just the string representation of the external dependencies that have changed and need to be reflected in the reflex:
 
 ```js
 count = 20;
@@ -84,7 +83,7 @@ reflect('count', [ 'object', 'property' ]);
 
 ### Change Propagation
 
-Reactivity exists with Contract Functions where there are dependencies "up" the scope to respond to! And here's the mental model for that:
+Reactivity exists with Reflex Functions where there are dependencies "up" the scope to respond to! And here's the mental model for that:
 
 `┌─` a change *happens outside* function scope
 
@@ -92,7 +91,7 @@ Reactivity exists with Contract Functions where there are dependencies "up" the 
 
 Changes within the function body itself is *self-propagation* all the way, going "top-down" the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
 
-Below is a good way to see that: a Contract Function having `score` as an external dependency, with lines having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
+Below is a good way to see that: a Reflex Function having `score` as an external dependency, with lines having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
 ```js
 let score = 40;
@@ -132,23 +131,23 @@ Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivi
 
 ### Documentation
 
-There's a whole lot possible here  which is covered in [the docs](https://github.com/webqit/contract/wiki).
+There's a whole lot possible here  which is covered in [the docs](https://github.com/webqit/reflex-functions/wiki).
 
-+ [Formal Syntax](https://github.com/webqit/contract/wiki#formal-syntax)
-+ [Change Propagation](https://github.com/webqit/contract/wiki#change-propagation)
-+ [Heuristics](https://github.com/webqit/contract/wiki#heuristics)
-+ [Flow Control](https://github.com/webqit/contract/wiki#flow-control)
-    + [Conditionals](https://github.com/webqit/contract/wiki#conditionals)
-    + [Loops](https://github.com/webqit/contract/wiki#loops)
-+ [Functions](https://github.com/webqit/contract/wiki#functions)
-    + [Side Effects](https://github.com/webqit/contract/wiki#side-effects)
-+ [API](https://github.com/webqit/contract/wiki#api)
-    + [`ContractFunction`](https://github.com/webqit/contract/wiki#contractfunction)
-    + [`ContractFunction.inspect()`](https://github.com/webqit/contract/wiki#contractfunctioninspect)
++ [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax)
++ [Change Propagation](https://github.com/webqit/reflex-functions/wiki#change-propagation)
++ [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics)
++ [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control)
+    + [Conditionals](https://github.com/webqit/reflex-functions/wiki#conditionals)
+    + [Loops](https://github.com/webqit/reflex-functions/wiki#loops)
++ [Functions](https://github.com/webqit/reflex-functions/wiki#functions)
+    + [Side Effects](https://github.com/webqit/reflex-functions/wiki#side-effects)
++ [API](https://github.com/webqit/reflex-functions/wiki#api)
+    + [`ReflexFunction`](https://github.com/webqit/reflex-functions/wiki#reflexfunction)
+    + [`ReflexFunction.inspect()`](https://github.com/webqit/reflex-functions/wiki#reflexfunctioninspect)
 
 ### Examples
 
-**--> Example 1:** Below is a custom element that has Contract Function as its `render()` method. The `render()` method has only been called once, and subsequent updates are just a fine-grained reflection.
+**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method has only been called once, and subsequent updates are just a fine-grained reflection.
 
 ```js
 // Outer dependency
@@ -188,21 +187,21 @@ customElements.define('click-counter', class extends HTMLElement {
 
 ## The Polyfill
 
-Contract Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Contract Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/contract/wiki).
+Reflex Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Reflex Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/reflex-functions/wiki).
 
 <details><summary>Load from a CDN</summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/contract/dist/main.js"></script>
+<script src="https://unpkg.com/@webqit/reflex-functions/dist/main.js"></script>
 ```
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/contract)
+> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/reflex-functions)
 
 ```js
 // Destructure from the webqit namespace
-const { ContractFunction } = window.webqit;
+const { ReflexFunction } = window.webqit;
 ```
 
 </details>
@@ -211,24 +210,24 @@ const { ContractFunction } = window.webqit;
 
 ```js
 // npm install
-npm i @webqit/contract
+npm i @webqit/reflex-functions
 ```
 
 ```js
 // Import API
-import { ContractFunction } from '@webqit/contract';
+import { ReflexFunction } from '@webqit/reflex-functions';
 ```
 
 </details>
 
-The current polyfill only supports the constructable form of Contract Functions:
+The current polyfill only supports the constructable form of Reflex Functions:
 
 ```js
 // External dependency
 globalThis.externalVar = 10;
 
 // Initial run
-let sum = ContractFunction( `a`, `b`, `return a + b + externalVar;` );
+let sum = ReflexFunction( `a`, `b`, `return a + b + externalVar;` );
 let [ result, reflect ] = sum(10, 10); // 30
 
 // Reflections
@@ -240,7 +239,7 @@ result = reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependen
 But the double star syntax is supported from within the function itself:
 
 ```js
-const contract = ContractFunction(`
+const reflex = ReflexFunction(`
   // External dependency
   let externalVar = 10;
 
@@ -255,30 +254,30 @@ const contract = ContractFunction(`
   result = reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
   result = reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 `);
-contract();
+reflex();
 ```
 
-### Contract Functions Lite
+### Reflex Functions Lite
 
-It is possible to use a lighter version of Contract Functions where the bundle size of the main build above will impact *initial* application loading. The *Lite* version initially comes without the compiler and yet let's you work with Contract Functions ahead of that.
+It is possible to use a lighter version of Reflex Functions where the bundle size of the main build above will impact *initial* application loading. The *Lite* version initially comes without the compiler and yet let's you work with Reflex Functions ahead of that.
 
-This lazy-loading strategy **also means that the Contract Functions API will *only* be available in [*async* mode](https://github.com/webqit/contract/wiki#async-mode)**! (This *async* mode is what makes it possible to load the compiler lazily!) And it comes with an additional perk: the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations are able to happen off the main thread!
+This lazy-loading strategy **also means that the Reflex Functions API will *only* be available in [*async* mode](https://github.com/webqit/reflex-functions/wiki#async-mode)**! (This *async* mode is what makes it possible to load the compiler lazily!) And it comes with an additional perk: the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations are able to happen off the main thread!
 
 <details><summary>Load from a CDN</summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/contract/dist/lite.js"></script>
+<script src="https://unpkg.com/@webqit/reflex-functions/dist/lite.js"></script>
 ```
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
 <!--
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/contract/dist/lite.js)
+> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/reflex-functions/dist/lite.js)
 -->
 
 ```js
 // Destructure from the webqit namespace
-const { ContractFunction: ContractFunctionLite } = window.webqit;
+const { ReflexFunction: ReflexFunctionLite } = window.webqit;
 ```
 
 </details>
@@ -287,24 +286,24 @@ const { ContractFunction: ContractFunctionLite } = window.webqit;
 
 ```js
 // npm install
-npm i @webqit/contract
+npm i @webqit/reflex-functions
 ```
 
 ```js
 // Import Lite API
-import { ContractFunctionLite } from '@webqit/contract';
+import { ReflexFunctionLite } from '@webqit/reflex-functions';
 ```
 
 </details>
 
-Contract Functions Lite comes this way in *async* mode:
+Reflex Functions Lite comes this way in *async* mode:
 
 ```js
 // External dependency
 globalThis.externalVar = 10;
 
 // Initial run
-let sum = ContractFunctionLite( `a`, `b`, `return a + b + externalVar;` );
+let sum = ReflexFunctionLite( `a`, `b`, `return a + b + externalVar;` );
 let [ result, reflect ] = await sum(10, 10); // 30
 
 // Reflections
@@ -313,12 +312,12 @@ result = await reflect( 'b' ); // no effect; "a" isn't an external dependency to
 result = await reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 ```
 
-But just for the fact that the Contract Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
+But just for the fact that the Reflex Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
 
 ```html
 <head>
-  <script src="https://unpkg.com/@webqit/contract/dist/compiler.js"></script> <!-- Must come before the polyfil -->
-  <script src="https://unpkg.com/@webqit/contract/dist/main.js"></script>
+  <script src="https://unpkg.com/@webqit/reflex-functions/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+  <script src="https://unpkg.com/@webqit/reflex-functions/dist/main.js"></script>
 </head>
 ```
 
@@ -330,10 +329,10 @@ But just for the fact that the Contract Functions Compiler is designed as a mova
 
 All forms of contributions are welcome at this time. For example, syntax and other implementation details are all up for discussion. Also, help is needed with more formal documentation. And here are specific links:
 
-+ [Project](https://github.com/webqit/contract)
-+ [Documentation](https://github.com/webqit/contract/wiki)
-+ [Discusions](https://github.com/webqit/contract/discussions)
-+ [Issues](https://github.com/webqit/contract/issues)
++ [Project](https://github.com/webqit/reflex-functions)
++ [Documentation](https://github.com/webqit/reflex-functions/wiki)
++ [Discusions](https://github.com/webqit/reflex-functions/discussions)
++ [Issues](https://github.com/webqit/reflex-functions/issues)
 
 ## License
 

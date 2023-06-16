@@ -2,8 +2,8 @@
 /**
  * @imports
  */
-import ContractFunction from './ContractFunction.js';
+import ReflexFunction from './ReflexFunction.js';
 
 // As globals
 if ( !self.webqit ) { self.webqit = {}; }
-self.webqit.ContractFunction = ContractFunction;
+self.webqit.ReflexFunction = ReflexFunction;

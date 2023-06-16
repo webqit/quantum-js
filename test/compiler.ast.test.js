@@ -5,17 +5,17 @@
 import { group, add } from './driver.js';
 
 /**
- * The add() methods below decribe what the Contract compiler would take and generate, respectively.
+ * The add() methods below decribe what the Reflex compiler would take and generate, respectively.
  * A quick way to see compiler results for an expression/statement is via ./_.js
  * @see ./_.js
  */
 
 describe( `Variable declarations`, function() {
 
-    group( `Form NO reactive contracts for non-reactive declarations.`, function() {
+    group( `Form NO reflexes for non-reactive declarations.`, function() {
 
         add(
-            `Uninitialized variables form NO reactive contract.`,
+            `Uninitialized variables form NO reflex.`,
             `
             let a;
             `,
@@ -25,7 +25,7 @@ describe( `Variable declarations`, function() {
         );
 
         add(
-            `Variables initialized with a Literal form NO reactive contract.`,
+            `Variables initialized with a Literal form NO reflex.`,
             `
             let b = 2;
             `,
@@ -35,7 +35,7 @@ describe( `Variable declarations`, function() {
         );
 
         add(
-            `Const variables form NO reactive contract.`,
+            `Const variables form NO reflex.`,
             `
             const c = d;
             `,
@@ -46,10 +46,10 @@ describe( `Variable declarations`, function() {
 
     } );
 
-    group( `Form reactive contracts for reactive declarations.`, function() {
+    group( `Form reflexes for reactive declarations.`, function() {
 
         add(
-            `Variables bound to references form a reactive contract.`,
+            `Variables bound to references form a reflex.`,
             `
             let e = f;
             `,
@@ -63,7 +63,7 @@ describe( `Variable declarations`, function() {
         );
 
         add(
-            `Destructured variables bound to references form an equivalent reactive contract.`,
+            `Destructured variables bound to references form an equivalent reflex.`,
             `
             let { a, b, c: { d, e: [ f ] } } = g;
             `,
@@ -101,10 +101,10 @@ describe( `Variable declarations`, function() {
 
 describe( `Assignment expressions`, function() {
 
-    group( `Form reactive contracts for assignments (every assignment is reactive).`, function() {
+    group( `Form reflexes for assignments (every assignment is reactive).`, function() {
 
         add(
-            `Assignment of a Literal forms a reactive contract.`,
+            `Assignment of a Literal forms a reflex.`,
             `
             b = 2;
             `,
@@ -117,7 +117,7 @@ describe( `Assignment expressions`, function() {
         );
 
         add(
-            `assignments bound to references form a reactive contract.`,
+            `assignments bound to references form a reflex.`,
             `
             e = f;
             `,
@@ -148,7 +148,7 @@ describe( `Assignment expressions`, function() {
 
 describe( `IF statements`, function() {
 
-    group( `Form NO reactive contracts for non-reactive "test" expressions.`, function() {
+    group( `Form NO reflexes for non-reactive "test" expressions.`, function() {
 
         add(
             `Literals as "test" expressions are non-reactive. But "test" expression is memoized nontheless.`,
@@ -164,7 +164,7 @@ describe( `IF statements`, function() {
         );
 
         add(
-            `Descendant expressions/statements may form their own contracts.`,
+            `Descendant expressions/statements may form their own reflexes.`,
             `
             if ( 1 ) {
                 call();
@@ -196,7 +196,7 @@ describe( `IF statements`, function() {
 
     } );
 
-    group( `Form reactive contracts for reactive "test" expressions.`, function() {
+    group( `Form reflexes for reactive "test" expressions.`, function() {
 
         add(
             `"test" expressions with references are reactive. And they're always memoized.`,
@@ -254,7 +254,7 @@ describe( `IF statements`, function() {
 
 describe( `SWITCH statements`, function() {
 
-    group( `Form NO reactive contracts for non-reactive "discriminant" expressions.`, function() {
+    group( `Form NO reflexes for non-reactive "discriminant" expressions.`, function() {
 
         add(
             `Literals as "discriminant" expressions are non-reactive. But "discriminant" expression is memoized nontheless.`,
@@ -286,7 +286,7 @@ describe( `SWITCH statements`, function() {
         );
 
         add(
-            `Descendant expressions/statements may form their own contracts.`,
+            `Descendant expressions/statements may form their own reflexes.`,
             `
             switch ( 1 ) {
                 case 2:
@@ -308,7 +308,7 @@ describe( `SWITCH statements`, function() {
 
     } );
 
-    group( `Form reactive contracts for reactive "discriminant" expressions.`, function() {
+    group( `Form reflexes for reactive "discriminant" expressions.`, function() {
 
         add(
             `"discriminant" expressions with references are reactive. And they're always memoized.`,
@@ -393,7 +393,7 @@ describe( `Conditional and logical expressions`, function() {
         );
 
         add(
-            `Form a reactive contract where contains references.`,
+            `Form a reflex where contains references.`,
             `
             a ? 0 : 1;
             `,
@@ -406,7 +406,7 @@ describe( `Conditional and logical expressions`, function() {
         );
 
         add(
-            `Reactive contracts are formed at statement level.`,
+            `Reactive reflexes are formed at statement level.`,
             `
             let b = a ? 0 : 1;
             `,
@@ -445,7 +445,7 @@ describe( `Conditional and logical expressions`, function() {
         );
 
         add(
-            `Form a reactive contract where contains references.`,
+            `Form a reflex where contains references.`,
             `
             a && 1;
             `,
@@ -458,7 +458,7 @@ describe( `Conditional and logical expressions`, function() {
         );
 
         add(
-            `Reactive contracts are formed at statement level.`,
+            `Reactive reflexes are formed at statement level.`,
             `
             let b = a && 1;
             `,
@@ -503,7 +503,7 @@ describe( `Functions`, function() {
     // Coming soon
 } );
 
-describe( `Contract Functions`, function() {
+describe( `Reflex Functions`, function() {
     // Coming soon
 } );
 

@@ -7,8 +7,8 @@ import EffectRef from './EffectRef.js';
 
 export default class EffectReference extends Reference {
 
-    constructor( ownerContract, id, def ) {
-        super( ownerContract, id, def );
+    constructor( ownerReflex, id, def ) {
+        super( ownerReflex, id, def );
         this.destructuringStack = [];
     }
 
@@ -71,7 +71,7 @@ export default class EffectReference extends Reference {
 
     inUse( inUse ) {
         let ret = super.inUse( ...arguments );
-        this.ownerContract.inUse( ...arguments );
+        this.ownerReflex.inUse( ...arguments );
         return ret;
     }
 

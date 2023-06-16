@@ -14,7 +14,7 @@ export default class Condition extends Common {
     constructor( ownerContext, id, def ) {
         super( id, def );
         this.ownerContext = ownerContext;
-        this.ownerContract = ownerContext.currentContract || ownerContext;
+        this.ownerReflex = ownerContext.currentReflex || ownerContext;
         this.parent = ownerContext.currentCondition;
     }
 
@@ -30,7 +30,7 @@ export default class Condition extends Common {
     }
 
     get lineage() {
-        return `${ this.ownerContract.lineage }:${ this.id }`;
+        return `${ this.ownerReflex.lineage }:${ this.id }`;
     }
 
     toJson( filter = false ) {
@@ -44,10 +44,10 @@ export default class Condition extends Common {
             json.when = this.when.id;
         }
         if ( this.parent ) {
-            if ( this.parent.ownerContract.id === this.ownerContract.id ) {
+            if ( this.parent.ownerReflex.id === this.ownerReflex.id ) {
                 json.parent = this.parent.id;
             } else {
-                json.parent = `${ this.parent.ownerContract.lineage }:${ this.parent.id }`;
+                json.parent = `${ this.parent.ownerReflex.lineage }:${ this.parent.id }`;
             }
         }
         return json;

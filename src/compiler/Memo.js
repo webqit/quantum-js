@@ -19,9 +19,9 @@ export default class Memo extends Common {
 
     generate() {
         if ( !this.expr ) /* such as case: null / default: */ return [ this.expr, this ];
-        let id$contract = Node.identifier( this.ownerContext.getRuntimeIdentifier( '$contract', true ) );
+        let id$reflex = Node.identifier( this.ownerContext.getReflexIdentifier( '$reflex', true ) );
         let ref = Node.memberExpr(
-            Node.memberExpr( id$contract, Node.identifier( 'memo' ) ),
+            Node.memberExpr( id$reflex, Node.identifier( 'memo' ) ),
             Node.literal( this.id ),
             true
         );

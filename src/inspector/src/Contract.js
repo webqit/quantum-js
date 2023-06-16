@@ -7,23 +7,23 @@ import Ref from './Ref.js';
 /**
  * @Path
  */
-export default class Contract extends Interactable( HTMLElement ) {
+export default class Reflex extends Interactable( HTMLElement ) {
 
     visualize( binding ) {
         Object.assign( this, binding );
         if ( !this.graph ) return;
         
-        if ( this.subContracts ) {
-            this.subContracts.forEach( subContract => {
-                subContract.replaceWith( ...subContract.childNodes );
+        if ( this.subReflexes ) {
+            this.subReflexes.forEach( subReflex => {
+                subReflex.replaceWith( ...subReflex.childNodes );
             } );
         }
-        this.subContracts = new Map;
+        this.subReflexes = new Map;
         this._textNodes = this.getTextNodes();
-        for ( let contractId in this.graph.subContracts ) {
-            let graph = this.graph.subContracts[ contractId ];
-            let childInstance = this.createSubContract( { ownerContract: this, graph } );
-            this.subContracts.set( graph.id, childInstance );
+        for ( let reflexId in this.graph.subReflexes ) {
+            let graph = this.graph.subReflexes[ reflexId ];
+            let childInstance = this.createSubReflex( { ownerReflex: this, graph } );
+            this.subReflexes.set( graph.id, childInstance );
         }
 
         this.effects = new Map;
@@ -38,14 +38,14 @@ export default class Contract extends Interactable( HTMLElement ) {
         this._textNodes = this.getTextNodes();
         const renderRefs = type => {
             for ( let referenceId in this.graph[ type ] ) {
-                let referenceInstance = this.createReference( { ownerContract: this, ...this.graph[ type ][ referenceId ] } );
+                let referenceInstance = this.createReference( { ownerReflex: this, ...this.graph[ type ][ referenceId ] } );
                 this[ type ].set( referenceId, referenceInstance );
             }
         };
         renderRefs( 'effects' );
         renderRefs( 'signals' );
 
-        this.setAttribute( 'title', this.graph.type + ' Contract' );
+        this.setAttribute( 'title', this.graph.type + ' Reflex' );
         this.on( 'mouseenter', () => {
             this.setState( 'block', 'hover', true, 0 );
         } ).on( 'mouseleave', () => {
@@ -62,23 +62,23 @@ export default class Contract extends Interactable( HTMLElement ) {
     }
 
     get program() {
-        if ( this.ownerContract ) return this.ownerContract.program;
+        if ( this.ownerReflex ) return this.ownerReflex.program;
         return this.runtime;
     }
 
     runThread( ...refs ) {
-        const runtimeContract = this.program.locate( this.graph.lineage );
-        if ( !runtimeContract ) return;
-        return runtimeContract.thread( ...refs );
+        const runtimeReflex = this.program.locate( this.graph.lineage );
+        if ( !runtimeReflex ) return;
+        return runtimeReflex.thread( ...refs );
     }
 
     observe( callback ) {
         return this.program.observe( this.graph.lineage, callback );
     }
 
-    createSubContract( childBinding ) {
-        let childInstance = document.createElement( 'cfunctions-contract' );
-        this.insertNode( childInstance, childBinding.graph.loc, 'contract' );
+    createSubReflex( childBinding ) {
+        let childInstance = document.createElement( 'cfunctions-reflex' );
+        this.insertNode( childInstance, childBinding.graph.loc, 'reflex' );
         childInstance.visualize( childBinding );
         return childInstance;
     }
@@ -127,7 +127,7 @@ export default class Contract extends Interactable( HTMLElement ) {
         let [ startOffsetNode, startOffset ] = this.resolveOffset( start - ownLocStart ),
             [ endOffsetNode, endOffset ] = this.resolveOffset( end - ownLocStart, false );
         let range = new Range;
-        if ( type === 'contract' ) {
+        if ( type === 'reflex' ) {
             if ( startOffset === 0 
             && startOffsetNode.parentNode.nodeName === 'SPAN'  ) {
                 range.setStartBefore( startOffsetNode.parentNode );
@@ -186,8 +186,8 @@ export default class Contract extends Interactable( HTMLElement ) {
     }
 
     setState( type, state, value, duration = 100 ) {
-        if ( value && this.ownerContract ) {
-            this.ownerContract.setState( type, state, false );
+        if ( value && this.ownerReflex ) {
+            this.ownerReflex.setState( type, state, false );
         }
         this.setStateCallback( type, state, value, duration, () => {
             if ( value ) {

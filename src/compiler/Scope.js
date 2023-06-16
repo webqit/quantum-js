@@ -58,7 +58,7 @@ export default class Scope extends Common {
         }, remainderRefs || [ ..._effectReference.refs ] );
         if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
             if ( _effectReference.type === 'VariableDeclaration' /* and ofcourse, kind: var */ ) return;
-            _effectReference.ownerContract.$sideEffects = true;
+            _effectReference.ownerReflex.$sideEffects = true;
             let sideEffects = remainderRefs.length && remainderRefs || [ ..._effectReference.refs ];
             return this.ownerContext.sideEffects.push( { reference: _effectReference, remainderRefs: sideEffects } ), true;
         }

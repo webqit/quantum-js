@@ -13,7 +13,7 @@ let ddddd = 2;
 let ast = _parse( source );
 let gen = _generate( ast );
 
-console.log( '>> Contract Source' );
+console.log( '>> Reflex Source' );
 console.log( gen.source );
 console.log( '' );
 console.log( '>> Dependency Graph' );

@@ -2,6 +2,6 @@
 /**
  * @imports
  */
-import Contract from './Contract.js';
+import Reflex from './Reflex.js';
 
-export default class Context extends Contract {}
+export default class Context extends Reflex {}

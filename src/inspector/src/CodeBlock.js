@@ -206,8 +206,8 @@ export default CodeBlock => class extends Base( CodeBlock || HTMLElement ) {
 
     get css() {
         return [
-            `https://unpkg.com/@webqit/contract/src/console/assets/prism.css`,
-            `https://unpkg.com/@webqit/contract/src/console/assets/vs-code-dark.css`,
+            `https://unpkg.com/@webqit/reflex/src/console/assets/prism.css`,
+            `https://unpkg.com/@webqit/reflex/src/console/assets/vs-code-dark.css`,
             `
             * {
                 -webkit-box-sizing: border-box;
