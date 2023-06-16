@@ -28,7 +28,7 @@ export default function ReflexFunctionLite( ...args ) {
     // Load and run ReflexCompiler async - in the background?
     if ( !window.webqit.ReflexCompilerWorker ) {
         const customUrl = document.querySelector( 'meta[name="reflex-compiler-url"]' );
-        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/reflex/dist/compiler.js' );
+        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/reflex-functions/dist/compiler.js' );
         const workerScriptText = `
         const compilerUrls = [ '${ compilerUrls.join( `','` ) }' ];
         ( function importScript() {
