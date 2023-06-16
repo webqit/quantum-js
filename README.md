@@ -8,17 +8,17 @@
 
 **[Motivation](#motivation) • [Overview](#an-overview) • [Polyfill](#the-polyfill) • [Design Discussion](#design-discussion) • [Getting Involved](#getting-involved) • [License](#license)**
 
-Reflex Functions are a proposed new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form and *linear* flow of the language, where every logic expressed is maintained as a "reflex" throughout the lifetime of the program! (By this, we introduce Imperative Reactive Programming (IRP) in JavaScript!)
+Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form and *linear* flow of the language, where every logic expressed is maintained as a "reflex" throughout the lifetime of the program! (By this, we introduce Imperative Reactive Programming (IRP) in JavaScript!)
 
 Reflex Functions is an upcoming proposal!
 
 ## Motivation
 
-Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, and has required much manual plumbing and a fundamental paradigm shift in how we build applications. All of that has eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain - with tricky runtime behaviours!
+Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, and has required much manual plumbing and a fundamental paradigm shift in how we build applications. (No easy way out!) All of that has eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain - with tricky runtime behaviours!
 
 This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/on-the-language-of-reactivity-part-1-and-introducing-the-observer-api-pkn-temp-slug-2525455?preview=74f1766eb6ae03dff8a4ceee33c4b1b534dc2fb007ddfc9e651e6e03ef59394d784f84e98d50cc7f1b48584585153af5fb1516c3d2555a80510d77d9)<sup>draft</sup>
 
-We realized that we could solve the "Language of Reactivity" down to just plain "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Reflex Functions" as a potential native language feature!
+We realized that we could solve the idea of Reactivity down to just plain "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Reflex Functions" as a potential native language feature!
 
 ## An Overview
 
@@ -77,8 +77,8 @@ Path dependencies are expressed in array notation. And multiple dependencies can
 
 ```js
 count++;
-object.property = value;
-reflect('count', [ 'object', 'property' ]);
+this.property = value;
+reflect('count', [ 'this', 'property' ]);
 ```
 
 ### Change Propagation
@@ -100,7 +100,7 @@ let score = 40;
 ```js
 function** ui() {
   let divElement = document.createElement('div');
-  // >>─────────┐
+  // >>---------┐
   let tense = score > 50 ? 'passed' : 'failed';
   //    └─>────────────────────────────────────┐
   let message = `Hi ${ p.firstName }, you ${ tense } this test!`;
@@ -133,29 +133,13 @@ Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivi
 
 There's a whole lot possible here  which is covered in [the docs](https://github.com/webqit/reflex-functions/wiki).
 
-+ [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax)
-+ [Change Propagation](https://github.com/webqit/reflex-functions/wiki#change-propagation)
-+ [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics)
-+ [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control)
-    + [Conditionals](https://github.com/webqit/reflex-functions/wiki#conditionals)
-    + [Loops](https://github.com/webqit/reflex-functions/wiki#loops)
-+ [Functions](https://github.com/webqit/reflex-functions/wiki#functions)
-    + [Side Effects](https://github.com/webqit/reflex-functions/wiki#side-effects)
-+ [API](https://github.com/webqit/reflex-functions/wiki#api)
-    + [`ReflexFunction`](https://github.com/webqit/reflex-functions/wiki#reflexfunction)
-    + [`ReflexFunction.inspect()`](https://github.com/webqit/reflex-functions/wiki#reflexfunctioninspect)
-
 ### Examples
 
 **--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method has only been called once, and subsequent updates are just a fine-grained reflection.
 
 ```js
-// Outer dependency
-let count = 10;
-```
-
-```js
 customElements.define('click-counter', class extends HTMLElement {
+  count = 10;
   connectedCallback() {
     // Full rendering at connected time
     // The querySelector() calls below are run
@@ -164,15 +148,15 @@ customElements.define('click-counter', class extends HTMLElement {
     // Fine-grained rendering at click time
     // The querySelector() calls below don't run again
     this.addEventListener('click', () => {
-      count ++;
-      treflect('count');
+      this.count ++;
+      treflect([ 'this', 'count' ]);
     });
   }
   **render() {
     let countElement = document.querySelector( '#count' );
-    countElement.innerHTML = count;
+    countElement.innerHTML = this.count;
     
-    let doubleCount = count * 2;
+    let doubleCount = this.count * 2;
     let doubleCountElement = document.querySelector( '#double-count' );
     doubleCountElement.innerHTML = doubleCount;
     
@@ -251,8 +235,6 @@ const reflex = ReflexFunction(`
 
   // Reflections
   result = reflect( 'externalVar' ); // 30
-  result = reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
-  result = reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 `);
 reflex();
 ```
@@ -308,8 +290,6 @@ let [ result, reflect ] = await sum(10, 10); // 30
 
 // Reflections
 result = await reflect( 'externalVar' ); // 30
-result = await reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
-result = await reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 ```
 
 But just for the fact that the Reflex Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
