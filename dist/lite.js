@@ -3,7 +3,7 @@
 `);a.graph.originalSource=`${h}(${r.join(", ")}) {
 ${f}
 }`,a.graph.originalSourceModified=!0}return t&&Object.defineProperty(a.callee,"name",{configurable:!0,value:t}),a};return this.prototype.createFunction(o,s)}};function P(...u){if(typeof window!="object")throw new Error("No window in context.");let t=v(typeof u[u.length-1]=="object"?u.pop():{}),e=O(u.pop()||""),r=u,i=s=>F.createFunction(void 0,s,r,t.runtimeParams,this,e);if(window.webqit?.ReflexCompiler&&!t.runtimeParams.async){let{parse:s,compile:n}=window.webqit.ReflexCompiler,o=s(e,t.parserParams);return i(n(o,t.compilerParams))}if(window.webqit=window.webqit||{},!window.webqit.ReflexCompilerWorker){let o=`
-        const compilerUrls = [ '${(document.querySelector('meta[name="reflex-compiler-url"]')?.content.split(",")||[]).concat("https://unpkg.com/@webqit/reflex/dist/compiler.js").join("','")}' ];
+        const compilerUrls = [ '${(document.querySelector('meta[name="reflex-compiler-url"]')?.content.split(",")||[]).concat("https://unpkg.com/@webqit/reflex-functions/dist/compiler.js").join("','")}' ];
         ( function importScript() {
             try { importScripts( compilerUrls.shift().trim() ) } catch( e ) { if ( compilerUrls.length ) { importScript(); } }
         } )();
