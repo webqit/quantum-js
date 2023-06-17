@@ -8,19 +8,60 @@
 
 **[Motivation](#motivation) • [Overview](#an-overview) • [Polyfill](#the-polyfill) • [Design Discussion](#design-discussion) • [Getting Involved](#getting-involved) • [License](#license)**
 
-Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form and *linear* flow of the language, where every logic expressed is maintained as a "reflex" throughout the lifetime of the program! (By this, we introduce Imperative Reactive Programming (IRP) in JavaScript!)
+Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form of the language, this time, something that draws entirely on the dependency graph of your own code!
 
-Reflex Functions is an upcoming proposal!
+Reflex Functions is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP) in JavaScript!)
 
 ## Motivation
 
-Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, and has required much manual plumbing and a fundamental paradigm shift in how we build applications. (No easy way out!) All of that has eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain - with tricky runtime behaviours!
+Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, has required much manual plumbing, and overall, constituted a fundamental paradigm shift to how we build applications. Approaches have often eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain with tricky runtime behaviours!
 
 This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/on-the-language-of-reactivity-part-1-and-introducing-the-observer-api-pkn-temp-slug-2525455?preview=74f1766eb6ae03dff8a4ceee33c4b1b534dc2fb007ddfc9e651e6e03ef59394d784f84e98d50cc7f1b48584585153af5fb1516c3d2555a80510d77d9)<sup>draft</sup>
 
-We realized that we could solve the idea of Reactivity down to just plain "JavaScript" - in a way that translates well into something that can comfortably be driven by the JS engine - both in terms of compilation and runtime! Having validated much of the assumptions over the years, we've now come to explore "Reflex Functions" as a potential native language feature!
+We realized that we could solve the idea of Reactivity down to just plain "JavaScript" - in both the *literal* form and *linear* flow of the language, in a way that translates well to a native language feature! This is what we explore now as Reflex Functions!
 
 ## An Overview
+
+Imagine a function that works like any other function - e.g. accepts a number of arguments:
+
+```js
+function calculate(a, b) {
+  console.log('Operand #1:', a);
+  console.log('Operand #2:', b);
+  console.log('Total:', a + b);
+}
+calculate(2, 3);
+```
+
+<details><summary>Console</summary>
+
+```js
+Operand #1: 2
+Operand #2: 3
+Total: 5
+```
+
+</details>
+
+But has a special ability to statically "reflect" changes to its external dependencies - e.g. those arguments:
+
+```js
+b = 8;
+reflect('b');
+```
+
+<details><summary>Console</summary>
+
+```js
+Operand #2: 8
+Total: 10
+```
+
+</details>
+
+Giving you fine-grained reactivity *at the precision of the dependency graph of your own code*!
+
+Okay, here's how it works:
 
 Reflex Functions have a distinguishing syntax: a double star notation.
 
@@ -100,7 +141,7 @@ let score = 40;
 ```js
 function** ui() {
   let divElement = document.createElement('div');
-  // >>---------┐
+  // >>─────────┐
   let tense = score > 50 ? 'passed' : 'failed';
   //    └─>────────────────────────────────────┐
   let message = `Hi ${ p.firstName }, you ${ tense } this test!`;
@@ -125,7 +166,7 @@ function** ui() {
 let [ returnValue, reflect ] = ui();
 ```
 
-It turns out, it's the same mental model you would have drawn as you set out to think about your code! And that's the whole algorithm around change propagation: **being just how anyone would *predict* it**!
+It turns out to be the very mental model you would have drawn as you set out to think about your code; **in just how anyone would *predict* it**!
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
@@ -167,7 +208,11 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-> Note that the above syntax isn't supported as-is by the polyfill. You may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin useful in this regard.
+<details><summary><b>Try it</b></summary>
+
+While the above syntax isn't supported as-is by the polyfill, you may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin useful in this regard.
+
+<details>
 
 ## The Polyfill
 
