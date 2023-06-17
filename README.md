@@ -212,7 +212,7 @@ customElements.define('click-counter', class extends HTMLElement {
 
 While the above syntax isn't supported as-is by the polyfill, you may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin useful in this regard.
 
-<details>
+</details>
 
 ## The Polyfill
 
