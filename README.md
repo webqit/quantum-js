@@ -8,7 +8,7 @@
 
 **[Motivation](#motivation) • [Overview](#an-overview) • [Polyfill](#the-polyfill) • [Design Discussion](#design-discussion) • [Getting Involved](#getting-involved) • [License](#license)**
 
-Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form of the language - this time, where reactivity is drawn entirely on the dependency graph of your own code!
+Reflex Functions are a new type of JavaScript functions that enable fine-grained Reactive Programming in the *imperative* form of the language - this time, where reactivity is drawn entirely on the dependency graph of your own code!
 
 Reflex Functions is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP) in JavaScript!)
 
