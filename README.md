@@ -261,8 +261,6 @@ let [ result, reflect ] = sum(10, 10); // 30
 
 // Reflections
 result = reflect( 'externalVar' ); // 30
-result = reflect( 'b' ); // no effect; "a" isn't an external dependency to sum()
-result = reflect( 'a', 'b' ); // no effect; "a" and "b" aren't external dependencies to sum()
 ```
 
 But the double star syntax is supported from within the function itself:
