@@ -10,7 +10,7 @@
 
 Reflex Functions are a new type of JavaScript functions that enable fine-grained Reactive Programming in the *imperative* form of the language - this time, where reactivity is drawn entirely on the dependency graph of your own code!
 
-Reflex Functions is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP) in JavaScript!)
+This is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP) in JavaScript!)
 
 ## Motivation
 
