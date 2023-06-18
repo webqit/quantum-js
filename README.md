@@ -30,7 +30,9 @@ function calculate(a, b) {
   console.log('Operand #2:', b);
   console.log('Total:', a + b);
 }
-calculate(2, 3);
+let operand1 = 2;
+let operand2 = 3;
+calculate(operand1, operand2);
 ```
 
 <details><summary>Console</summary>
@@ -46,8 +48,8 @@ Total: 5
 But has a special ability to statically "reflect" changes to its external dependencies - e.g. those arguments:
 
 ```js
-b = 8;
-reflect('b');
+operand2 = 8;
+reflect('b'); // "b" being what the function sees
 ```
 
 <details><summary>Console</summary>
@@ -132,7 +134,7 @@ Reactivity exists with Reflex Functions where there are dependencies "up" the sc
 
 Changes within the function body itself is *self-propagation* all the way, going "top-down" the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
 
-Below is a good way to see that: a Reflex Function having `score` as an external dependency, with lines having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
+Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
 ```js
 let score = 40;
@@ -166,7 +168,7 @@ function** ui() {
 let [ returnValue, reflect ] = ui();
 ```
 
-It turns out to be the very mental model you would have drawn as you set out to think about your code; **in just how anyone would *predict* it**!
+It turns out to be the very mental model you would have drawn as you think about your code; **in just how anyone would *predict* it**!
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
