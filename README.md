@@ -61,9 +61,9 @@ Total: 10
 
 </details>
 
-Giving you fine-grained reactivity *at the precision of the individual expression*!
+Giving you fine-grained reactivity *at the precision of the individual expressions*!
 
-Okay, here's how it works:
+This is what you have of Reflex Functions, and here's how it works:
 
 Reflex Functions have a distinguishing syntax: a double star notation.
 
