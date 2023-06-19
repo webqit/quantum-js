@@ -61,7 +61,7 @@ Total: 10
 
 </details>
 
-Giving you fine-grained reactivity *at the precision of the dependency graph of your own code*!
+Giving you fine-grained reactivity *at the precision of the individual expression*!
 
 Okay, here's how it works:
 
@@ -75,7 +75,7 @@ function** calculate() {
 
 > See [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax) for details.
 
-Function body is any regular piece of code that needs to be automatically maintained as a "reflex" with its dependencies:
+Function body is any regular piece of code that needs to be automatically maintained as a "contract" with its dependencies:
 
 ```js
 let count = 10; // External dependency
@@ -101,7 +101,7 @@ console.log(returnValue); // undefined
 
 </details>
 
-The `reflect()` function takes just the string representation of the external dependencies that have changed and need to be reflected in the reflex:
+The `reflect()` function takes just the string representation of the external dependencies that have changed and need to be reflected in the function:
 
 ```js
 count = 20;
@@ -128,11 +128,11 @@ reflect('count', [ 'this', 'property' ]);
 
 Reactivity exists with Reflex Functions where there are dependencies "up" the scope to respond to! And here's the mental model for that:
 
-`┌─` a change *happens outside* function scope
+`┌─` a change *happens outside* of function scope
 
 `└─` is *propagated into* function, then *self-propagates down* `─┐`
 
-Changes within the function body itself is *self-propagation* all the way, going "top-down" the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
+Changes within the function body itself *self-propagate* all the way, going "top-down" the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
 
 Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
@@ -168,31 +168,31 @@ function** ui() {
 let [ returnValue, reflect ] = ui();
 ```
 
-It turns out to be the very mental model you would have drawn as you think about your code; **in just how anyone would *predict* it**!
+It turns out to be the very mental model you would have drawn as you set out to think about your own code! Eveything works **in just how anyone would *predict* it**!
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
 ### Documentation
 
-There's a whole lot possible here  which is covered in [the docs](https://github.com/webqit/reflex-functions/wiki).
+Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details around [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax), [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics), [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control) and [Functions](https://github.com/webqit/reflex-functions/wiki#functions), [API](https://github.com/webqit/reflex-functions/wiki#api), etc.
 
 ### Examples
 
-**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method has only been called once, and subsequent updates are just a fine-grained reflection.
+**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates happen as reflex actions.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
   count = 10;
   connectedCallback() {
     // Full rendering at connected time
-    // The querySelector() calls below are run
+    // meaning that the querySelector() calls in there are run as normal
     let [ , reflect ] = this.render();
 
-    // Fine-grained rendering at click time
-    // The querySelector() calls below don't run again
+    // Reflex actions at click time
+    // this time, meaning that the querySelector() calls in there don't re-run
     this.addEventListener('click', () => {
       this.count ++;
-      treflect([ 'this', 'count' ]);
+      reflect([ 'this', 'count' ]);
     });
   }
   **render() {
@@ -210,15 +210,53 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-<details><summary><b>Try it</b></summary>
+**--> Example 2:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
 
-While the above syntax isn't supported as-is by the polyfill, you may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin useful in this regard.
+```js
+customElements.define('click-counter', class extends HTMLElement {
+  count = 10;
+  connectedCallback() {
+    // Full rendering at connected time
+    // meaning that the querySelector() calls in there are run as normal
+    let [ , reflect ] = this.render();
+
+    // Using the Observer API to automatically drive updates into the render function
+    Observer.observe(this, changes => {
+      changes.forEach(change => reflect([ 'this', change.key ]));
+    });
+
+    // Reflex actions at click time
+    // this time, meaning that the querySelector() calls in there don't re-run
+    this.addEventListener('click', () => {
+      this.count ++;
+    });
+  }
+  **render() {
+    let countElement = document.querySelector( '#count' );
+    countElement.innerHTML = this.count;
+    
+    let doubleCount = this.count * 2;
+    let doubleCountElement = document.querySelector( '#double-count' );
+    doubleCountElement.innerHTML = doubleCount;
+    
+    let quadCount = doubleCount * 2;
+    let quadCountElement = document.querySelector( '#quad-count' );
+    quadCountElement.innerHTML = quadCount;
+  }
+});
+```
+
+<details><summary>Try it</summary>
+
+While the above *double star* syntax isn't supported as-is by the polyfill, you could acheive the same using the `ReflexFunction` constructor below.
+
+If you're really into Custom Elements, you may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin exciting.
 
 </details>
 
 ## The Polyfill
 
-Reflex Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Reflex Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/reflex-functions/wiki).
+Reflex Functions are being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Reflex Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/reflex-functions/wiki).
 
 <details><summary>Load from a CDN</summary>
 
@@ -228,7 +266,7 @@ Reflex Functions is being developed as something to be used today - via a polyfi
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/reflex-functions)
+> `47.8` kB min + gz | `167` KB min [↗](https://bundlephobia.com/package/@webqit/reflex-functions)
 
 ```js
 // Destructure from the webqit namespace
@@ -262,7 +300,8 @@ let sum = ReflexFunction( `a`, `b`, `return a + b + externalVar;` );
 let [ result, reflect ] = sum(10, 10); // 30
 
 // Reflections
-result = reflect( 'externalVar' ); // 30
+externalVar = 20;
+result = reflect( 'externalVar' ); // 40
 ```
 
 But the double star syntax is supported from within the function itself:
@@ -279,7 +318,8 @@ const reflex = ReflexFunction(`
   let [ result, reflect ] = sum( 10, 10 ); // 30
 
   // Reflections
-  result = reflect( 'externalVar' ); // 30
+  externalVar = 20;
+  result = reflect( 'externalVar' ); // 40
 `);
 reflex();
 ```
@@ -334,10 +374,11 @@ let sum = ReflexFunctionLite( `a`, `b`, `return a + b + externalVar;` );
 let [ result, reflect ] = await sum(10, 10); // 30
 
 // Reflections
-result = await reflect( 'externalVar' ); // 30
+externalVar = 20;
+result = await reflect( 'externalVar' ); // 40
 ```
 
-But just for the fact that the Reflex Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
+But being that the Reflex Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
 
 ```html
 <head>
