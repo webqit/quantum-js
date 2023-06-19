@@ -86,7 +86,7 @@ function** calculate(factor) {
 }
 ```
 
-Return value is a two-part array that contains both the function's actual return value and a special `reflect` function for getting the reflex to reflect updates:
+Return value is a two-part array that contains both the function's actual return value and a special `reflect` function for getting the function to reflect updates:
 
 ```js
 let [ returnValue, reflect ] = calculate(2);
@@ -101,7 +101,7 @@ console.log(returnValue); // undefined
 
 </details>
 
-The `reflect()` function takes just the string representation of the external dependencies that have changed and need to be reflected in the function:
+The `reflect()` function takes just the string representation of the external dependencies that have changed:
 
 ```js
 count = 20;
@@ -132,7 +132,7 @@ Reactivity exists with Reflex Functions where there are dependencies "up" the sc
 
 `└─` is *propagated into* function, then *self-propagates down* `─┐`
 
-Changes within the function body itself *self-propagate* all the way, going "top-down" the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
+Changes within the function body itself *self-propagate* all the way, downwards, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
 
 Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
