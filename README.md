@@ -168,7 +168,7 @@ function** ui() {
 let [ returnValue, reflect ] = ui();
 ```
 
-It turns out to be the very mental model you would have drawn as you set out to think about your own code! Eveything works **in just how anyone would *predict* it**!
+It turns out to be the very mental model you would have drawn as you set out to think about your own code! Everything works **in just how anyone would *predict* it**!
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
