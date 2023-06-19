@@ -246,7 +246,7 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-<details><summary>Try it</summary>
+<details><summary>Try it using the polyfill</summary>
 
 While the above *double star* syntax isn't supported as-is by the polyfill, you could acheive the same using the `ReflexFunction` constructor below.
 
