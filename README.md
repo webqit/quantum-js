@@ -178,7 +178,7 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ### Examples
 
-**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates happen as reflex actions.
+**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
