@@ -75,7 +75,7 @@ function** calculate() {
 
 > See [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax) for details.
 
-Function body is any regular piece of code that needs to be statically reflect changes to its external dependencies:
+Function body is any regular piece of code that should statically reflect changes to its external dependencies:
 
 ```js
 let count = 10; // External dependency
