@@ -6,7 +6,7 @@
 
 <!-- /BADGES --> 
 
-**[Motivation](#motivation) • [Overview](#an-overview) • [Polyfill](#the-polyfill) • [Design Discussion](#design-discussion) • [Getting Involved](#getting-involved) • [License](#license)**
+**[Motivation](#motivation) • [Overview](#an-overview) • [Documentation](#documentation) • [Polyfill](#the-polyfill) • [Getting Involved](#getting-involved) • [License](#license)**
 
 Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form of the language - wherein reactivity is drawn entirely on the dependency graph of your own code!
 
@@ -275,7 +275,7 @@ const { ReflexFunction } = window.webqit;
 
 </details>
 
-<details><summary>Install from a NPM</summary>
+<details><summary>Install from NPM</summary>
 
 ```js
 // npm install
@@ -363,7 +363,7 @@ import { ReflexFunctionLite } from '@webqit/reflex-functions';
 
 </details>
 
-Reflex Functions Lite comes this way in *async* mode:
+Reflex Functions Lite is an *async* API:
 
 ```js
 // External dependency
@@ -386,10 +386,6 @@ But being that the Reflex Functions Compiler is designed as a movable peice, it 
   <script src="https://unpkg.com/@webqit/reflex-functions/dist/main.js"></script>
 </head>
 ```
-
-## Design Discussion
-
-*[TODO]*
 
 ## Getting Involved
 
