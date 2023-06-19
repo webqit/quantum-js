@@ -3,8 +3,9 @@
  * @imports
  */
 import { expect } from 'chai';
-import { Compiler, Parser } from '../src/index.js';
+import { Compiler, Parser, ReflexFunction } from '../src/index.js';
 
+export { ReflexFunction };
 export const _jsonfy = ast => JSON.parse( JSON.stringify( ast ) );
 export const _parse = source => Parser.parse( source, {
     ecmaVersion: 'latest',

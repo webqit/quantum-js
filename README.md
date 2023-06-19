@@ -132,7 +132,7 @@ Reactivity exists with Reflex Functions where there are dependencies "up" the sc
 
 `└─` is *propagated into* function, then *self-propagates down* `─┐`
 
-Changes within the function body itself *self-propagate* all the way, downwards, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
+Changes within the function body itself *self-propagate* down the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
 
 Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
@@ -172,11 +172,11 @@ It turns out to be the very mental model you would have drawn as you set out to 
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
-### Documentation
+## Documentation
 
 Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details around [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax), [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics), [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control) and [Functions](https://github.com/webqit/reflex-functions/wiki#functions), [API](https://github.com/webqit/reflex-functions/wiki#api), etc.
 
-### Examples
+## Examples
 
 **--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
 
