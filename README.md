@@ -383,7 +383,7 @@ But being that the Reflex Functions Compiler is designed as a movable peice, it 
 ```html
 <head>
   <script src="https://unpkg.com/@webqit/reflex-functions/dist/compiler.js"></script> <!-- Must come before the polyfil -->
-  <script src="https://unpkg.com/@webqit/reflex-functions/dist/main.js"></script>
+  <script src="https://unpkg.com/@webqit/reflex-functions/dist/lite.js"></script>
 </head>
 ```
 
