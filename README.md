@@ -16,7 +16,7 @@ This is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP)
 
 Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, has required much manual work, and overall, constituted a fundamental paradigm shift to how we build applications. Approaches have often eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain with tricky runtime behaviours!
 
-This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/-5a24-temp-slug-8418045?preview=40453d84038ac67aca691a16751f213cad6de732edbe94192e859edb94cd8e137a1e5520efe344a7d8630692c68848e3a48220e0695c8a206fef921e)<sup>draft</sup>
+This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/re-exploring-reactivity-and-introducing-the-observer-api-and-reflex-functions-4h70)
 
 We realized that we could solve the Language of Reactivity down to plain "JavaScript" - in both the *literal* form and *linear* flow of the language, in a way that translates well to a native language feature! This is what we explore now as Reflex Functions!
 
