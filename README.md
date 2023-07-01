@@ -208,7 +208,7 @@ class Url {
       this.href = this.origin + this.pathname + this.search + this.hash;
     }
     // Initial computations
-    const [ , reflect ] = compute();
+    const [ , reflect ] = compute.call(this);
 
     // Automatic transmission of property updates to reflex actions
     Observer.observe(this, changes => {
