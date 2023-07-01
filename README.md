@@ -14,11 +14,11 @@ This is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP)
 
 ## Motivation
 
-Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, has required much manual plumbing, and overall, constituted a fundamental paradigm shift to how we build applications. Approaches have often eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain with tricky runtime behaviours!
+Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, has required much manual work, and overall, constituted a fundamental paradigm shift to how we build applications. Approaches have often eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain with tricky runtime behaviours!
 
 This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/-5a24-temp-slug-8418045?preview=40453d84038ac67aca691a16751f213cad6de732edbe94192e859edb94cd8e137a1e5520efe344a7d8630692c68848e3a48220e0695c8a206fef921e)<sup>draft</sup>
 
-We realized that we could solve the idea of Reactivity down to just plain "JavaScript" - in both the *literal* form and *linear* flow of the language, in a way that translates well to a native language feature! This is what we explore now as Reflex Functions!
+We realized that we could solve the Language of Reactivity down to plain "JavaScript" - in both the *literal* form and *linear* flow of the language, in a way that translates well to a native language feature! This is what we explore now as Reflex Functions!
 
 ## An Overview
 
@@ -168,7 +168,7 @@ function** ui() {
 let [ returnValue, reflect ] = ui();
 ```
 
-It turns out to be the very mental model you would have drawn as you set out to think about your own code! Everything works **in just how anyone would *predict* it**!
+It turns out to be the very mental model you would have drawn if you set out to think about your own code! Everything works **in just how anyone would *predict* it**!
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
 
@@ -178,7 +178,53 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ## Examples
 
-**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
+**--> Example 1:** Consider a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties!
+
+```js
+class Url {
+  constructor(href) {
+
+    // The raw url
+    this.href = href;
+
+    // Reflex function for the rest computations
+    function** compute() {
+      // These will be re-computed from this.href always
+      let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
+
+      // We batch the operations here to avoid too many individual updates
+      Observer.batch(this, () => {
+        this.protocol = protocol;
+        this.hostname = hostname;
+        this.port = port;
+        this.pathname = pathname;
+        this.search = search;
+        this.hash = hash;
+      });
+
+      // These individual property assignments each depend on the previous 
+      this.host = this.hostname + ':' + this.port;
+      this.origin = this.protocol + '//' + this.host;
+      this.href = this.origin + this.pathname + this.search + this.hash;
+    }
+    // Initial computations
+    const [ , reflect ] = compute();
+
+    // Automatic transmission of property updates to reflex actions
+    Observer.observe(this, changes => {
+      changes.forEach(change => reflect([ 'this', change.key ]));
+    }, { diff: true });
+    /**
+    Notice the `options.diff` parameter,
+    which makes `Observer.observe()` ignore events whose current value is same as previous value,
+    which in this case helps us avoid recursions from the cyclic nature of `this.href`.
+    */
+
+  }
+}
+```
+
+**--> Example 2:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -210,7 +256,7 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-**--> Example 2:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
+**--> Example 3:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -250,13 +296,17 @@ customElements.define('click-counter', class extends HTMLElement {
 
 While the above *double star* syntax isn't supported as-is by the polyfill, you could acheive the same using the `ReflexFunction` constructor below.
 
-If you're really into Custom Elements, you may find the [Play UI PlayElement](https://github.com/webqit/playui/tree/master/packages/playui-element) mixin exciting.
-
 </details>
+
+**--> Example 4:** Check out how the `PlayElement` mixin brings Reflex-Functions-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
+
+**--> Example 5:** Check out how `<script reflex></script>` elements bring Reflex-Functions-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
+
+**--> Example 6:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
 
 ## The Polyfill
 
-Reflex Functions are being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Reflex Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/reflex-functions/wiki).
+Reflex Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Reflex Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/reflex-functions/wiki).
 
 <details><summary>Load from a CDN</summary>
 
