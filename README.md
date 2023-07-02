@@ -186,29 +186,8 @@ class Url {
 
     // The raw url
     this.href = href;
-
-    // Reflex function for the rest computations
-    function** compute() {
-      // These will be re-computed from this.href always
-      let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
-
-      // We batch the operations here to avoid too many individual updates
-      Observer.batch(this, () => {
-        this.protocol = protocol;
-        this.hostname = hostname;
-        this.port = port;
-        this.pathname = pathname;
-        this.search = search;
-        this.hash = hash;
-      });
-
-      // These individual property assignments each depend on the previous 
-      this.host = this.hostname + ':' + this.port;
-      this.origin = this.protocol + '//' + this.host;
-      this.href = this.origin + this.pathname + this.search + this.hash;
-    }
     // Initial computations
-    const [ , reflect ] = compute.call(this);
+    const [ , reflect ] = this.compute();
 
     // Automatic transmission of property updates to reflex actions
     Observer.observe(this, changes => {
@@ -220,6 +199,26 @@ class Url {
     which in this case helps us avoid recursions from the cyclic nature of `this.href`.
     */
 
+  }
+
+  **compute() {
+    // These will be re-computed from this.href always
+    let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
+
+    // We batch the operations here to avoid too many individual updates
+    Observer.batch(this, () => {
+      this.protocol = protocol;
+      this.hostname = hostname;
+      this.port = port;
+      this.pathname = pathname;
+      this.search = search;
+      this.hash = hash;
+    });
+
+    // These individual property assignments each depend on the previous 
+    this.host = this.hostname + ':' + this.port;
+    this.origin = this.protocol + '//' + this.host;
+    this.href = this.origin + this.pathname + this.search + this.hash;
   }
 }
 ```
