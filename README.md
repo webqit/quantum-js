@@ -136,6 +136,9 @@ Changes within the function body itself *self-propagate* down the scope, but re-
 
 Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
+![Code with reflex lines](https://github.com/webqit/reflex-functions/blob/master/reflex-lines.png)
+
+<!--
 ```js
 let score = 40;
 ```
@@ -167,6 +170,7 @@ function** ui() {
 ```js
 let [ returnValue, reflect ] = ui();
 ```
+-->
 
 It turns out to be the very mental model you would have drawn if you set out to think about your own code! Everything works **in just how anyone would *predict* it**!
 
