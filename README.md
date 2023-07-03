@@ -178,7 +178,7 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ## Examples
 
-Let's start how we could write reactive Custom Elements:
+Let's start with how we could write reactive Custom Elements:
 
 **--> Example 1:** Consider is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
 
@@ -250,7 +250,7 @@ customElements.define('click-counter', class extends HTMLElement {
     let quadCountElement = document.querySelector( '#quad-count' );
     quadCountElement.innerHTML = quadCount;
   }
-  
+
 });
 ```
 
@@ -260,11 +260,11 @@ While the above *double star* syntax isn't supported as-is by the polyfill, you 
 
 </details>
 
-**--> Example 3:** Check out how the `PlayElement` mixin brings Reflex-Functions-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
+**--> Example 3:** Check out how the `PlayElement` mixin brings Reflex-Function-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
 
-This mext one lets you write reactive UI logic with just the `<script>` element:
+This next one lets you write reactive UI logic all out of a `<script>` element:
 
-**--> Example 4:** Check out how `<script reflex></script>` elements bring Reflex-Functions-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
+**--> Example 4:** Check out how `<script reflex></script>` elements bring Reflex-Function-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
 
 But Reflex Functions isn't just about the UI! Here's some *pure computational* usecases:
 
