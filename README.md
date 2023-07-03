@@ -178,9 +178,9 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ## Examples
 
-Let's start with how we could write reactive Custom Elements:
+**-->** Let's start with how we could write reactive Custom Elements:
 
-**--> Example 1:** Consider is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
+**└ Example 1:** Consider is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -215,7 +215,7 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-**--> Example 2:** Consider a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
+**└ Example 2:** Consider a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -260,15 +260,15 @@ While the above *double star* syntax isn't supported as-is by the polyfill, you 
 
 </details>
 
-**--> Example 3:** Check out how the `PlayElement` mixin brings Reflex-Function-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
+**└ Example 3:** Check out how the `PlayElement` mixin brings Reflex-Function-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
 
-This next one lets you write reactive UI logic all out of a `<script>` element:
+**-->** This next one lets you write reactive UI logic all out of a `<script>` element:
 
-**--> Example 4:** Check out how `<script reflex></script>` elements bring Reflex-Function-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
+**└ Example 4:** Check out how `<script reflex></script>` elements bring Reflex-Function-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
 
-But Reflex Functions isn't just about the UI! Here's some *pure computational* usecases:
+**-->** But Reflex Functions isn't just about the UI! Here's some *pure computational* usecases:
 
-**--> Example 5:** Consider a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
+**└ Example 5:** Consider a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
 
 ```js
 class Url {
@@ -306,7 +306,7 @@ class Url {
 }
 ```
 
-**--> Example 6:** Consider a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant.
+**└ Example 6:** Consider a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant.
 
 ```js
 class Url {
@@ -348,7 +348,7 @@ class Url {
 }
 ```
 
-**--> Example 7:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
+**└ Example 7:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
 
 ## The Polyfill
 
