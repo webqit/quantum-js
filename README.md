@@ -178,56 +178,14 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ## Examples
 
-**--> Example 1:** Consider a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties!
+Let's start how we could write reactive Custom Elements:
 
-```js
-class Url {
-  constructor(href) {
-
-    // The raw url
-    this.href = href;
-    // Initial computations
-    const [ , reflect ] = this.compute();
-
-    // Automatic transmission of property updates to reflex actions
-    Observer.observe(this, changes => {
-      changes.forEach(change => reflect([ 'this', change.key ]));
-    }, { diff: true });
-    /**
-    Notice the `options.diff` parameter,
-    which makes `Observer.observe()` ignore events whose current value is same as previous value,
-    which in this case helps us avoid recursions from the cyclic nature of `this.href`.
-    */
-
-  }
-
-  **compute() {
-    // These will be re-computed from this.href always
-    let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
-
-    // We batch the operations here to avoid too many individual updates
-    Observer.batch(this, () => {
-      this.protocol = protocol;
-      this.hostname = hostname;
-      this.port = port;
-      this.pathname = pathname;
-      this.search = search;
-      this.hash = hash;
-    });
-
-    // These individual property assignments each depend on the previous 
-    this.host = this.hostname + ':' + this.port;
-    this.origin = this.protocol + '//' + this.host;
-    this.href = this.origin + this.pathname + this.search + this.hash;
-  }
-}
-```
-
-**--> Example 2:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
+**--> Example 1:** Consider is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
   count = 10;
+
   connectedCallback() {
     // Full rendering at connected time
     // meaning that the querySelector() calls in there are run as normal
@@ -240,6 +198,7 @@ customElements.define('click-counter', class extends HTMLElement {
       reflect([ 'this', 'count' ]);
     });
   }
+
   **render() {
     let countElement = document.querySelector( '#count' );
     countElement.innerHTML = this.count;
@@ -252,14 +211,16 @@ customElements.define('click-counter', class extends HTMLElement {
     let quadCountElement = document.querySelector( '#quad-count' );
     quadCountElement.innerHTML = quadCount;
   }
+
 });
 ```
 
-**--> Example 3:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
+**--> Example 2:** Consider a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
   count = 10;
+
   connectedCallback() {
     // Full rendering at connected time
     // meaning that the querySelector() calls in there are run as normal
@@ -276,6 +237,7 @@ customElements.define('click-counter', class extends HTMLElement {
       this.count ++;
     });
   }
+
   **render() {
     let countElement = document.querySelector( '#count' );
     countElement.innerHTML = this.count;
@@ -288,6 +250,7 @@ customElements.define('click-counter', class extends HTMLElement {
     let quadCountElement = document.querySelector( '#quad-count' );
     quadCountElement.innerHTML = quadCount;
   }
+  
 });
 ```
 
@@ -297,11 +260,95 @@ While the above *double star* syntax isn't supported as-is by the polyfill, you 
 
 </details>
 
-**--> Example 4:** Check out how the `PlayElement` mixin brings Reflex-Functions-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
+**--> Example 3:** Check out how the `PlayElement` mixin brings Reflex-Functions-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
 
-**--> Example 5:** Check out how `<script reflex></script>` elements bring Reflex-Functions-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
+This mext one lets you write reactive UI logic with just the `<script>` element:
 
-**--> Example 6:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
+**--> Example 4:** Check out how `<script reflex></script>` elements bring Reflex-Functions-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
+
+But Reflex Functions isn't just about the UI! Here's some *pure computational* usecases:
+
+**--> Example 5:** Consider a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
+
+```js
+class Url {
+  constructor(href) {
+    // The raw url
+    this.href = href;
+    // Initial computations
+    const [ , reflect ] = this.compute();
+
+    // Detect updates and reflect them
+    Observer.observe(this, changes => {
+      changes.forEach(change => reflect([ 'this', change.key ]));
+    });
+  }
+
+  **compute() {
+    // These will be re-computed from this.href always
+    let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
+
+    this.protocol = protocol;
+    this.hostname = hostname;
+    this.port = port;
+    this.pathname = pathname;
+    this.search = search;
+    this.hash = hash;
+
+    // These individual property assignments each depend on the previous 
+    this.host = this.hostname + ':' + this.port;
+    this.origin = this.protocol + '//' + this.host;
+    let href = this.origin + this.pathname + this.search + this.hash;
+    if (href !== this.href) { // Prevent unnecessary update
+      this.href = href;
+    }
+  }
+}
+```
+
+**--> Example 6:** Consider a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant.
+
+```js
+class Url {
+  constructor(href) {
+    // The raw url
+    this.href = href;
+    // Initial computations
+    const [ , reflect ] = this.compute();
+    // Detect updates and reflect them
+    Observer.observe(this, changes => {
+      // All the updates from batch() below will now also be reflected as one batch
+      let paths = changes.map(change => ([ 'this', change.key ]));
+      reflect(...paths);
+    });
+  }
+
+  **compute() {
+    // These will be re-computed from this.href always
+    let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
+
+    // We batch the operations here so that they're delivered and reflected above as one batch
+    Observer.batch(this, () => {
+      this.protocol = protocol;
+      this.hostname = hostname;
+      this.port = port;
+      this.pathname = pathname;
+      this.search = search;
+      this.hash = hash;
+    });
+
+    // These individual property assignments each depend on the previous 
+    this.host = this.hostname + ':' + this.port;
+    this.origin = this.protocol + '//' + this.host;
+    let href = this.origin + this.pathname + this.search + this.hash;
+    if (href !== this.href) { // Prevent unnecessary update
+      this.href = href;
+    }
+  }
+}
+```
+
+**--> Example 7:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
 
 ## The Polyfill
 
