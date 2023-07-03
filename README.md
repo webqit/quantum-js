@@ -178,7 +178,7 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ## Usecases
 
-### Reactive Custom Elements
+### Usecase: *Reactive Custom Elements*
 
 Consider how we could write reactive Custom Elements!
 
@@ -308,7 +308,7 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
 
 > [Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element)
 
-### Reactive Script Elements
+### Usecase: *Reactive Script Elements*
 
 For when Custom Elements are an overkill, write reactive UI logic all out of an embedded `<script>` element!
 
@@ -331,9 +331,9 @@ For when Custom Elements are an overkill, write reactive UI logic all out of an 
 
 > [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
 
-### Pure Computations
+### Usecase: *Pure Computations*
 
-**Reflex Functions isn't all about the UI!** Consider some *pure computational* usecases!
+Reflex Functions *isn't all about the UI!* Consider some *pure computational* usecases!
 
 **└ Example 5:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
 
