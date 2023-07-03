@@ -176,16 +176,18 @@ Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivi
 
 Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details around [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax), [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics), [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control) and [Functions](https://github.com/webqit/reflex-functions/wiki#functions), [API](https://github.com/webqit/reflex-functions/wiki#api), etc.
 
-## Examples
+## Usecases
 
-**-->** Let's start with how we could write reactive Custom Elements:
+### Reactive Custom Elements
 
-**└ Example 1:** Consider is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen as reflex actions.
+Consider how we could write reactive Custom Elements!
+
+**└ Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen via reflections.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
-  count = 10;
 
+  count = 10;
   connectedCallback() {
     // Full rendering at connected time
     // meaning that the querySelector() calls in there are run as normal
@@ -215,12 +217,12 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-**└ Example 2:** Consider a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
+**└ Example 2:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
+  
   count = 10;
-
   connectedCallback() {
     // Full rendering at connected time
     // meaning that the querySelector() calls in there are run as normal
@@ -235,6 +237,7 @@ customElements.define('click-counter', class extends HTMLElement {
     // this time, meaning that the querySelector() calls in there don't re-run
     this.addEventListener('click', () => {
       this.count ++;
+      // Polyfill syntax: Observer.set(this, 'count', this.count + 1);
     });
   }
 
@@ -256,22 +259,87 @@ customElements.define('click-counter', class extends HTMLElement {
 
 <details><summary>Try it using the polyfill</summary>
 
-While the above *double star* syntax isn't supported as-is by the polyfill, you could acheive the same using the `ReflexFunction` constructor below.
+While the above *double star* syntax isn't supported as-is by the polyfill, you could acheive the same using the `ReflexFunction` constructor as below:
+
+```js
+customElements.define('click-counter', class extends HTMLElement {
+  render: ReflexFunction(`
+    // code here
+  `),
+});
+```
+
+Or check out the `PlayElement` mixin below.
 
 </details>
 
-**└ Example 3:** Check out how the `PlayElement` mixin brings Reflex-Function-based reactivity to Custom Elements! ([Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element))
+**└ Example 3:** Consider how the `PlayElement` mixin brings Reflex-based reactivity to Custom Elements!
 
-**-->** This next one lets you write reactive UI logic all out of a `<script>` element:
+```js
+customElements.define( 'count-element', class extends PlayElement( HTMLElement ) {
+  // List of methods that should be transformed to "reflex" functions
+  static get reflexFunctions() {
+    return [ 'render' ];
+  }
 
-**└ Example 4:** Check out how `<script reflex></script>` elements bring Reflex-Function-based reactivity to HTML! ([Visit OOHTML](https://github.com/webqit/oohtml#reactive-html))
+  count = 10;
+  connectedCallback() {
+    this.addEventListener('click', () => {
+      this.count ++;
+      // Polyfill syntax: Observer.set(this, 'count', this.count + 1);
+    });
+  }
 
-**-->** But Reflex Functions isn't just about the UI! Here's some *pure computational* usecases:
+  render() {
+    let countElement = document.querySelector( '#count' );
+    countElement.innerHTML = this.count;
+    
+    let doubleCount = this.count * 2;
+    let doubleCountElement = document.querySelector( '#double-count' );
+    doubleCountElement.innerHTML = doubleCount;
+    
+    let quadCount = doubleCount * 2;
+    let quadCountElement = document.querySelector( '#quad-count' );
+    quadCountElement.innerHTML = quadCount;
+  }
 
-**└ Example 5:** Consider a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
+});
+```
+
+> [Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element)
+
+### Reactive Script Elements
+
+For when Custom Elements are an overkill, write reactive UI logic all out of an embedded `<script>` element!
+
+**└ Example 4:** Consider how `<script reflex>` elements bring Reflex-based reactivity to HTML!
+
+```html
+<div>
+  <script reflex scoped>
+    console.log(this) // div
+
+    console.log(this.liveProperty) // live expression
+
+    if (this.bindings.isCollapsed) {
+        // Live block
+        console.log('Section collapsed!');
+    }
+  </script>
+</div>
+```
+
+> [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
+
+### Pure Computations
+
+**Reflex Functions isn't all about the UI!** Consider some *pure computational* usecases!
+
+**└ Example 5:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
 
 ```js
 class Url {
+
   constructor(href) {
     // The raw url
     this.href = href;
@@ -303,13 +371,15 @@ class Url {
       this.href = href;
     }
   }
+
 }
 ```
 
-**└ Example 6:** Consider a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant.
+**└ Example 6:** Below is a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant.
 
 ```js
 class Url {
+
   constructor(href) {
     // The raw url
     this.href = href;
@@ -330,11 +400,17 @@ class Url {
     // We batch the operations here so that they're delivered and reflected above as one batch
     Observer.batch(this, () => {
       this.protocol = protocol;
+      // Polyfill syntax: Observer.set(this, 'protocol', protocol);
       this.hostname = hostname;
+      // Polyfill syntax: Observer.set(this, 'hostname', hostname);
       this.port = port;
+      // Polyfill syntax: Observer.set(this, 'port', port);
       this.pathname = pathname;
+      // Polyfill syntax: Observer.set(this, 'pathname', pathname);
       this.search = search;
+      // Polyfill syntax: Observer.set(this, 'search', search);
       this.hash = hash;
+      // Polyfill syntax: Observer.set(this, 'hash', hash);
     });
 
     // These individual property assignments each depend on the previous 
@@ -343,8 +419,10 @@ class Url {
     let href = this.origin + this.pathname + this.search + this.hash;
     if (href !== this.href) { // Prevent unnecessary update
       this.href = href;
+      // Polyfill syntax: Observer.set(this, 'href', href);
     }
   }
+
 }
 ```
 
