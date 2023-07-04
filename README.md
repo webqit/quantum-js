@@ -136,7 +136,7 @@ Changes within the function body itself *self-propagate* down the scope, but re-
 
 Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
 
-![Code with reflex lines](https://github.com/webqit/reflex-functions/blob/master/reflex-lines.png)
+![Code with reflex lines](https://github.com/webqit/reflex-functions/blob/master/resources/reflex-lines-1.png)
 
 <!--
 ```js
