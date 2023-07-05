@@ -347,13 +347,13 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
 
 ### Usecase: *Compile Target*
 
-Custom template languages have been designed to support reactivity on the UI! (Sometimes extending JavaScript with XML-like syntaxes (JSX), and sometimes extending HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) to support various things like data binding, event handling, conditional rendering, looping, and more!) **But what if, instead of re-inventing a new language, we could just write *conventional* JavaScript as template language and yet gain fine-grained reactivity on top of that?**
+Custom template languages have been designed to support reactivity on the frontend! (Sometimes extending JavaScript with XML-like syntaxes (JSX), and sometimes extending HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) to support various things like data binding, event handling, conditional rendering, looping, and more!) **But what if, instead of re-inventing a new language, we could just write *conventional* JavaScript as template language and gain fine-grained reactivity on top of that?**
 
 You could simply have Reflex Functions as your *compile target*!
 
 #### *Example 1:*
 
-Below is how the [`<script reflex>`](https://github.com/webqit/oohtml#reactive-html) element in the OOHTML suite which brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood! Here's an example:
+Below is how the [`<script reflex>`](https://github.com/webqit/oohtml#reactive-html) element in the OOHTML suite brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood:
 
 ```html
 <div>
@@ -370,11 +370,16 @@ Below is how the [`<script reflex>`](https://github.com/webqit/oohtml#reactive-h
 </div>
 ```
 
+```js
+// Mutate a binding:
+divElement.bindings.isCollapsed = true;
+```
+
 └ [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
 
 ### Usecase: *Pure Computations*
 
-Reactivity doesn't really end on the UI! Sometimes we find ourself elsewhere manually wiring callbacks to model depencencies that need to stay in sync! (And often, this takes a toll on readability and ergonomics!) But what if we could sometimes just express the logic in its *static* form and *turn on* reactivity on top of it? (Much like an escape hatch out of complexity :))
+Reactivity isn't all a UI thing! Sometimes we find ourself elsewhere manually wiring callbacks to model depencencies that need to stay in sync! (And often, this takes a toll on readability and ergonomics!) But what if we could sometimes just express the logic in its *static* form and *turn on* reactivity on top of it? (Much like an escape hatch out of complexity :))
 
 Consider some of these *pure computational* usecases!
 
@@ -410,7 +415,7 @@ class Url {
     this.hash = hash;
 
     // These individual property assignments each depend on the previous 
-    this.host = this.hostname + ':' + this.port;
+    this.host = this.hostname + (this.port ? ':' + this.port : '');
     this.origin = this.protocol + '//' + this.host;
     let href = this.origin + this.pathname + this.search + this.hash;
     if (href !== this.href) { // Prevent unnecessary update
@@ -419,6 +424,17 @@ class Url {
   }
 
 }
+```
+
+```js
+// Change a property and have it's dependents auto-compute
+const url = new Url('https://www.example.com/path');
+
+url.protocol = 'http:';
+console.log(url.href); // http://www.example.com/path
+
+url.hostname = 'foo.dev';
+console.log(url.href); // http://foo.dev/path
 ```
 
 #### *Example 2:*
@@ -458,7 +474,7 @@ class Url {
     });
 
     // These individual property assignments each depend on the previous 
-    this.host = this.hostname + ':' + this.port;
+    this.host = this.hostname + (this.port ? ':' + this.port : '');
     this.origin = this.protocol + '//' + this.host;
     let href = this.origin + this.pathname + this.search + this.hash;
     if (href !== this.href) { // Prevent unnecessary update
@@ -467,6 +483,17 @@ class Url {
   }
 
 }
+```
+
+```js
+// Change a property and have it's dependents auto-compute
+const url = new Url('https://www.example.com/path');
+
+url.port = 1914;
+console.log(url.href); // https://www.example.com:1914/path
+
+url.pathname = '/level1/level2';
+console.log(url.href); // https://www.example.com:1914//level1/level2
 ```
 
 <details><summary>Try it using the polyfill</summary>
@@ -512,7 +539,7 @@ The above is possible with the polyfills today with only a few modifications:
 
 #### *Example 3:*
 
-Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
+Check out how the [`ReflexFunction.inspect()`](https://github.com/webqit/reflex-functions/wiki#example-usecase) method ties in with the [Observer API](https://github.com/webqit/observer)!
 
 ## The Polyfill
 
