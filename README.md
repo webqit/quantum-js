@@ -188,7 +188,7 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ### Usecase: *Reactive Custom Elements*
 
-Reactivity with Custom Elements has often relied on manual change-propagation techniques and, in some cases, custom syntaxes that themselves rely on a compile step! ([Lit](https://lit.dev/), for example, follows a "HTML as string" approach for DOM structure - albeit JavaScript template strings!) **But what if we could decouple behaviour and presentation and just write *normal* rendering logic and yet gain fine-grained reactivity on top of that?**
+Reactivity with Custom Elements has often relied on manual change-propagation techniques and, in some cases, custom syntaxes that themselves rely on a compile step! ([Lit](https://lit.dev/), for example, follows a "HTML as string" approach for DOM structure - albeit via JavaScript template strings!) **But what if we could decouple behaviour and presentation and just write *normal* rendering logic and yet gain fine-grained reactivity on top of that?**
 
 This is one thing that Reflex Functions could help with!
 
