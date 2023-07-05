@@ -183,7 +183,7 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 ## Usecases
 
 + [Usecase: *Reactive Custom Elements*](#usecase-reactive-custom-elements)
-+ [Usecase: *Compilation Target*](#usecase-compilation-target)
++ [Usecase: *Compile Target*](#usecase-compile-target)
 + [Usecase: *Pure Computations*](#usecase-pure-computations)
 
 ### Usecase: *Reactive Custom Elements*
@@ -402,7 +402,7 @@ class Url {
     this.href = href;
     // Initial computations
     const [ , reflect ] = this.compute();
-    
+
     // Detect updates and reflect them
     Observer.observe(this, changes => {
       // All the updates from batch() below will now also be reflected as one batch
