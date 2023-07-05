@@ -351,7 +351,7 @@ Custom template languages have been designed to support reactivity on the UI! (S
 
 You could simply have Reflex Functions as your *compile target*!
 
-**--> Example 4:** The `<script reflex>` element is part of the OOHTML suite which brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood! Here's an example:
+**--> Example 1:** The `<script reflex>` element is part of the OOHTML suite which brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood! Here's an example:
 
 ```html
 <div>
@@ -376,7 +376,7 @@ Reactivity doesn't really end on the UI! Sometimes we find ourself elsewhere man
 
 Consider some of these *pure computational* usecases!
 
-**--> Example 5:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically:
+**--> Example 1:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically:
 
 ```js
 class Url {
@@ -417,7 +417,7 @@ class Url {
 }
 ```
 
-**--> Example 6:** Below is a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant:
+**--> Example 2:** Below is a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant:
 
 ```js
 class Url {
@@ -504,7 +504,7 @@ The above is possible with the polyfills today with only a few modifications:
 
 </details>
 
-**--> Example 7:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
+**--> Example 3:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
 
 ## The Polyfill
 
