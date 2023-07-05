@@ -6,7 +6,7 @@
 
 <!-- /BADGES --> 
 
-**[Motivation](#motivation) • [Overview](#an-overview) • [Documentation](#documentation) • [Usecases](#usecases) • [Polyfill](#the-polyfill) • [Getting Involved](#getting-involved) • [License](#license)**
+**[Motivation](#motivation) • [Overview](#an-overview) • [Usecases](#usecases) • [Documentation](#documentation) • [Polyfill](#the-polyfill) • [Getting Involved](#getting-involved) • [License](#license)**
 
 Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form of the language - wherein reactivity is drawn entirely on the dependency graph of your own code!
 
@@ -175,10 +175,6 @@ let [ returnValue, reflect ] = ui();
 It turns out to be the very mental model you would have drawn if you set out to think about your own code! Everything works **in just how anyone would *predict* it**!
 
 Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
-
-## Documentation
-
-Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details around [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax), [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics), [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control) and [Functions](https://github.com/webqit/reflex-functions/wiki#functions), [API](https://github.com/webqit/reflex-functions/wiki#api), etc.
 
 ## Usecases
 
@@ -540,6 +536,10 @@ The above is possible with the polyfills today with only a few modifications:
 #### *Example 3:*
 
 Check out how the [`ReflexFunction.inspect()`](https://github.com/webqit/reflex-functions/wiki#example-usecase) method ties in with the [Observer API](https://github.com/webqit/observer)!
+
+## Documentation
+
+Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details around [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax), [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics), [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control) and [Functions](https://github.com/webqit/reflex-functions/wiki#functions), [API](https://github.com/webqit/reflex-functions/wiki#api), etc.
 
 ## The Polyfill
 
