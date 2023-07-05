@@ -366,9 +366,11 @@ Below is how the [`<script reflex>`](https://github.com/webqit/oohtml#reactive-h
 </div>
 ```
 
+As a plus, the external dependencies within the script are automatically observed and reflected:
+
 ```js
 // Mutate a binding:
-divElement.bindings.isCollapsed = true;
+divElement.bindings.isCollapsed = true; // Console: "Section collapsed!"
 ```
 
 └ [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
