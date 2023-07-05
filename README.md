@@ -6,7 +6,7 @@
 
 <!-- /BADGES --> 
 
-**[Motivation](#motivation) • [Overview](#an-overview) • [Documentation](#documentation) • [Polyfill](#the-polyfill) • [Getting Involved](#getting-involved) • [License](#license)**
+**[Motivation](#motivation) • [Overview](#an-overview) • [Documentation](#documentation) • [Usecases](#usecases) • [Polyfill](#the-polyfill) • [Getting Involved](#getting-involved) • [License](#license)**
 
 Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form of the language - wherein reactivity is drawn entirely on the dependency graph of your own code!
 
@@ -188,11 +188,11 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ### Usecase: *Reactive Custom Elements*
 
-Reactivity with Custom Elements has often relied on manual change-propagation techniques and, in some cases, custom syntaxes that themselves rely on a compile step! ([Lit](https://lit.dev/), for example, follows a "HTML as string" approach for DOM structure - albeit JavaScript template strings!) **But what if we could decouple behaviour and presentation and just write *normal* rendering logic and yet gain fine-grained reactivity on top?**
+Reactivity with Custom Elements has often relied on manual change-propagation techniques and, in some cases, custom syntaxes that themselves rely on a compile step! ([Lit](https://lit.dev/), for example, follows a "HTML as string" approach for DOM structure - albeit JavaScript template strings!) **But what if we could decouple behaviour and presentation and just write *normal* rendering logic and yet gain fine-grained reactivity on top of that?**
 
 This is one thing that Reflex Functions could help with!
 
-**└ Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be invoked only once and subsequent updates would happen via reflections.
+**--> Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be invoked only once and subsequent updates would happen via reflections:
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -227,7 +227,7 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-**└ Example 2:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function.
+**--> Example 2:** Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function:
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -247,8 +247,8 @@ customElements.define('click-counter', class extends HTMLElement {
     // this time, meaning that the querySelector() calls in there don't re-run
     this.addEventListener('click', () => {
       this.count ++;
-      // Polyfill syntax: Observer.set(this, 'count', this.count + 1);
     });
+
   }
 
   **render() {
@@ -269,21 +269,49 @@ customElements.define('click-counter', class extends HTMLElement {
 
 <details><summary>Try it using the polyfill</summary>
 
-While the above *double star* syntax isn't supported as-is by the polyfill, you could acheive the same using the `ReflexFunction` constructor as below:
+The above is possible with the polyfills today with only a few modifications:
 
-```js
-customElements.define('click-counter', class extends HTMLElement {
-  render: ReflexFunction(`
-    // code here
-  `),
-});
-```
+1. The above *double star* syntax isn't supported as-is in JavaScript, but you could acheive the same using the `ReflexFunction` constructor as below:
+    &ensp;
 
-Or check out the `PlayElement` mixin below.
+    ```js
+    customElements.define('click-counter', class extends HTMLElement {
+      constructor(href) {
+        const [ , reflect ] = this.render.call(this); // notice the .call(this)
+      }
+
+      render = ReflexFunction(`
+        // code here
+      `);
+    });
+    ```
+    &ensp;
+
+    Or you can check out the `PlayElement` mixin below.
+    &ensp;
+
+2. The literal update expression `this.count++` isn't reactive as-is in JavaScript, but you can acheive the same using the Observer API's mutation methods:
+    &ensp;
+
+    ```js
+    Observer.set(this, 'count', this.count + 1);
+    ```
+    &ensp;
+
+    Or you can "pre-transform" the `count` property to a reactive property:
+    &ensp;
+
+    ```js
+    customElements.define('click-counter', class extends HTMLElement {
+      connectedCallback() {
+        Observer.accessorize(this, [ 'count' ]);
+      }
+    });
+    ```
 
 </details>
 
-**└ Example 3:** Consider how the `PlayElement` mixin brings Reflex-based reactivity to Custom Elements!
+**--> Example 3:** The `PlayElement` Custom Element mixin takes this concept further to bring Reflex-based reactivity to Custom Elements! Here's an example:
 
 ```js
 customElements.define( 'count-element', class extends PlayElement( HTMLElement ) {
@@ -296,7 +324,6 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
   connectedCallback() {
     this.addEventListener('click', () => {
       this.count ++;
-      // Polyfill syntax: Observer.set(this, 'count', this.count + 1);
     });
   }
 
@@ -316,15 +343,15 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
 });
 ```
 
-> [Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element)
+└ [Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element)
 
 ### Usecase: *Compile Target*
 
-Custom template languages have been designed to support reactivity on the UI! (Sometimes extending JavaScript with XML-like syntaxes (JSX), and sometimes extending HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) to support various things like data binding, event handling, conditional rendering, looping, and more!) **But what if, instead of re-inventing a new language, we could just write *conventional* JavaScript as template language and yet gain fine-grained reactivity on top?**
+Custom template languages have been designed to support reactivity on the UI! (Sometimes extending JavaScript with XML-like syntaxes (JSX), and sometimes extending HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) to support various things like data binding, event handling, conditional rendering, looping, and more!) **But what if, instead of re-inventing a new language, we could just write *conventional* JavaScript as template language and yet gain fine-grained reactivity on top of that?**
 
 You could simply have Reflex Functions as your *compile target*!
 
-**└ Example 4:** Consider how `<script reflex>` elements bring Reflex-based reactivity to HTML!
+**--> Example 4:** The `<script reflex>` element is part of the OOHTML suite which brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood! Here's an example:
 
 ```html
 <div>
@@ -341,7 +368,7 @@ You could simply have Reflex Functions as your *compile target*!
 </div>
 ```
 
-> [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
+└ [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
 
 ### Usecase: *Pure Computations*
 
@@ -349,7 +376,7 @@ Reactivity doesn't really end on the UI! Sometimes we find ourself elsewhere man
 
 Consider some of these *pure computational* usecases!
 
-**└ Example 5:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
+**--> Example 5:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically:
 
 ```js
 class Url {
@@ -365,8 +392,6 @@ class Url {
       changes.forEach(change => reflect([ 'this', change.key ]));
     });
 
-    // This line is only required because literal property assignments aren't reactive in the Observer API polyfill
-    Observer.accessorize(this, ['protocol', 'hostname', 'port', 'pathname', 'search', 'hash', 'host', 'origin', 'href']);
   }
 
   **compute() {
@@ -392,7 +417,7 @@ class Url {
 }
 ```
 
-**└ Example 6:** Below is a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant.
+**--> Example 6:** Below is a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant:
 
 ```js
 class Url {
@@ -410,8 +435,6 @@ class Url {
       reflect(...paths);
     });
 
-    // This line is only required because literal property assignments aren't reactive in the Observer API polyfill
-    Observer.accessorize(this, ['protocol', 'hostname', 'port', 'pathname', 'search', 'hash', 'host', 'origin', 'href']);
   }
 
   **compute() {
@@ -440,7 +463,48 @@ class Url {
 }
 ```
 
-**└ Example 7:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
+<details><summary>Try it using the polyfill</summary>
+
+The above is possible with the polyfills today with only a few modifications:
+
+1. The above *double star* syntax isn't supported as-is in JavaScript, but you could acheive the same using the `ReflexFunction` constructor as below:
+    &ensp;
+
+    ```js
+    class Url {
+      constructor(href) {
+        const [ , reflect ] = this.compute.call(this); // notice the .call(this)
+      }
+
+      compute = ReflexFunction(`
+        // code here
+      `);
+    }
+    ```
+    &ensp;
+
+2. The literal update expressions like `this.href = href` aren't reactive as-is in JavaScript, but you can acheive the same using the Observer API's mutation methods:
+    &ensp;
+
+    ```js
+    Observer.set(this, 'href', href);
+    ```
+    &ensp;
+
+    Or you can "pre-transform" the properties to reactive properties:
+    &ensp;
+
+    ```js
+    customElements.define('click-counter', class extends HTMLElement {
+      connectedCallback() {
+        Observer.accessorize(this, [ 'protocol', 'hostname', 'port', 'pathname', 'search', 'hash', 'host', 'origin', 'href' ]);
+      }
+    });
+    ```
+
+</details>
+
+**--> Example 7:** Check out how the `ReflexFunction.inspect()` method ties in with the [Observer API](https://github.com/webqit/observer)! ([Visit example](https://github.com/webqit/reflex-functions/wiki#example-usecase))
 
 ## The Polyfill
 
