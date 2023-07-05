@@ -267,7 +267,7 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
-<details><summary>Try it using the polyfill</summary>
+<details><summary>Try it using the polyfills</summary>
 
 The above is possible with the polyfills today with only a few modifications:
 
@@ -307,7 +307,7 @@ The above is possible with the polyfills today with only a few modifications:
 
 #### *Example 3:*
 
-Below is how the [`PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element) Custom Element mixin takes this concept further to bring Reflex-based reactivity to Custom Elements! Here's an example:
+Below is how the [`PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element) Custom Element mixin takes this concept further to bring Reflex-based reactivity to Custom Elements:
 
 ```js
 customElements.define( 'count-element', class extends PlayElement( HTMLElement ) {
@@ -492,7 +492,7 @@ url.pathname = '/level1/level2';
 console.log(url.href); // https://www.example.com:1914//level1/level2
 ```
 
-<details><summary>Try it using the polyfill</summary>
+<details><summary>Try it using the polyfills</summary>
 
 The above is possible with the polyfills today with only a few modifications:
 
