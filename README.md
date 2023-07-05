@@ -182,11 +182,17 @@ Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details ar
 
 ## Usecases
 
++ [Usecase: *Reactive Custom Elements*](#usecase-reactive-custom-elements)
++ [Usecase: *Compilation Target*](#usecase-compilation-target)
++ [Usecase: *Pure Computations*](#usecase-pure-computations)
+
 ### Usecase: *Reactive Custom Elements*
 
-Consider how we could write reactive Custom Elements!
+Reactivity with Custom Elements has often relied on manual change-propagation techniques and, in some cases, custom syntaxes that themselves rely on a compile step! ([Lit](https://lit.dev/), for example, follows a "HTML as string" approach for DOM structure - albeit JavaScript template strings!) **But what if we could decouple behaviour and presentation and just write *normal* rendering logic and yet gain fine-grained reactivity on top?**
 
-**└ Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be run only once and subsequent updates would happen via reflections.
+This is one thing that Reflex Functions could help with!
+
+**└ Example 1:** Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be invoked only once and subsequent updates would happen via reflections.
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -312,9 +318,11 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
 
 > [Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element)
 
-### Usecase: *Reactive Script Elements*
+### Usecase: *Compile Target*
 
-For when Custom Elements are an overkill, write reactive UI logic all out of an embedded `<script>` element!
+Custom template languages have been designed to support reactivity on the UI! (Sometimes extending JavaScript with XML-like syntaxes (JSX), and sometimes extending HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) to support various things like data binding, event handling, conditional rendering, looping, and more!) **But what if, instead of re-inventing a new language, we could just write *conventional* JavaScript as template language and yet gain fine-grained reactivity on top?**
+
+You could simply have Reflex Functions as your *compile target*!
 
 **└ Example 4:** Consider how `<script reflex>` elements bring Reflex-based reactivity to HTML!
 
@@ -337,7 +345,9 @@ For when Custom Elements are an overkill, write reactive UI logic all out of an 
 
 ### Usecase: *Pure Computations*
 
-Reflex Functions *isn't all about the UI!* Consider some *pure computational* usecases!
+Reactivity doesn't really end on the UI! Sometimes we find ourself elsewhere manually wiring callbacks to model depencencies that need to stay in sync! (And often, this takes a toll on readability and ergonomics!) But what if we could sometimes just express the logic in its *static* form and *turn on* reactivity on top of it? (Much like an escape hatch out of complexity :))
+
+Consider some of these *pure computational* usecases!
 
 **└ Example 5:** Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically.
 
@@ -354,6 +364,9 @@ class Url {
     Observer.observe(this, changes => {
       changes.forEach(change => reflect([ 'this', change.key ]));
     });
+
+    // This line is only required because literal property assignments aren't reactive in the Observer API polyfill
+    Observer.accessorize(this, ['protocol', 'hostname', 'port', 'pathname', 'search', 'hash', 'host', 'origin', 'href']);
   }
 
   **compute() {
@@ -389,12 +402,16 @@ class Url {
     this.href = href;
     // Initial computations
     const [ , reflect ] = this.compute();
+    
     // Detect updates and reflect them
     Observer.observe(this, changes => {
       // All the updates from batch() below will now also be reflected as one batch
       let paths = changes.map(change => ([ 'this', change.key ]));
       reflect(...paths);
     });
+
+    // This line is only required because literal property assignments aren't reactive in the Observer API polyfill
+    Observer.accessorize(this, ['protocol', 'hostname', 'port', 'pathname', 'search', 'hash', 'host', 'origin', 'href']);
   }
 
   **compute() {
@@ -404,17 +421,11 @@ class Url {
     // We batch the operations here so that they're delivered and reflected above as one batch
     Observer.batch(this, () => {
       this.protocol = protocol;
-      // Polyfill syntax: Observer.set(this, 'protocol', protocol);
       this.hostname = hostname;
-      // Polyfill syntax: Observer.set(this, 'hostname', hostname);
       this.port = port;
-      // Polyfill syntax: Observer.set(this, 'port', port);
       this.pathname = pathname;
-      // Polyfill syntax: Observer.set(this, 'pathname', pathname);
       this.search = search;
-      // Polyfill syntax: Observer.set(this, 'search', search);
       this.hash = hash;
-      // Polyfill syntax: Observer.set(this, 'hash', hash);
     });
 
     // These individual property assignments each depend on the previous 
@@ -423,7 +434,6 @@ class Url {
     let href = this.origin + this.pathname + this.search + this.hash;
     if (href !== this.href) { // Prevent unnecessary update
       this.href = href;
-      // Polyfill syntax: Observer.set(this, 'href', href);
     }
   }
 
