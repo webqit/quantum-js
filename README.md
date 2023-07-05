@@ -311,7 +311,7 @@ The above is possible with the polyfills today with only a few modifications:
 
 </details>
 
-**--> Example 3:** The `PlayElement` Custom Element mixin takes this concept further to bring Reflex-based reactivity to Custom Elements! Here's an example:
+**--> Example 3:** Below is how the [`PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element) Custom Element mixin takes this concept further to bring Reflex-based reactivity to Custom Elements! Here's an example:
 
 ```js
 customElements.define( 'count-element', class extends PlayElement( HTMLElement ) {
@@ -351,7 +351,7 @@ Custom template languages have been designed to support reactivity on the UI! (S
 
 You could simply have Reflex Functions as your *compile target*!
 
-**--> Example 1:** The `<script reflex>` element is part of the OOHTML suite which brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood! Here's an example:
+**--> Example 1:** Below is how the [`<script reflex>`](https://github.com/webqit/oohtml#reactive-html) element in the OOHTML suite which brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood! Here's an example:
 
 ```html
 <div>
