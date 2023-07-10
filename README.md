@@ -339,7 +339,7 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
 
 ### Usecase: *Compile Target*
 
-Template languages have been a means to reactivity on the frontend! But if we didn't have to re-invent a language - i.e. extend JavaScript with XML-like syntaxes (JSX), or extend HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) - to support things like data binding, event handling, conditional rendering, looping, and others?
+Template languages have been a means to reactivity on the frontend! But what if we didn't have to re-invent a language - i.e. extend JavaScript with XML-like syntaxes (JSX), or extend HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) - to support things like data binding, event handling, conditional rendering, looping, and others?
 
 You could simply have "reactive JavaScript" as your template language with Reflex Functions as your *compile target*!
 
