@@ -198,11 +198,9 @@ customElements.define('click-counter', class extends HTMLElement {
   count = 10;
   connectedCallback() {
     // Full rendering at connected time
-    // meaning that the querySelector() calls in there are run as normal
     let [ , reflect ] = this.render();
 
-    // Reflex actions at click time
-    // this time, meaning that the querySelector() calls in there don't re-run
+    // Reflex actions at click time (Fine-grained reactivity)
     this.addEventListener('click', () => {
       this.count ++;
       reflect([ 'this', 'count' ]);
@@ -235,7 +233,6 @@ customElements.define('click-counter', class extends HTMLElement {
   count = 10;
   connectedCallback() {
     // Full rendering at connected time
-    // meaning that the querySelector() calls in there are run as normal
     let [ , reflect ] = this.render();
 
     // Using the Observer API to automatically drive updates into the render function
@@ -243,8 +240,7 @@ customElements.define('click-counter', class extends HTMLElement {
       changes.forEach(change => reflect([ 'this', change.key ]));
     });
 
-    // Reflex actions at click time
-    // this time, meaning that the querySelector() calls in there don't re-run
+    // Reflex actions at click time (Fine-grained reactivity)
     this.addEventListener('click', () => {
       this.count ++;
     });
