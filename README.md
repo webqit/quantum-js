@@ -184,9 +184,9 @@ Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivi
 
 ### Usecase: *Reactive Custom Elements*
 
-Reactivity with Custom Elements has often relied on manual change-propagation techniques and, in some cases, custom syntaxes that themselves rely on a compile step! ([Lit](https://lit.dev/), for example, follows a "HTML as string" approach for DOM structure - albeit via JavaScript template strings!) **But what if we could decouple behaviour and presentation and just write *normal* rendering logic and yet gain fine-grained reactivity on top of that?**
+Reactivity with Custom Elements has never been neat! (In [Lit](https://lit.dev/), for example, you still have to follow a "HTML-as-string" approach that mangles JavaScript classes with templating concerns, and things become tightly-coupled!) But what if we could just write JavaScript classes with "neat" rendering logic?
 
-This is one thing that Reflex Functions could help with!
+This is one question that Reflex Functions answers.
 
 #### *Example 1:*
 
@@ -343,9 +343,9 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
 
 ### Usecase: *Compile Target*
 
-Custom template languages have been designed to support reactivity on the frontend! (Sometimes extending JavaScript with XML-like syntaxes (JSX), and sometimes extending HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) to support various things like data binding, event handling, conditional rendering, looping, and more!) **But what if, instead of re-inventing a new language, we could just write *conventional* JavaScript as template language and gain fine-grained reactivity on top of that?**
+Template languages have been a means to reactivity on the frontend! But if we didn't have to re-invent a language - i.e. extend JavaScript with XML-like syntaxes (JSX), or extend HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) - to support things like data binding, event handling, conditional rendering, looping, and others?
 
-You could simply have Reflex Functions as your *compile target*!
+You could simply have "reactive JavaScript" as your template language with Reflex Functions as your *compile target*!
 
 #### *Example 1:*
 
@@ -377,7 +377,7 @@ divElement.bindings.isCollapsed = true; // Console: "Section collapsed!"
 
 ### Usecase: *Pure Computations*
 
-Reactivity isn't all a UI thing! Sometimes we find ourself elsewhere manually wiring callbacks to model depencencies that need to stay in sync! (And often, this takes a toll on readability and ergonomics!) But what if we could sometimes just express the logic in its *static* form and *turn on* reactivity on top of it? (Much like an escape hatch out of complexity :))
+Reactivity isn't all a UI thing! Sometimes we find ourselves elsewhere manually wiring callbacks to model depencencies that need to stay in sync! (And often, this is suboptimal!) But what if we could express that same logic in its *imperative* form and let the machine figure out the intrinsic dependecnies and reactivity? (Much like an escape hatch from complexity :))
 
 Consider some of these *pure computational* usecases!
 
