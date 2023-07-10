@@ -208,15 +208,15 @@ customElements.define('click-counter', class extends HTMLElement {
   }
 
   **render() {
-    let countElement = document.querySelector( '#count' );
+    let countElement = this.querySelector( '#count' );
     countElement.innerHTML = this.count;
     
     let doubleCount = this.count * 2;
-    let doubleCountElement = document.querySelector( '#double-count' );
+    let doubleCountElement = this.querySelector( '#double-count' );
     doubleCountElement.innerHTML = doubleCount;
     
     let quadCount = doubleCount * 2;
-    let quadCountElement = document.querySelector( '#quad-count' );
+    let quadCountElement = this.querySelector( '#quad-count' );
     quadCountElement.innerHTML = quadCount;
   }
 
@@ -248,15 +248,15 @@ customElements.define('click-counter', class extends HTMLElement {
   }
 
   **render() {
-    let countElement = document.querySelector( '#count' );
+    let countElement = this.querySelector( '#count' );
     countElement.innerHTML = this.count;
     
     let doubleCount = this.count * 2;
-    let doubleCountElement = document.querySelector( '#double-count' );
+    let doubleCountElement = this.querySelector( '#double-count' );
     doubleCountElement.innerHTML = doubleCount;
     
     let quadCount = doubleCount * 2;
-    let quadCountElement = document.querySelector( '#quad-count' );
+    let quadCountElement = this.querySelector( '#quad-count' );
     quadCountElement.innerHTML = quadCount;
   }
 
@@ -320,15 +320,15 @@ customElements.define( 'count-element', class extends PlayElement( HTMLElement )
   }
 
   render() {
-    let countElement = document.querySelector( '#count' );
+    let countElement = this.querySelector( '#count' );
     countElement.innerHTML = this.count;
     
     let doubleCount = this.count * 2;
-    let doubleCountElement = document.querySelector( '#double-count' );
+    let doubleCountElement = this.querySelector( '#double-count' );
     doubleCountElement.innerHTML = doubleCount;
     
     let quadCount = doubleCount * 2;
-    let quadCountElement = document.querySelector( '#quad-count' );
+    let quadCountElement = this.querySelector( '#quad-count' );
     quadCountElement.innerHTML = quadCount;
   }
 
