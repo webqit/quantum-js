@@ -35,7 +35,7 @@ export default class EffectReference extends Reference {
         this.refs.forEach( ( effectRef, i ) => {
             _remainderRefs.forEach( signalRef => {
                 let [ isMatch, remainder ] = effectRef.match( signalRef );
-                if ( isMatch && remainder <= 0 ) {
+                if ( isMatch && ( effectRef.path.length === 1 || remainder > 0 ) ) {
                     if ( this.kind === 'const' ) return;
                     effectRef.subscribe( signalReference, signalRef );
                     // Someone is depending on us now
@@ -57,7 +57,9 @@ export default class EffectReference extends Reference {
         this.refs.forEach( ( effectRef, i ) => {
             _remainderRefs.forEach( _effectRef => {
                 let [ isMatch, remainder ] = effectRef.match( _effectRef );
-                if ( isMatch && remainder >= 0 ) {
+                const isRootUpdate = _effectRef.path.length === 1 || remainder < 0;
+                const isPropertyUpdate = remainder === 1;
+                if ( isMatch && ( isRootUpdate || isPropertyUpdate ) ) {
                     if ( this.kind === 'const' ) {
                         throw new Error(`Assignment to a constant declaration.`);
                     }

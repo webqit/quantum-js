@@ -149,6 +149,7 @@ export default class Reflex extends Common {
         let targetScope = targetContext.currentScope || targetContext.ownerScope /* when an Iteration */;
         
         if ( !reference.refs.size || ( this.type === 'VariableDeclaration' && this.kind === 'const' ) || ( resolveInScope && !targetScope.doSubscribe( reference ) ) ) {
+            // Undo this.pushReference();
             this.references = this.references.filter( _reference => _reference !== reference );
         }
 

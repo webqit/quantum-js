@@ -41,8 +41,8 @@ export default class Ref extends Common {
         let compareIdentifiers = ( a, b ) => !a || !b ? false : ( ( a instanceof Memo ) && ( b instanceof Memo ) ? a.id === b.id : a.name === b.name );
         let pathA = this.path,
             pathB = Array.isArray( ref ) ? ref : ref.path;
-        let remainder = pathA.length - pathB.length;
-        if ( remainder > 0 ) {
+        let remainder = pathB.length - pathA.length;
+        if ( remainder < 0 ) {
             [ pathA, pathB ] = [ pathB, pathA ];
         }
         return [

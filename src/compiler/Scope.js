@@ -21,7 +21,7 @@ export default class Scope extends Common {
     // ---------------
 
     pushEffectReference( effectReference ) {
-        this.effectReferences.push( effectReference );
+        this.effectReferences.unshift( effectReference );
     }
 
     // -----------------
