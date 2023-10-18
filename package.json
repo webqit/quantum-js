@@ -1,5 +1,5 @@
 {
-  "name": "@webqit/reflex-functions",
+  "name": "@webqit/stateful-js",
   "title": "Subscript",
   "description": "Customizable JavaScript runtime",
   "keywords": [
@@ -7,15 +7,15 @@
     "js-parser",
     "DSL"
   ],
-  "homepage": "https://webqit.io/tooling/reflex-functions",
+  "homepage": "https://webqit.io/tooling/stateful-js",
   "version": "2.1.86",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webqit/reflex-functions.git"
+    "url": "git+https://github.com/webqit/stateful-js.git"
   },
   "bugs": {
-    "url": "https://github.com/webqit/reflex-functions/issues"
+    "url": "https://github.com/webqit/stateful-js/issues"
   },
   "type": "module",
   "sideEffects": true,
@@ -23,14 +23,13 @@
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
-    "build-main": "esbuild main=src/targets.browser.js lite=src/targets.browser.lite.js compiler=src/targets.browser.compiler.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
-    "build-tooling": "esbuild inspector-element=src/inspector/Inspector.js sandbox-element=src/inspector/Sandbox.js visualizer-element=src/inspector/Visualizer.js dev-elements=src/inspector/index.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
-    "build": "npm run build-main",
+    "build": "esbuild main=src/api.global.js main.async=src/api.global.async.js compiler=src/api.compiler.global.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
     "preversion": "npm run test && npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
+    "@webqit/observer": "^2.1.19",
     "acorn": "^8.8.1",
     "astring": "^1.8.3"
   },
@@ -59,9 +58,9 @@
     "config": {
       "patreonUsername": "ox_harris",
       "githubUsername": "webqit",
-      "githubRepository": "reflex-functions",
-      "githubSlug": "webqit/reflex-functions",
-      "npmPackageName": "@webqit/reflex-functions"
+      "githubRepository": "stateful-js",
+      "githubSlug": "webqit/stateful-js",
+      "npmPackageName": "@webqit/stateful-js"
     }
   }
 }
