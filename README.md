@@ -52,7 +52,7 @@ What do we have in all?
 No more having to explicitly model relationships in your code or concern yourself with how changes propagate throughout your code! Just write "stateful" programs! Everything else is best left to a highly-optimised engine!
 
 And what's more? Having all of it under the hood as a runtime extension, instead of as a syntax extension to the language, brings us to a maximum authoring experience; letting us do more by a large margin:
-+ retain all of JavaScript syntax across reactive/non-reactive code, and write universal JavaScript in all!
++ retain all of JavaScript syntax across reactive/non-reactive code; in other words, write universal JavaScript in all!
 + write much cleaner, leaner code!
 
 Stateful is a new category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
@@ -82,7 +82,7 @@ Of course, this precision just makes everything many "x" faster!
 
 Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
 
-This simply translates to eliminating the difficult-to-grok update storms in non-linear update models - as would be the case below if an update on line 6 moved control up the scope to trigger statements 5 and 3!
+This simply translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case below if an update on line 6 moved control up the scope to trigger statements 5 and 3!
 
 ```js
 let outputNode = document.createElement('div'); // [Statement 1]
@@ -93,7 +93,7 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 1
 outputNode = document.createElement('span'); // [Statement 6]: Has no dependents and wouldn't move control up the scope to statements 5 and 3, as those aren't dependents
 ```
 
-Of course, our current linear update model just makes everything many "x" dead simple!
+Of course, our current linear update model just makes everything many "x" straightforward!
 
 > Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
 
