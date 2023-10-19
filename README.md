@@ -76,13 +76,13 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 4
 setTimeout(() => count = 10, 500);
 ```
 
-This simply translates to eliminating the overheads of doing **_unrelated_** work - as would be the case with having that `div` above recreated and appending each time `count` is updated! 
+Now, this translates to eliminating the overheads of doing **_unrelated_** work - as would be the case with having that `div` above recreated and appending each time `count` is updated! 
 
-Of course, this precision just makes everything many "x" faster!
+Of course, this precision just makes us many "x" more performant!
 
 Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
 
-This simply translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case with having an update below on line 6 moved control up the scope to trigger statements 5 and 3!
+Now, this translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case with having an update below on line 6 moved control up the scope to trigger statements 5 and 3!
 
 ```js
 let outputNode = document.createElement('div'); // [Statement 1]
@@ -93,7 +93,7 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 1
 outputNode = document.createElement('span'); // [Statement 6]: Has no dependents and wouldn't move control up the scope to statements 5 and 3, as those aren't dependents
 ```
 
-Of course, our current linear update model just makes everything many "x" straightforward!
+Of course, our current linear update model just makes everything many "x" easier to reason about!
 
 > Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
 
