@@ -436,7 +436,7 @@ This means that:
 
 ### Outside Changes Will Be Automatically Reflected
 
-Stateful JS programs will statically reflect changes to any external references that it may depend on:
+Stateful JS programs will statically reflect changes to any external references that they may depend on:
 
 ```js
 // External value
