@@ -32,7 +32,7 @@ useEffect(() => {
 setTimeout(() => setCount(10), 500);
 ```
 
-Stateful JS lets you acheive the same in the imperative form of the language:
+Stateful JS lets you acheive the same in the ordinary imperative form of the language:
 
 ```js
 let count = 5;
@@ -49,10 +49,10 @@ Here, you are able to write code that can *statically* reflect changes to state 
 
 What do we have in all?
 
-No more having to explicitly model relationships in your code or concern yourself with how changes propagate across your code base; just write "stateful" programs! The rest is best left to a highly-optimised engine!
+No more having to explicitly model relationships in your code or concern yourself with how changes propagate throughout your code! Just write "stateful" programs! Everything else is best left to a highly-optimised engine!
 
-And what's more? Having all of it as a runtime extension beneath literal JavaScript syntax - with notably zero syntax noise or additions to the language - brings us to a maximum authoring experience; letting us do more by a large margin:
-+ retain all of JavaScript syntax across reactive/non-reactive code, and write universal JavaScript in all!
+And what's more? Having all of it under the hood as a runtime extension, instead of as a syntax extension to the language, brings us to a maximum authoring experience; letting us do more by a large margin:
++ retain all of JavaScript syntax across reactive/non-reactive code; in other words, write universal JavaScript in all!
 + write much cleaner, leaner code!
 
 Stateful is a new category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
@@ -61,7 +61,7 @@ Stateful is a new category in the reactivity spectrum! (You can learn more in th
 
 When a change happens, Stateful programs do *just what's needed* to reflect it! Updates will always involve *just the relevant expression*, or sequence of expressions - as entirely determined by your program's dependency graph - that actually need to be touched to keep program state fully in sync!
 
-This means: game on with however your code lends itself to be written, as in below, only the following sequence of expressions: 4 -> 5, will reflect a change to `count`:
+This means: game on with however your code lends itself to be written, as in below; but only the following sequence of expressions: 4 -> 5, will reflect a change to `count`:
 
 ```js
 let outputNode = document.createElement('div');
@@ -76,13 +76,13 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 4
 setTimeout(() => count = 10, 500);
 ```
 
-This simply translates to eliminating the overheads of doing *unrelated* work - as would be the case above if we had that `div` recreated and appending each time `count` is updated! 
+Now, this translates to eliminating the overheads of doing **_unrelated_** work - as would be the case with having that `div` above recreated and appending each time `count` is updated! 
 
-Now, of course, this precision just brings us to much fewer CPU cycles!
+Of course, this precision just makes us many "x" more performant!
 
-Also, update sequence is always *linear* (ordered)! Reflection will always happen in the same top-down "control flow" sequence of imperative programs, ensuring familiar and predictable runtime behaviour.
+Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
 
-This simply translates to eliminating the difficult-to-grok reactions in non-linear update models - as would be the case below if control went up the scope in a sequence like: 6 -> 5 -> 3!
+Now, this translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case with having an update below on line 6 moved control up the scope to trigger statements 5 and 3!
 
 ```js
 let outputNode = document.createElement('div'); // [Statement 1]
@@ -93,15 +93,17 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 1
 outputNode = document.createElement('span'); // [Statement 6]: Has no dependents and wouldn't move control up the scope to statements 5 and 3, as those aren't dependents
 ```
 
-Now, of course, this linear update model just brings us to much fewer brain cycles!
+Of course, our current linear update model just makes everything many "x" easier to reason about!
 
-> Note that, earlier, the update to `count` is an update that didn't happen in the same flow as the dependents themselves, but triggered by an external event: `setTimeout(() => count = 10, 500);`!
+> Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
 
 Armed with this simple principle of operation, you can go pretty any length without breaking a sweat!
 
 ## Creating Stateful Programs
 
-Stateful JS comes as a language-level feature and no setup or build step is required! You can write stateful programs at either the function level or program level. (Polyfill just ahead!)
+Stateful JS comes as a language-level feature and no setup or build step is required! (Polyfill just ahead!)
+
+Here, you can write stateful programs at either the function level or program level.
 
 ### At the Function Level
 
@@ -127,7 +129,7 @@ async function** bar() {
 await bar();
 ```
 
-<details><summary>in just how a function works in JavaScript</summary>
+<details><summary>and in just how a function works in JavaScript</summary>
 
 ```js
 // As function expression, optionally async
@@ -313,7 +315,7 @@ Other tooling may choose to use the same infrastructure in other ways; e.g. as c
 
 ## Consuming Stateful Programs
 
-Each call to a stateful function or script returns back a `State` object that lets us consume the program from the outside world. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
+Each call to a stateful function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
 ### Return Value
 
@@ -434,7 +436,7 @@ This means that:
 
 ### Outside Changes Will Be Automatically Reflected
 
-Stateful JS programs will statically reflect changes to any external references that it may depend on:
+Stateful JS programs will statically reflect changes to any external references that they may depend on:
 
 ```js
 // External value
@@ -451,7 +453,7 @@ function** bar() {
 bar();
 ```
 
-...or from serving as *default value* in a function's parameter list:
+...or from the place of a parameter's *default value*:
 
 ```js
 function** bar(localVar = foo.baz) {
@@ -506,7 +508,7 @@ bar();
 
 ### Bare Variables in an *Observable* Scope Will Work the Same Way
 
-Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access surrounding variables would only be able to catch updates to their properties if they are objects, but not the variable replacement itself! 
+Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access these variables in the zurrounding zcope would only be able to catch updates to their properties if they are objects, but not the variable replacement itself! 
 
 This may eventually change, or not change, for Stateful programs! But certain scopes are always observable:
 
