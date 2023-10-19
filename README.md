@@ -61,7 +61,7 @@ Stateful is a new category in the reactivity spectrum! (You can learn more in th
 
 When a change happens, Stateful programs do *just what's needed* to reflect it! Updates will always involve *just the relevant expression*, or sequence of expressions - as entirely determined by your program's dependency graph - that actually need to be touched to keep program state fully in sync!
 
-This means: game on with however your code lends itself to be written, as in below, only the following sequence of expressions: 4 -> 5, will reflect a change to `count`:
+This means: game on with however your code lends itself to be written, as in below; but only the following sequence of expressions: 4 -> 5, will reflect a change to `count`:
 
 ```js
 let outputNode = document.createElement('div');
@@ -76,13 +76,13 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 4
 setTimeout(() => count = 10, 500);
 ```
 
-This simply translates to eliminating the overheads of doing **_unrelated_** work - as would be the case above if we had that `div` recreated and appending each time `count` is updated! 
+This simply translates to eliminating the overheads of doing **_unrelated_** work - as would be the case above with having that `div` recreated and appending each time `count` is updated! 
 
 Of course, this precision just makes everything many "x" faster!
 
 Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
 
-This simply translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case below if an update on line 6 moved control up the scope to trigger statements 5 and 3!
+This simply translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case below with having an update on line 6 moved control up the scope to trigger statements 5 and 3!
 
 ```js
 let outputNode = document.createElement('div'); // [Statement 1]
