@@ -32,7 +32,7 @@ useEffect(() => {
 setTimeout(() => setCount(10), 500);
 ```
 
-Stateful JS lets you acheive the same in the imperaive form of the language:
+Stateful JS lets you acheive the same in the ordinary imperaive form of the language:
 
 ```js
 let count = 5;
@@ -49,9 +49,9 @@ Here, you are able to write code that can *statically* reflect changes to state 
 
 What do we have in all?
 
-No more having to explicitly model relationships in your code or concern yourself with how changes propagate across your code base; just write "stateful" programs! The rest is best left to a highly-optimised engine!
+No more having to explicitly model relationships in your code or concern yourself with how changes propagate across your code base; just write "stateful" programs; the rest is best left to a highly-optimised engine!
 
-And what's more? Having all of it as a runtime extension beneath literal JavaScript syntax - with notably zero syntax noise or additions to the language - brings us to a maximum authoring experience; letting us do more by a large margin:
+And what's more? Having all of it under the hood as a runtime extension, instead of a syntax extension to the language, brings us to a maximum authoring experience; letting us do more by a large margin:
 + retain all of JavaScript syntax across reactive/non-reactive code, and write universal JavaScript in all!
 + write much cleaner, leaner code!
 
@@ -76,13 +76,13 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 4
 setTimeout(() => count = 10, 500);
 ```
 
-This simply translates to eliminating the overheads of doing *unrelated* work - as would be the case above if we had that `div` recreated and appending each time `count` is updated! 
+This simply translates to eliminating the overheads of doing **_unrelated_** work - as would be the case above if we had that `div` recreated and appending each time `count` is updated! 
 
-Now, of course, this precision just brings us to much fewer CPU cycles!
+Of course, this precision just makes everything many "x" faster!
 
-Also, update sequence is always *linear* (ordered)! Reflection will always happen in the same top-down "control flow" sequence of imperative programs, ensuring familiar and predictable runtime behaviour.
+Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
 
-This simply translates to eliminating the difficult-to-grok reactions in non-linear update models - as would be the case below if control went up the scope in a sequence like: 6 -> 5 -> 3!
+This simply translates to eliminating the difficult-to-grok update storms in non-linear update models - as would be the case below if an update on line 6 moved control up the scope to trigger statements 5 and 3!
 
 ```js
 let outputNode = document.createElement('div'); // [Statement 1]
@@ -93,15 +93,17 @@ outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 1
 outputNode = document.createElement('span'); // [Statement 6]: Has no dependents and wouldn't move control up the scope to statements 5 and 3, as those aren't dependents
 ```
 
-Now, of course, this linear update model just brings us to much fewer brain cycles!
+Of course, our current linear update model just makes everything many "x" dead simple!
 
-> Note that, earlier, the update to `count` is an update that didn't happen in the same flow as the dependents themselves, but triggered by an external event: `setTimeout(() => count = 10, 500);`!
+> Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
 
 Armed with this simple principle of operation, you can go pretty any length without breaking a sweat!
 
 ## Creating Stateful Programs
 
-Stateful JS comes as a language-level feature and no setup or build step is required! You can write stateful programs at either the function level or program level. (Polyfill just ahead!)
+Stateful JS comes as a language-level feature and no setup or build step is required! (Polyfill just ahead!)
+
+Here, you can write stateful programs at either the function level or program level.
 
 ### At the Function Level
 
@@ -127,7 +129,7 @@ async function** bar() {
 await bar();
 ```
 
-<details><summary>in just how a function works in JavaScript</summary>
+<details><summary>and in just how a function works in JavaScript</summary>
 
 ```js
 // As function expression, optionally async
@@ -313,7 +315,7 @@ Other tooling may choose to use the same infrastructure in other ways; e.g. as c
 
 ## Consuming Stateful Programs
 
-Each call to a stateful function or script returns back a `State` object that lets us consume the program from the outside world. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
+Each call to a stateful function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
 ### Return Value
 
@@ -451,7 +453,7 @@ function** bar() {
 bar();
 ```
 
-...or from serving as *default value* in a function's parameter list:
+...or from the point of parameter's *default value*:
 
 ```js
 function** bar(localVar = foo.baz) {
@@ -506,7 +508,7 @@ bar();
 
 ### Bare Variables in an *Observable* Scope Will Work the Same Way
 
-Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access surrounding variables would only be able to catch updates to their properties if they are objects, but not the variable replacement itself! 
+Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access these variables in the zurrounding zcope would only be able to catch updates to their properties if they are objects, but not the variable replacement itself! 
 
 This may eventually change, or not change, for Stateful programs! But certain scopes are always observable:
 
