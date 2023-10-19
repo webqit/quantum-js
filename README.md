@@ -453,7 +453,7 @@ function** bar() {
 bar();
 ```
 
-...or from the point of parameter's *default value*:
+...or from the place of a parameter's *default value*:
 
 ```js
 function** bar(localVar = foo.baz) {
