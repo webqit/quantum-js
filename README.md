@@ -49,9 +49,9 @@ Here, you are able to write code that can *statically* reflect changes to state 
 
 What do we have in all?
 
-No more having to explicitly model relationships in your code or concern yourself with how changes propagate across your code base; just write "stateful" programs; the rest is best left to a highly-optimised engine!
+No more having to explicitly model relationships in your code or concern yourself with how changes propagate throughout your code! Just write "stateful" programs; everything else is best left to a highly-optimised engine!
 
-And what's more? Having all of it under the hood as a runtime extension, instead of a syntax extension to the language, brings us to a maximum authoring experience; letting us do more by a large margin:
+And what's more? Having all of it under the hood as a runtime extension, instead of as a syntax extension to the language, brings us to a maximum authoring experience; letting us do more by a large margin:
 + retain all of JavaScript syntax across reactive/non-reactive code, and write universal JavaScript in all!
 + write much cleaner, leaner code!
 
