@@ -32,7 +32,7 @@ useEffect(() => {
 setTimeout(() => setCount(10), 500);
 ```
 
-Stateful JS lets you acheive the same in the imperaive form of the language:
+Stateful JS lets you acheive the same in the imperative form of the language:
 
 ```js
 let count = 5;
@@ -601,7 +601,7 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule
 
 </details>
 
-While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructable form of Stateful Functions - which give you the equivalent of the function forms!
+While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructable form of Stateful Functions - which give you the equivalent of the normal function forms!
 
 | API | Runs as... |
 | :------- | :----------- |

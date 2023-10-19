@@ -1,14 +1,15 @@
 {
   "name": "@webqit/stateful-js",
-  "title": "Subscript",
-  "description": "Customizable JavaScript runtime",
+  "title": "Stateful JS",
+  "description": "Runtime extension to JavaScript that let's us do Imperative Reactive Programming (IRP) in the very language.",
   "keywords": [
+    "fine-grained reactivity",
     "js-runner",
     "js-parser",
     "DSL"
   ],
   "homepage": "https://webqit.io/tooling/stateful-js",
-  "version": "2.1.86",
+  "version": "3.0.0-0",
   "license": "MIT",
   "repository": {
     "type": "git",

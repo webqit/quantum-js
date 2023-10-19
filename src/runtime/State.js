@@ -13,9 +13,11 @@ export default class State {
             runtime.on( name, events[ name ] );
             events[ name ]();
         }
-        if ( runtime.$params.sourceType === 'module' ) { Object.defineProperty( this, 'exports', { value: runtime.exports } ); }
+        if ( runtime.$params.sourceType === 'module' ) {
+            Object.defineProperty( this, 'exports', { value: runtime.exports } );
+        }
     }
     
-    dispose() { return this.runtime.abort(); }
+    dispose() { return this.runtime.abort( true ); }
 
 }
