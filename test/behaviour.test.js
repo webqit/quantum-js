@@ -15,6 +15,7 @@ const promise = ( timeout, value ) => new Promise( res => setTimeout(() => res( 
 
 const env = { log: [], iteratee: [ '0', '1', '2', '3' ], breakpoint: '2', br: 10 };
 
+/*
 const script = new StatefulModule(`
     let kk, rest;
     [ kk, , ...rest ] = iteratee;
@@ -26,7 +27,8 @@ await script.execute();
 Observer.proxy( env.iteratee ).push( 'four', 'five' );
 console.log( '----------------', env.log );
 
-/*
+
+
 
 
 const t = StatefulAsyncFunction(`
@@ -55,6 +57,8 @@ await promise( 400 );
 
 
 
+
+
 const t = StatefulFunction(`
     for (let i = 0; i < iteratee.length; i++) {
         console.log( i);
@@ -69,7 +73,10 @@ await t();
 await promise( 400 );
 Observer.set( env, 'breakpoint', '4' );
 await promise( 400 );
-*/
+
+
+
+
 
 const t = StatefulFunction(`
     let i = 0
@@ -83,6 +90,7 @@ await t();
 Observer.set( env, 'br', 12 );
 Observer.set( env, 'br', 30 );
 await promise( 400 );
+*/
 
 describe( 'Basic', function() {
 
