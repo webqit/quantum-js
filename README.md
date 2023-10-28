@@ -49,13 +49,13 @@ Here, you are able to write code that can *statically* reflect changes to state 
 
 ## Idea
 
-Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives, and sometimes some other means to that end.
+Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives, and sometimes some other means to the same end.
 
 <details><summary>Learn more</summary>
 
 Whether it's an assignment expression that sets or changes the data held in a local variable (`a = b`), or a delete expression that mutates some object property (`delete c.d`), it's all *effect* producing an *end state*! (And a large program is just many of these at play, interspersed with control flow structures!)
 
-What we don't get with how this works naturally is having end state automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is really what we try to acheive in an alternative approach.
+What we don't get with how this works naturally is having end state automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is often what we try to acheive in an alternative approach.
 
 </details>
 
@@ -70,7 +70,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 
 </details>
 
-But fun question: does it really work? You want to see!
+But fun question: does this really work? You want to see!
 
 <!--
 
