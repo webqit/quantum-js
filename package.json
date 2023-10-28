@@ -20,7 +20,7 @@
   },
   "type": "module",
   "sideEffects": true,
-  "main": "./src/index.async.js",
+  "main": "./src/index.js",
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",

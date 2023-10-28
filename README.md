@@ -674,7 +674,7 @@ program();
 
 ### Stateful Functions Lite
 
-It is possible to use a lighter version of Stateful JS where the bundle size of the main build above will impact *initial* application load. The *Lite* version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
+It is possible to use a lighter version of Stateful JS where you want something *still* feather weight for your initial application load. The *Lite* version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>Load from a CDN</summary>
 
@@ -684,9 +684,7 @@ It is possible to use a lighter version of Stateful JS where the bundle size of 
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-<!--
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js/dist/main.async.js)
--->
+> `10.8` kB min + gz | `33.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js@3.0.1-async.0)
 
 ```js
 // Destructure from the webqit namespace
