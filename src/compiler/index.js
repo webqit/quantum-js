@@ -19,8 +19,8 @@ export function parse( source, params = {} ) {
         catch( e ) {
             const message = `${ e.message || e }`;
             const { pos, loc: { line, column } } = e;
-            const expr = source.slice( pos, pos + 20 );
-            throw new ( globalThis[ e.name ] || Error )( message, { cause: { trace: [ { expr, line, column } ], source } } );
+            const expr = source.slice( Math.max( 0, pos - 15 ), pos + 15 );
+            throw new ( globalThis[ e.name ] || Error )( message, { cause: [ { expr, line, column }, { source } ] } );
         }
         ast.originalSource = source;
         parseCache.set( cacheKey, ast );

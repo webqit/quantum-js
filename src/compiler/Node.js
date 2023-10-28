@@ -2,10 +2,9 @@
 export default {
 
     // Statements & Clauses
+    throwStmt( argument ) { return { type: 'ThrowStatement', argument }; },
     tryStmt( block, handler, finalizer, guardedHandlers ) { return { type: 'TryStatement', block, handler, finalizer, guardedHandlers }; },
     catchClause( param, body ) { return { type: 'CatchClause', param, body }; },
-    throwStmt( argument ) { return { type: 'ThrowStatement', argument }; },
-    returnStmt( argument ) { return { type: 'ReturnStatement', argument }; },
     exprStmt( expression ) { return { type: 'ExpressionStatement', expression, }; },
     blockStmt( body ) { return { type: 'BlockStatement', body }; },
     labeledStmt( label, body ) { return { type: 'LabeledStatement', label, body }; },
@@ -20,6 +19,9 @@ export default {
     forOfStmt( left, right, body ) { return { type: 'ForOfStatement', left, right, body }; },
     breakStmt( label = null ) { return { type: 'BreakStatement', label }; },
     continueStmt( label = null ) { return { type: 'ContinueStatement', label }; },
+    returnStmt( argument ) { return { type: 'ReturnStatement', argument }; },
+    yieldExpr( argument, delegate = false ) { return { type: 'YieldExpression', argument, delegate }; },
+    awaitExpr( argument ) { return { type: 'AwaitExpression', argument }; },
 
     // Declarations
     varDeclaration( kind, declarations ) { return { type: 'VariableDeclaration', kind, declarations } },
@@ -46,7 +48,6 @@ export default {
     chainExpr( expression ) { return { type: 'ChainExpression', expression }; },
     callExpr( callee, args, optional = false ) { return { type: 'CallExpression', callee, arguments: args, optional }; },
     newExpr( callee, args ) { return { type: 'NewExpression', callee, arguments: args }; },
-    awaitExpr( argument ) { return { type: 'AwaitExpression', argument }; },
     taggedTemplateExpr( tag, quasi ) { return { type: 'TaggedTemplateExpression', tag, quasi }; },
     memberExpr( object, property, computed = false, optional = false ) {
         return { type: 'MemberExpression', object, property, computed, optional };

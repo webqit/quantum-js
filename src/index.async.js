@@ -2,6 +2,7 @@
 /**
  * @imports
  */
+import Observer from '@webqit/observer';
 import { _$functionArgs } from './util.js';
 import { $eval } from './runtime/index.js';
 import AbstractStatefulScript from './AbstractStatefulScript.js';
@@ -9,7 +10,7 @@ import State from './runtime/State.js';
 
 /** -------------- APIs */
 
-export { State }
+export { Observer, State }
 
 export function StatefulAsyncFunction( ...args ) {
     const { source, params } = _$functionArgs( args );

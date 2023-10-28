@@ -16,12 +16,9 @@ export default class AbstractStatefulScript {
         this.$program = $eval( $static.sourceType, $static.parseCompileCallback, source, params );
     }
 
-    execute() {
-        return _await( this.$program, ( { runtime } ) => {
-            runtime.abort();
-            return runtime.execute( () => new State( runtime ) );
-        } );
-    }
+    execute() { return _await( this.$program, ( { createRuntime } ) => createRuntime().execute() ); }
+
+    bind( thisContext ) { return _await( this.$program, ( { createRuntime } ) => createRuntime( thisContext ) ); }
 
     toString( $fSource = false ) {
         return _await( this.$program, ( { compiledSource } ) => {

@@ -47,17 +47,22 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
             if ( runtimeParams.compileFunction ) return runtimeParams.compileFunction( source, params );
             return new ( asyncEval ? ( async function() {} ).constructor : Function )( ...params.concat( source ) );
         };
-        let main = $eval( [ compiledSource.identifier + '' ], compiledSource + '' );
-        if ( runtimeParams.thisContext ) { main = main.bind( runtimeParams.thisContext ); }
-        // There's always a global scope
-        let contextType = 'global', scope = new Scope( undefined, contextType, globalThis );
-        // Then this, for script scope, which may also directly reflect/mutate any provided "env"
-        if ( sourceType.endsWith( 'script' ) || env ) { contextType = 'env'; scope = new Scope( scope, contextType, env ); }
-        // Or this for module scope. And where "env" was provided, the "env" scope above too
-        if ( sourceType === 'module' ) { contextType = 'module'; scope = new Scope( scope, contextType ); }
-        const runtime = new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compiledSource.originalSource }, scope, main );
-        return [ 'function', 'async-function' ].includes( sourceType )
-            ? runtime.execute() // Produces the actual stateful function designed above
-            : { runtime, compiledSource };
+        const main = $eval( [ compiledSource.identifier + '' ], compiledSource + '' );
+        const isFunction = [ 'function', 'async-function' ].includes( sourceType );
+        const createRuntime = thisContext => {
+            let $main = main;
+            if ( thisContext ) { $main = $main.bind( thisContext ); }
+            // There's always a global scope
+            let contextType = 'global', scope = new Scope( undefined, contextType, globalThis );
+            // Then this, for script scope, which may also directly reflect/mutate any provided "env"
+            if ( sourceType.endsWith( 'script' ) || env ) { contextType = 'env'; scope = new Scope( scope, contextType, env ); }
+            // Or this for module scope. And where "env" was provided, the "env" scope above too
+            if ( sourceType === 'module' ) { contextType = 'module'; scope = new Scope( scope, contextType ); }
+            return new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compiledSource.originalSource, isStatefulFunction: !isFunction }, scope, $main );
+
+        };
+        return isFunction
+            ? createRuntime().execute() // Produces the actual stateful function designed above
+            : { createRuntime, compiledSource };
     } );
 }

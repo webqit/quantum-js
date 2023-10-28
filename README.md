@@ -47,15 +47,34 @@ setTimeout(() => count = 10, 500);
 
 Here, you are able to write code that can *statically* reflect changes to state in *micro* details, such that the state of your program is always in sync with the rest of the program at any given point!
 
-What do we have in all?
+## Idea
 
-No more having to explicitly model relationships in your code or concern yourself with how changes propagate throughout your code! Just write "stateful" programs! Everything else is best left to a highly-optimised engine!
+Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives, and sometimes some other means to that end.
 
-And what's more? Having all of it under the hood as a runtime extension, instead of as a syntax extension to the language, brings us to a maximum authoring experience; letting us do more by a large margin:
-+ retain all of JavaScript syntax across reactive/non-reactive code; in other words, write universal JavaScript in all!
-+ write much cleaner, leaner code!
+<details><summary>Learn more</summary>
 
-Stateful is a new category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
+Whether it's an assignment expression that sets or changes the data held in a local variable (`a = b`), or a delete expression that mutates some object property (`delete c.d`), it's all *effect* producing an *end state*! (And a large program is just many of these at play, interspersed with control flow structures!)
+
+What we don't get with how this works naturally is having end state automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is really what we try to acheive in an alternative approach.
+
+</details>
+
+If we could get the JS runtime to add "statefulness" to how it already works - i.e. having each effect automatically maintain their end state (thus giving us a *stateful program* as a whole), we would have unnecessitated the manual way and unlocked many new possibilities!
+
+<details><summary>Learn more</summary>
+
+Many new things here for free when machine-level concepts are indeed left to the machine:
+
++ A level of precision and performance that could never be attained manually
++ A maximum authoring experience and much cleaner, leaner code; by a large margine
+
+</details>
+
+But fun question: does it really work? You want to see!
+
+<!--
+
+It's really a new category here in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
 
 ## Update Model
 
@@ -98,19 +117,20 @@ Of course, our current linear update model just makes everything many "x" easier
 > Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
 
 Armed with this simple principle of operation, you can go pretty any length without breaking a sweat!
+-->
 
 ## Creating Stateful Programs
 
-Stateful JS comes as a language-level feature and no setup or build step is required! (Polyfill just ahead!)
+This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for entire programs: "Stateful Execution Mode" (or "Stateful Mode" for short; much like "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
 
-Here, you can write stateful programs at either the function level or program level.
+Given a language-level feature, no setup or build step is required! (Polyfill just ahead!)
 
-### At the Function Level
+### Stateful Functions
 
-You can designate a function as stateful using a double star notation (similar to [how generator functions look](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)):
+You can designate a function as stateful using a double star notation; similar to [how generator functions look](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
 ```js
-// As function declaration
+// Stateful function declaration
 function** bar() {
   let count = 5;
   let doubleCount = count * 2;
@@ -120,7 +140,7 @@ bar();
 ```
 
 ```js
-// As async function declaration
+// Stateful async function declaration
 async function** bar() {
   let count = await 5;
   let doubleCount = count * 2;
@@ -129,17 +149,17 @@ async function** bar() {
 await bar();
 ```
 
-<details><summary>and in just how a function works in JavaScript</summary>
+<details><summary>...and in just how a function works in JavaScript</summary>
 
 ```js
-// As function expression, optionally async
+// Stateful function expression, optionally async
 const bar = function** () {
   // Function body
 }
 ```
 
 ```js
-// As object property, optionally async
+// Stateful object property, optionally async
 const foo = {
   bar: function** () {
     // Function body
@@ -148,7 +168,7 @@ const foo = {
 ```
 
 ```js
-// As object method, optionally async
+// Stateful object method, optionally async
 const foo = {
   **bar() {
     // Function body
@@ -157,7 +177,7 @@ const foo = {
 ```
 
 ```js
-// As class method, optionally async
+// Stateful class method, optionally async
 class Foo {
   **bar() {
     // Function body
@@ -170,7 +190,7 @@ class Foo {
 And you can acheive the same using Stateful Function constructors:
 
 ```js
-// As function constructor
+// Stateful function constructor
 const bar = StatefulFunction(`
   let count = 5;
   let doubleCount = count * 2;
@@ -180,7 +200,7 @@ bar();
 ```
 
 ```js
-// As async function constructor
+// Stateful async function constructor
 const bar = StatefulAsyncFunction(`
   let count = await 5;
   let doubleCount = count * 2;
@@ -189,7 +209,7 @@ const bar = StatefulAsyncFunction(`
 await bar();
 ```
 
-<details><summary>in just how <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function">function constructors</a> work in JavaScript</summary>
+<details><summary>...and in just how <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function">function constructors</a> work in JavaScript</summary>
 
 ```js
 // With function parameters
@@ -208,7 +228,7 @@ class Foo {
 }
 ```
 
-This also includes the fact that, unlike normal function declarations and expressions that can see their surrounding scope, code in function constructors can see only the global scope:
+Well, this also includes the fact that, unlike normal function declarations and expressions that can see their surrounding scope, code in function constructors can see only the global scope:
 
 ```js
 let a;
@@ -224,12 +244,12 @@ bar();
 
 </details>
 
-### At Program Level
+### Stateful Mode
 
-Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us do just that:
+Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
 
 ```js
-// As regular JavaScript
+// Stateful regular JS
 const program = new StatefulScript(`
   let count = 5;
   let doubleCount = count * 2;
@@ -239,7 +259,7 @@ program.execute();
 ```
 
 ```js
-// As module
+// Stateful module
 const program = new StatefulModule(`
   let count = await 5;
   let doubleCount = count * 2;
@@ -250,10 +270,12 @@ await program.execute();
 
 These will run in the global scope!
 
-<details><summary>The latter does certainly let you use <code>import</code> and <code>export</code> statements</summary>
+The latter does certainly let you use `import` and `export` statements!
+
+<details><summary>Exanple</summary>
 
 ```js
-// As module
+// Stateful module
 const program = new StatefulModule(`
   import module1, { module2 } from 'package-name';
   import { module3 as alias } from 'package-name';
@@ -265,10 +287,10 @@ const program = new StatefulModule(`
 
 </details>
 
-A related work, [OOHTML](https://github.com/webqit/oohtml), takes this concept further to let us have stateful scripts:
+Now, this goes a step further to let us have "Stateful Scripts" - as may be seen in a related work, [OOHTML](https://github.com/webqit/oohtml):
 
 ```html
-<!-- As classic script -->
+<!-- Stateful classic script -->
 <script stateful>
   let count = 5;
   let doubleCount = count * 2;
@@ -277,7 +299,7 @@ A related work, [OOHTML](https://github.com/webqit/oohtml), takes this concept f
 ```
 
 ```html
-<!-- As module script -->
+<!-- Stateful module script -->
 <script type="module" stateful>
   let count = await 5;
   let doubleCount = count * 2;
@@ -285,10 +307,11 @@ A related work, [OOHTML](https://github.com/webqit/oohtml), takes this concept f
 </script>
 ```
 
-<details><summary>And the ideas there are powerful enough to simplify how we build single page applications</summary>
+And the ideas there are powerful enough to simplify how we build single page applications!
+
+<details><summary>Sneak peak</summary>
 
 ```html
-<!-- With the "scoped" attribute -->
 <main id="page1">
   <script scoped stateful>
 
@@ -299,7 +322,6 @@ A related work, [OOHTML](https://github.com/webqit/oohtml), takes this concept f
 ```
 
 ```html
-<!-- With the "scoped" attribute -->
 <main id="page2">
   <script type="module" scoped stateful>
 
@@ -311,7 +333,7 @@ A related work, [OOHTML](https://github.com/webqit/oohtml), takes this concept f
 
 </details>
 
-Other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
+Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
 
 ## Consuming Stateful Programs
 
@@ -361,7 +383,7 @@ Observer.observe(state, 'value', mutation => {
 For module programs, the `State` object also features an `exports` property that exposes the module's exports:
 
 ```js
-// As module
+// Stateful module
 const program = new StatefulModule(`
   import module1, { module2 } from 'package-name';
   import { module3 as alias } from 'package-name';
@@ -508,7 +530,7 @@ bar();
 
 ### Bare Variables in an *Observable* Scope Will Work the Same Way
 
-Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access these variables in the zurrounding zcope would only be able to catch updates to their properties if they are objects, but not the variable replacement itself! 
+Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access these variables in the zurrounding zcope would only be able to catch updates to their properties if they are objects, but not the variable replacement themselves! 
 
 This may eventually change, or not change, for Stateful programs! But certain scopes are always observable:
 
@@ -556,7 +578,7 @@ Where a function runs within a Stateful program itself, everything just works; b
   // Live scope
 
   let count = 0;
-  setInterval(() => count++, 500); // Live updates, even though not from within a stateful scope
+  setInterval(() => count++, 500); // Live updates, even though not from within a stateful closure
 
   console.log('From main stateful scope: ', count); // Reflected here
 
@@ -603,7 +625,7 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule
 
 </details>
 
-While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructable form of Stateful Functions - which give you the equivalent of the normal function forms!
+While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
 
 | API | Runs as... |
 | :------- | :----------- |
@@ -652,8 +674,6 @@ program();
 
 ### Stateful Functions Lite
 
-<details><summary>See details...</summary>
-
 It is possible to use a lighter version of Stateful JS where the bundle size of the main build above will impact *initial* application load. The *Lite* version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>Load from a CDN</summary>
@@ -689,6 +709,8 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State } fro
 
 </details>
 
+<details><summary>See details</summary>
+
 The lazy-loading strategy here could only comfortably give you equivalent APIs to "async" program types!
 
 | API | Runs as... |
@@ -715,7 +737,7 @@ console.log(state.value); // 40
 
 But these APIs also take advantage of the fact that they can do compilation for their source types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
 
-But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly as if short-circuiting the lazy-loading strategy of the Lite APIs:
+But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
 
 ```html
 <head>
@@ -780,7 +802,7 @@ customElements.define('click-counter', class extends HTMLElement {
 
 Even outside of UI code, we often still need to write reactive logic!
 
-In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties!
+In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
 
 ```js
 class MyURL {
@@ -828,7 +850,7 @@ console.log(url.href); // http://foo.dev/path
 
 ## Documentation
 
-Visit the [docs](https://github.com/webqit/stateful-js/wiki) for details around [Formal Syntax](https://github.com/webqit/stateful-js/wiki#formal-syntax), [Heuristics](https://github.com/webqit/stateful-js/wiki#heuristics), [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control) and [Functions](https://github.com/webqit/stateful-js/wiki#functions), [API](https://github.com/webqit/stateful-js/wiki#api), etc.
+Visit [project wiki](https://github.com/webqit/stateful-js/wiki).
 
 ## Getting Involved
 

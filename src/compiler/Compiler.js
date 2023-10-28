@@ -4,7 +4,7 @@
  */
 import { generate as astringGenerate } from 'astring';
 import $fIdentifier from './$fIdentifier.js';
-import $fRest from './$fRest.js';
+import $fDownstream from './$fDownstream.js';
 import Scope from './Scope.js';
 import Node from './Node.js';
 
@@ -105,8 +105,8 @@ export default class Compiler {
             if ( $state.flowControl?.size && $state.node.type === 'IfStatement' ) {
                 const restNodes = nodes.slice( i + 1 );
                 if ( restNodes.length ) {
-                    const restBlock = new $fRest( restNodes );
-                    return build.concat( this.transformNode( restBlock ) );
+                    const downstream = new $fDownstream( restNodes );
+                    return build.concat( this.transformNode( downstream ) );
                 }
             }
             return eat.call( this, build, i + 1 );
@@ -149,6 +149,11 @@ export default class Compiler {
 
     $call( callee, ...args ) { return Node.callExpr( this.$path( callee ), args ); }
 
+    $typed( as, value, name = null ) {
+        const $namePart = name ? [ Node.literal( name ) ] : [];
+        return this.$call( 'typed', Node.literal( as ), value, ...$namePart );
+    }
+
     $obj( obj ) {
         const entries = Object.entries( obj ).map( ( [ name, value ] ) => Node.property( Node.identifier( name ), Array.isArray( value ) ? Node.arrayExpr( value ) : value ) );
         return Node.objectExpr( entries );
@@ -159,16 +164,15 @@ export default class Compiler {
         return Node.arrowFuncExpr( null, params, body, this.currentEntry.hoistedAwaitKeyword );
     }
 
-    $var( kind, $serial, id, init ) {
-        const closure = init ? this.$closure( Node.assignmentExpr( id, init ) ) : Node.identifier( 'undefined' );
-        const declareExpr = Node.varDeclaration( kind, [ Node.varDeclarator( id ) ] );
-        const autorunExpr = Node.exprStmt( this.$call( kind, Node.literal( id ), $serial, closure ) );
-        return [ declareExpr, autorunExpr ];
+    $var( kind, $serial, id, init, ...$rest ) {
+        const closure = init ? this.$closure( [ this.currentScope.get$fIdentifier( '$f' ) ], init ) : Node.identifier( 'undefined' );
+        const autorunExpr = Node.exprStmt( this.$call( kind, Node.literal( id ), $serial, closure, ...$rest ) );
+        return [ autorunExpr ];
     }
 
-    $update( left, right ) {
-        const closure = this.$closure( Node.assignmentExpr( left, right ) );
-        return this.$call( 'update', Node.literal( left.name ), closure );
+    $update( left, right, ...$rest ) {
+        const closure = this.$closure( right );
+        return this.$call( 'update', Node.literal( left.name ), closure, ...$rest );
     }
 
     $autorun( type, ...rest ) {
@@ -176,7 +180,7 @@ export default class Compiler {
         const $serial = rest.pop();
         const spec = rest.pop() || {};
         const $spec = Object.keys( spec ).length ? [ this.$obj( spec ) ] : [];;
-        const closure = this.$closure( ( spec.args || [] ).slice( 0 ), body );
+        const closure = this.$closure( [ this.currentScope.get$fIdentifier( '$f' ) ], body );
         let autorun = this.$call( 'autorun', Node.literal( type ), ...$spec, $serial, closure );
         if ( closure.async ) { autorun = Node.awaitExpr( autorun ); }
         return Node.exprStmt( autorun );
@@ -208,7 +212,7 @@ export default class Compiler {
             if ( [ 'break', 'continue' ].includes( cmd.value ) && arg.endpoint ) {
                 const exitSignature = `${ cmd.value }|${ arg.value || arg.name }`;
                 if ( seen.has( exitSignature ) ) return;
-                const exitCheck = this.$call( 'nowRunning.flowControlApplied', cmd, arg );
+                const exitCheck = this.$call( 'flowControlApplied', cmd, arg );
                 const exitAction = Node.exprStmt( Node.identifier( cmd.value ) );
                 pushIfStmt( exitCheck, exitAction );
                 flowControl.delete( cmd );
@@ -216,7 +220,7 @@ export default class Compiler {
             } else {  exitStrategy_return = true; }
         } );
         if ( exitStrategy_return ) {
-            const exitCheck = this.$call( 'nowRunning.flowControlApplied' );
+            const exitCheck = this.$call( 'flowControlApplied' );
             const exitAction = Node.exprStmt( Node.identifier( 'return' ) );
             pushIfStmt( exitCheck, exitAction );
         }
@@ -301,7 +305,7 @@ export default class Compiler {
 
         const isStatefulFunctionFlag = Node.identifier( node.isStatefulFunction || false );
         const isDeclaration = Node.identifier( node.type === 'FunctionDeclaration' );
-        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'run', isStatefulFunctionFlag, closure ) ) ] );
+        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', isStatefulFunctionFlag, closure ) ) ] );
 
         const metarisation = reference => this.$call( 'function', isDeclaration, isStatefulFunctionFlag, $serial, reference/* reference to the declaration */ );
         let resultNode = transform.call( Node, id, params, $body, node.async, node.expresion, node.generator );
@@ -310,7 +314,10 @@ export default class Compiler {
             resultNode = [ resultNode, Node.exprStmt( metarisation( id ) ) ];
             // Is export?
             if ( this.currentEntry.isExport ) {
-                const spec = [ id, Node.literal( this.currentEntry.isExport === 'as-default' ? 'default' : id ) ];
+                const spec = [ Node.literal( id ), $serial ];
+                if ( this.currentEntry.isExport === 'as-default' ) {
+                    spec.push( Node.literal( 'default' ) );
+                }
                 this.exports.add( [ Node.arrayExpr( spec ) ] );
             }
         } else if ( !this.currentEntry.isMethod ) { resultNode = metarisation( resultNode ); }
@@ -324,6 +331,7 @@ export default class Compiler {
     transformClassExpression( node ) { return this.transformClass( Node.classExpression, ...arguments ); }
     transformClass( transform, node ) {
         let { id, body, superClass } = node;
+        if ( superClass ) { superClass = this.transformNode( superClass ); }
         const methods = new Set;
         body = this.pushScope( node, () => {
             // On the inner scope
@@ -341,7 +349,10 @@ export default class Compiler {
             resultNode = [ resultNode, Node.exprStmt( metarisation( id ) ) ];
             // Is export?
             if ( this.currentEntry.isExport ) {
-                const spec = [ id, Node.literal( this.currentEntry.isExport === 'as-default' ? 'default' : id ) ];
+                const spec = [ Node.literal( id ), this.$serial( node ) ];
+                if ( this.currentEntry.isExport === 'as-default' ) {
+                    spec.push( Node.literal( 'default' ) );
+                }
                 this.exports.add( [ Node.arrayExpr( spec ) ] );
             }
         } else { resultNode = metarisation( resultNode ); }
@@ -440,7 +451,7 @@ export default class Compiler {
         const ref = this.currentScope.find( node );
         if ( !ref && node.name ) { this.currentScope.$fIdentifiersNoConflict( node.name ); }
         // Static mode?
-        if ( node.type === 'ThisExpression' || [ 'param', 'self' ].includes( ref?.type ) || [ 'arguments' ].includes( node.name ) || ( ref && ref.type !== 'import' && !ref.willUpdate ) ) {
+        if ( node.type === 'ThisExpression' || [ 'param', 'self' ].includes( ref?.type ) || [ 'arguments' ].includes( node.name ) ) {
             if ( this.currentEntry.trail ) return this.$call( 'obj', node, ...this.$trail() );
             return node;
         }
@@ -452,45 +463,35 @@ export default class Compiler {
     transformMemberExpression( node ) {
         let { object, property, computed, optional } = node;
         if ( computed ) { property = this.transformNode( property ); }
-        object = this.transformNode( object, { trail: ( this.currentEntry.trail || 0 ) + 1 } );
-        return Node.memberExpr( object, property, computed, optional );
+        let $object = this.transformNode( object, { trail: ( this.currentEntry.trail || 0 ) + 1 } );
+        if ( object.typed ) {
+            $object = this.$typed( object.typed, $object, Node.literal( property ) );
+        }
+        return Node.memberExpr( $object, property, computed, optional );
     }
 
     /* DECLARATIONS & MUTATIONS (SIGNALS) */
 
     transformVariableDeclaration( node ) {
-        const staticMode = this.currentEntry.static || node.kind === 'const';
         const isExport = this.currentEntry.isExport;
         // Expanded declarations?
         const entries = node.declarations.reduce( ( decs, dec ) => {
-            if ( !staticMode && [ 'ObjectPattern', 'ArrayPattern' ].includes( dec.id.type ) ) {
+            if ( [ 'ObjectPattern', 'ArrayPattern' ].includes( dec.id.type ) ) {
                 return decs.concat( this.expandPattern( dec.id, dec.init ) );
             }
             return decs.concat( dec );
         }, [] );
-        // Static mode?
-        if ( staticMode ) {
-            const exports = [];
-            const declaration = Node.varDeclaration( node.kind, entries.reduce( ( decs, dec ) => {
-                const signals = new Set;
-                const init = this.transformNode( dec.init, { static: true } );
-                const id = this.transformSignal( dec.id, node.kind, signals );
-                signals.forEach( s => {
-                    this.currentEntry.signals?.add( s );
-                } );
-                // Is export?
-                if ( isExport ) { exports.push( ...[ ...signals ].map( id => Node.arrayExpr( [ id, Node.literal( id ) ] ) ) ); }
-                return decs.concat( Node.varDeclarator( id, init ) );;
-            }, [] ) );
-            if ( exports.length ) { this.exports.add( exports ); }
-            return declaration;
-        }
         // Dynamic assignment construct
         return entries.reduce( ( stmts, dec ) => {
             const $serial = this.$serial( dec );
-            const init = this.transformNode( dec.init );
+            let $init = this.transformNode( dec.init );
             this.transformSignal( dec.id, node.kind, this.currentEntry.signals );
-            const $stmts = stmts.concat( this.$var( node.kind, $serial, dec.id, init ) );
+            let $rest = [];
+            if ( dec.restOf ) {
+                $init = this.$typed( dec.init.typed, $init );
+                $rest.push( this.$obj( { restOf: dec.restOf, type: Node.literal( dec.init.typed === 'iterable' ? 'array' : 'object' ) } ) );
+            }
+            const $stmts = stmts.concat( this.$var( node.kind, $serial, dec.id, $init, ...$rest ) );
             // Is export?
             if ( isExport && !( dec.id instanceof $fIdentifier ) ) {
                 const spec = [ Node.literal( dec.id ), $serial ];
@@ -526,16 +527,21 @@ export default class Compiler {
                     return stmts.concat( assignmentExpr( dec.left, dec.right ) );
                 }
                 // Actual operation
-                const init = this.transformNode( dec.init );
-                const closure = this.$closure( Node.assignmentExpr( dec.id, init ) );
+                let $init = this.transformNode( dec.init );
                 // As intermediate variable?
                 if ( dec.id instanceof $fIdentifier ) {
                     const $serial = this.$serial( dec );
-                    return stmts.concat( this.$var( 'let', $serial, dec.id, init ) );
+                    return stmts.concat( this.$var( 'let', $serial, dec.id, $init ) );
                 }
                 // As update!
                 this.transformSignal( dec.id, 'update', this.currentEntry.signals ); // An identifier
-                return stmts.concat( this.$update( dec.id, init ) );
+                let $rest = [];
+                // A Rest parameter?
+                if ( dec.restOf ) {
+                    $init = this.$typed( dec.init.typed, $init );
+                    $rest.push( this.$obj( { restOf: dec.restOf, type: Node.literal( dec.init.typed === 'iterable' ? 'array' : 'object' ) } ) );
+                }
+                return stmts.concat( this.$update( dec.id, $init, ...$rest ) );
             }, [] );
             // As individual statements?
             if ( expandableAsStatements ) return declarations;
@@ -546,7 +552,8 @@ export default class Compiler {
         // Other: left is an identifier
         right = this.transformNode( right );
         this.transformSignal( left, 'update', this.currentEntry.signals );
-        return this.$call( 'update', Node.literal( left ), this.$closure( Node.assignmentExpr( left, right, node.operator ) ) );
+        const currentValueLocalIdentifier = this.currentScope.getRandomIdentifier( '$current', false );
+        return this.$call( 'update', Node.literal( left ), this.$closure( [ currentValueLocalIdentifier ], Node.assignmentExpr( currentValueLocalIdentifier, right, node.operator.replace( '====', '' ) ) ) );
     }
 
     transformAssignmentPattern( node ) {
@@ -560,6 +567,8 @@ export default class Compiler {
         return Node.assignmentPattern( left, right );
     }
 
+    /*
+    NO-MORE
     transformObjectPattern( node ) {
         const properties = node.properties.map( property => {
             let { key, value } = property;
@@ -582,20 +591,33 @@ export default class Compiler {
         } );
         return Node.arrayPattern( elements );
     }
+    */
     
     expandPattern( a, b, withIntermediates = true ) {
         const declarations = [], _this = this;
-        if ( ![ 'Identifier' ].includes( b.type ) && withIntermediates ) {
+        if ( ![ 'Identifier', 'Literal' ].includes( b.type ) && withIntermediates ) {
             const intermediateLocalIdentifier = Node.withLoc( _this.currentScope.getRandomIdentifier( '$rand', false ), b );
             intermediateLocalIdentifier.originalB = true;
+            b.typed = a.type === 'ObjectPattern' ? 'desctructurable' : 'iterable';
             declarations.push( Node.withLoc( Node.varDeclarator( intermediateLocalIdentifier, b ), b ) );
             b = intermediateLocalIdentifier;
         }
-        ( function expand( patternEntries, $init ) {
+        ( function expand( patternEntries, $init, isObjectType ) {
+            $init.typed = isObjectType ? 'desctructurable' : 'iterable';
+            const localIdentifiers = [];
             for ( let i = 0; i < patternEntries.length; i ++ ) {
                 let entry = patternEntries[ i ], key = i, value = entry;
-                const isProperty = entry.type === 'Property';
-                if ( isProperty ) { ( { key, value } = entry ); }
+                if ( entry === null ) {
+                    localIdentifiers.push( i );
+                    continue;
+                }
+                if ( entry.type === 'RestElement' ) {
+                    const dec = Node.withLoc( Node.varDeclarator( entry.argument, $init ), entry );
+                    dec.restOf = localIdentifiers.map( v => Node.literal( v ) );
+                    declarations.push( dec );
+                    continue;
+                }
+                if ( isObjectType ) { ( { key, value } = entry ); }
                 else { key = Node.literal( key ); }
                 // Obtain default value and local identifier
                 let defaultValue, localIdentifier;
@@ -607,25 +629,24 @@ export default class Compiler {
                     localIdentifier = value;
                 }
                 // Generate for let and var
-                let init = Node.memberExpr( $init, key, isProperty ? entry.computed : true );
+                let init = Node.memberExpr( $init, key, isObjectType ? entry.computed : true );
                 if ( defaultValue ) { init = Node.logicalExpr( '||', init, defaultValue ); }
                 if ( localIdentifier ) {
                     declarations.push( Node.withLoc( Node.varDeclarator( localIdentifier, init ), entry ) );
+                    localIdentifiers.push( key );
                 } else if ( value.type === 'MemberExpression' || ( value.type === 'ChainExpression' && ( value = value.expression ) ) ) {
                     declarations.push( Node.withLoc( Node.assignmentExpr( value, init ), entry ) );
                 } else if ( value.elements || value.properties ) {
-                    const numDeclarationsAtLevel = value.properties 
-                        ? value.properties
-                        : value.elements
-                    if ( withIntermediates && numDeclarationsAtLevel.length > 1 ) {
+                    const numDeclarationsAtLevel = ( value.properties ? value.properties : value.elements ).length > 1;
+                    if ( withIntermediates && numDeclarationsAtLevel ) {
                         const intermediateLocalIdentifier = _this.currentScope.getRandomIdentifier( '$rand', false );
                         declarations.push( Node.withLoc( Node.varDeclarator( intermediateLocalIdentifier, init ), entry ) );
                         init = intermediateLocalIdentifier;
                     }
-                    expand( ( value.elements || value.properties ), init );
+                    expand( ( value.elements || value.properties ), init, value.properties && true );
                 }
             }
-        } )( ( a.elements || a.properties ), b );
+        } )( ( a.elements || a.properties ), b, a.properties && true );
         return declarations;
     }
 
@@ -634,7 +655,8 @@ export default class Compiler {
             this.transformSignal( node.argument, 'update', this.currentEntry.signals );
             const currentValueLocalIdentifier = this.currentScope.getRandomIdentifier( '$current', false );
             const expr = Node.binaryExpr( node.operator === '--' ? '-' : '+', currentValueLocalIdentifier, Node.literal( 1 ), true/* being now a bare value */ );
-            return this.$call( 'update', Node.literal( node.argument.name ), this.$closure( [ currentValueLocalIdentifier ], expr ), Node.identifier( node.prefix ) );
+            const kind = ( node.prefix ? 'pre' : 'post' ) + ( node.operator === '--' ? 'dec' : 'inc' );
+            return this.$call( 'update', Node.literal( node.argument.name ), this.$closure( [ currentValueLocalIdentifier ], expr ), this.$obj( { kind: Node.literal( kind ) } ) );
         }
         return transform.call( Node, node.operator, this.transformNode( node.argument ), node.prefix );
     }
@@ -698,28 +720,29 @@ export default class Compiler {
         const kind = node.type === 'WhileStatement' ? 'while' : ( node.type === 'DoWhileStatement' ? 'do-while' : 'for' );
         const $serial = this.$serial( node );
         return this.pushScope( node, () => {
-            let createNodeCallback, init, test, update, outerStmts = [], signals = new Set;
-            
+            const $fIdentifier = this.currentScope.get$fIdentifier( '$f' );
+            let createNodeCallback;
+            const spec = {
+                kind: Node.literal( kind ),
+                label: this.currentEntry.parentNode.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
+            };
             if ( kind === 'for' ) {
-                const $init = this.transformNode( node.init );
-                if ( Array.isArray( $init ) && $init.length > 1 ) {
-                    outerStmts.push( ...$init );
-                    init = null;
-                } else { init = [].concat( $init )[ 0 ]; }
-                [ test, update ] = this.transformNodes( [ node.test, node.update ], { signals } );
+                const init = Node.blockStmt( this.transformNode( node.init ) );
+                spec.init = this.$closure( [ $fIdentifier ], init );
+                const test = this.transformNode( node.test );
+                spec.test = this.$closure( [ $fIdentifier ], test );
+                const update = this.transformNode( node.update );
+                spec.advance = this.$closure( [ $fIdentifier ], update );
                 createNodeCallback = $body => transform.call( Node, init, test, update, $body );
             } else {
-                test = this.transformNode( node.test );
+                const test = this.transformNode( node.test );
+                spec.test = this.$closure( [ $fIdentifier ], test );
                 createNodeCallback = $body => transform.call( Node, test, $body );
             }
             const body = this.transformNode( node.body );
 
-            // Static mode?
-            return createNodeCallback( body );
             if ( this.currentEntry.static ) { return createNodeCallback( body ); }
-
-            const $body = this.$round( { args: [ ...signals ] }, $serial, body );
-            return this.$iteration( kind, $serial, [ ...outerStmts, createNodeCallback( $body ) ] );
+            return this.$autorun( 'iteration', spec, $serial, body );
         } );
     }
 
@@ -734,14 +757,15 @@ export default class Compiler {
                 const [ left, body ] = this.transformNodes( [ node.left, node.body ] );
                 return transform.call( Node, left, right, body );
             }
-
+            // Iteration driver
+            const $fIdentifier = this.currentScope.get$fIdentifier( '$f' );
             const production = this.currentScope.get$fIdentifier( kind === 'for-of' ? '$val' : '$key', false );
             const spec = {
                 kind: Node.literal( kind ),
                 label: this.currentEntry.parentNode.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
-                iteratee: this.$closure( right ),
-                production: Node.literal( production ),
+                parameters: this.$closure( [ $fIdentifier ], Node.arrayExpr( [ Node.literal( production ), right ] ) ),
             };
+            // Iteration round...
             let originalLeft;
             if ( node.left.type === 'VariableDeclaration' ) {
                 const declarator = Node.withLoc( Node.varDeclarator( node.left.declarations[ 0 ].id, production ), node.left );
@@ -766,7 +790,7 @@ export default class Compiler {
         if ( exitTarget?.type === 'SwitchStatement' ) {
             return transform.call( Node );
         }
-        return Node.exprStmt( this.$call( `nowRunning.${ keyword }`, label ), );
+        return Node.exprStmt( this.$call( keyword, label ), );
     }
 
     transformReturnStatement( node ) {
@@ -779,9 +803,7 @@ export default class Compiler {
         const args = argument ? [ cmd, argument ] : [ cmd ];
         this.hoistExitStatement( ...args );
 
-        const hoisting = Node.callExpr(
-            Node.memberExpr( Node.logicalExpr( '||', this.$path( 'nowRunning' ), this.currentScope.get$fIdentifier( '$f' ) ), Node.identifier( 'return' )
-        ), args.slice( 1 ) );
+        const hoisting = this.$call( 'return', ...args.slice( 1 ) );
         if ( !refs.size ) return Node.exprStmt( hoisting );
 
         // Return statement hoisting
@@ -792,10 +814,10 @@ export default class Compiler {
     /* GENERAL */
 
     transformBlockStatement( node ) {
-        if ( node instanceof $fRest ) {
+        if ( node instanceof $fDownstream ) {
             const $serial = this.$serial( node );
             const body = this.transformNodes( node.body );
-            return this.$autorun( 'rest', $serial, Node.blockStmt( body ) );
+            return this.$autorun( 'downstream', $serial, Node.blockStmt( body ) );
         }
         const body = this.pushScope( node, () => this.transformNodes( node.body ) );
         return Node.blockStmt( body );

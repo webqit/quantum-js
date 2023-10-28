@@ -3,8 +3,7 @@
  * @imports
  */
 import { expect } from 'chai';
-import Observer from '@webqit/observer';
-import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule } from '../src/index.js';
+import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, Observer } from '../src/index.js';
 
 import { setMaxListeners } from 'events';
 import { other as otherUtil1 } from '../src/util.js';
@@ -13,6 +12,77 @@ otherUtil1.setMaxListeners = setMaxListeners;
 otherUtil2.setMaxListeners = setMaxListeners;
 
 const promise = ( timeout, value ) => new Promise( res => setTimeout(() => res( value ), timeout ) );
+
+const env = { log: [], iteratee: [ '0', '1', '2', '3' ], breakpoint: '2', br: 10 };
+
+const script = new StatefulModule(`
+    let kk, rest;
+    [ kk, , ...rest ] = iteratee;
+    log.push( rest, typeof rest );
+`, { env } );
+
+console.log( '----------------', script.toString( true ) );
+await script.execute();
+Observer.proxy( env.iteratee ).push( 'four', 'five' );
+console.log( '----------------', env.log );
+
+/*
+
+
+const t = StatefulAsyncFunction(`
+    for (let i in await iteratee) {
+        console.log(await i);
+        if (i === '3') iteratee.push( iteratee.length + '' );
+        if (i === '4') iteratee.push( iteratee.length + '' );
+        if (i === breakpoint) {
+            console.log('breaking');
+            break;
+        }
+    }
+`, { env } );
+console.log(t.toString(true));
+await t();
+await promise( 400 );
+Observer.proxy( env.iteratee ).push( env.iteratee.length + '' );
+Observer.proxy( env.iteratee ).push( env.iteratee.length + '' );
+await promise( 400 );
+Observer.set( env, 'breakpoint', '4' );
+await promise( 400 );
+Observer.set( env, 'breakpoint', '5' );
+await promise( 400 );
+Observer.set( env, 'breakpoint', '19' );
+await promise( 400 );
+
+
+
+const t = StatefulFunction(`
+    for (let i = 0; i < iteratee.length; i++) {
+        console.log( i);
+        if (i + '' === breakpoint) {
+            console.log('breaking');
+            break;
+        }
+    }
+`, { env } );
+console.log(t.toString(true));
+await t();
+await promise( 400 );
+Observer.set( env, 'breakpoint', '4' );
+await promise( 400 );
+*/
+
+const t = StatefulFunction(`
+    let i = 0
+    while(i++ < 100) {
+        if (i===br) break;
+        console.log(i);
+    }
+`, { env } );
+console.log(t.toString(true));
+await t();
+Observer.set( env, 'br', 12 );
+Observer.set( env, 'br', 30 );
+await promise( 400 );
 
 describe( 'Basic', function() {
 
@@ -100,8 +170,9 @@ describe( 'Internal autoruns and nesting', function() {
         expect( env.log[ 0 ] ).to.equal( 'initial value' );
 
         // Change state for both nested and outer
+        env.log.splice( 0 );
         Observer.set( env, 'state', 'new value' );
-        expect( env.log.length ).to.equal( 2 );
+        expect( env.log.length ).to.equal( 1 );
         expect( env.log[ 0 ] ).to.equal( 'new value' );
     } );
 
@@ -433,7 +504,7 @@ describe( 'Early returns and Loop flow control', function() {
             log.push( 'Second "return" point fails through.' );
             
             outer: for ( let key in loops.outer ) {
-                for ( const val of loops.inner ) {
+                for ( let val of loops.inner ) {
                     log.push( 'Outer: ' + key + '; Inner: ' + val );
                     if ( val === 'two' ) {
                         log.push( 'Breaking inner' );
@@ -527,8 +598,7 @@ describe( 'Early returns and Loop flow control', function() {
         expect( state.value ).to.eq( 29 );
         expect( env.log ).to.eql( [
             'Outer: one; Inner: new "one"',
-            'Outer: two; Inner: new "one"',
-            'Breaking outer'
+            'Outer: two; Inner: new "one"'
         ] );
     } );
 

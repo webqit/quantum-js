@@ -11,21 +11,26 @@ export default class Signal extends EventTarget {
     subscribers = new Set;
     signals = new Map;
 
-    constructor( context, state ) {
+    constructor( context, type, state ) {
         super();
         this.context = context;
         this.context?.once( () => this.abort() );
         this.once( () => this.watchMode( false ) );
+        this.type = type;
         this.state = state;
     }
 
     get name() { return [ ...this.context?.signals.keys() || [] ].find( k => this.context.signals.get( k ) === this ); }
    
-    signal( name ) {
+    signal( name, type = 'prop' ) {
         let signal = this.signals.get( name );
         if ( !signal ) {
             // Initialization
-            signal = new Signal( this, this.type === 'objects' ? name : ( typeof this.state === 'object' && this.state ? Observer.get( this.state, name ) : undefined ) );
+            signal = new Signal(
+                this,
+                type,
+                type === 'object' ? name : ( _isTypeObject( this.state ) ? Observer.get( this.state, name ) : undefined )
+            );
             this.signals.set( name, signal );
             // Self-start
             if ( this.signals.size === 1 ) { this.watchMode(); }

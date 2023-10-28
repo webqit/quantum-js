@@ -1,6 +1,6 @@
 import Node from "./Node.js";
 
-export default class $fRest {
+export default class $fDownstream {
 
     type = 'BlockStatement';
     $body = [];
