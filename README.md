@@ -602,7 +602,7 @@ Stateful JS may be used today via a polyfill.
 
 > This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-> `47.8` kB min + gz | `179.5` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js)
+> `53.6` kB min + gz | `184.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js)
 
 ```js
 // Destructure from the webqit namespace
@@ -750,7 +750,7 @@ But having been designed as a movable peice, the Stateful JS Compiler is all sti
 
 ## Examples
 
-Using the polyfills, the following examples work today.
+Using the polyfill, the following examples work today.
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
