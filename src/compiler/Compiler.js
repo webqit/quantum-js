@@ -194,40 +194,6 @@ export default class Compiler {
         return this.$autorun( 'iteration', spec, $serial, $body );
     }
 
-    $round( spec, $serial, body ) {
-        // Buildup...
-        const stmts = [ this.$autorun( 'round', spec, $serial, body ) ];
-        // Check/action constructor
-        let prevIf, exitStrategy_return;
-        const pushIfStmt = ( test, consequent ) => {
-            const ifStmt = Node.ifStmt( test, consequent );
-            if ( prevIf ) {
-                prevIf.alternate = ifStmt;
-                prevIf = prevIf.alternate;
-            } else { stmts.push( prevIf = ifStmt ); }
-        };
-        // The loop
-        const flowControl = this.currentEntry.flowControl, seen = new Set;
-        flowControl.forEach( ( arg, cmd ) => {
-            if ( [ 'break', 'continue' ].includes( cmd.value ) && arg.endpoint ) {
-                const exitSignature = `${ cmd.value }|${ arg.value || arg.name }`;
-                if ( seen.has( exitSignature ) ) return;
-                const exitCheck = this.$call( 'flowControlApplied', cmd, arg );
-                const exitAction = Node.exprStmt( Node.identifier( cmd.value ) );
-                pushIfStmt( exitCheck, exitAction );
-                flowControl.delete( cmd );
-                seen.add( exitSignature );
-            } else {  exitStrategy_return = true; }
-        } );
-        if ( exitStrategy_return ) {
-            const exitCheck = this.$call( 'flowControlApplied' );
-            const exitAction = Node.exprStmt( Node.identifier( 'return' ) );
-            pushIfStmt( exitCheck, exitAction );
-        }
-        // Total
-        return Node.blockStmt( stmts );
-    }
-
     /* FLOW CONTROL */
 
     hoistAwaitKeyword() {

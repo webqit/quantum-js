@@ -83,10 +83,6 @@ export default class Autorun extends EventTarget {
         }
     }
 
-    async import( ...args ) { return this.runtime.import( ...args ); }
-
-    async export( ...args ) { return this.runtime.export( ...args ); }
-
     typed( as, value, name = undefined ) {
         const valueType = Array.isArray( value ) ? 'array' : ( value === null ? 'null' : typeof value );
         if ( valueType === as || ( as === 'iterable' && value?.[ Symbol.iterator ] ) || ( as === 'desctructurable' && ![ 'undefined', 'null' ].includes( valueType ) ) ) return value;
@@ -264,6 +260,10 @@ export default class Autorun extends EventTarget {
         } );
         return $class;
     }
+
+    async import( ...args ) { return this.runtime.import( ...args ); }
+
+    async export( ...args ) { return this.runtime.export( ...args ); }
 
     continue( label ) { return this.applyFlowControl( 'continue', label ); }
 

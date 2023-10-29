@@ -440,7 +440,7 @@ state.dispose();
 
 <!-- TODO: Talk about auto-disposals -->
 
-## Interactions with the Outside World
+## Interaction with the Outside World
 
 Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript program can reference outside variables and also make side effects:
 
@@ -452,20 +452,22 @@ function** bar() {
 bar();
 ```
 
-But unlike regular JavaScript, Stateful programs maintain a live relationship with the outside world.
+But unlike regular JavaScript, Stateful programs maintain a live relationship with the outside world:
 
-This means that:
+### with Arbitrary Objects
 
-### Outside Changes Will Be Automatically Reflected
+With any object, every interaction happening at the property level is a live interaction! This means that:
 
-Stateful JS programs will statically reflect changes to any external references that they may depend on:
+#### Mutations to Object Properties from the Outside Will Be Automatically Reflected
+
+Stateful JS programs will statically reflect changes to any property that they may depend on:
 
 ```js
 // External value
-var foo = { baz: 0 };
+const foo = { baz: 0 };
 ```
 
-...whether that reference is made from within program body itself:
+...whether it's a reference made from within program body itself:
 
 ```js
 function** bar() {
@@ -489,8 +491,6 @@ bar();
 foo.baz = 1; // This will now be reflected above
 ```
 
-The above works as Stateful JS uses the Observer API under the hood!
-
 <details><summary>In practice...</summary>
 
 ...since the Observer API isn't yet native, the above `foo.baz = 1` assignment would need to happen via the `Observer.set()` method:
@@ -501,26 +501,26 @@ Observer.set(foo, 'baz', 1);
 
 </details>
 
-### Side Effects Are Observable
+#### Interactions with an Object from the Inside Are Observable
 
-Updates made to the outside scope can be observed using, also, the Observer API:
+Mutations from within a Stateful program may also be observed from the outside:
 
 ```js
 // External value
-var foo = { baz: 0 };
+const foo = { baz: 0 };
 ```
 
 ```js
-// An observer
-function log(mutation) {
-  console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
+function** bar() {
+  foo.baz++;
 }
+```
 
+```js
 // Observe specific property
-Observer.observe(foo, 'baz', log);
-
-// Or, observe all properties
-Observer.observe(foo, mutations => mutations.forEach(log));
+Observer.observe(foo, 'baz', mutation => {
+  console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
+});
 ```
 
 ```js
@@ -528,64 +528,138 @@ Observer.observe(foo, mutations => mutations.forEach(log));
 bar();
 ```
 
-### Bare Variables in an *Observable* Scope Will Work the Same Way
+And if you'd go further with the Observer API, you could even intercept any property access by Stateful programs!
 
-Unlike object properties as above, bare variables in a local scope in JavaScript can't be observed or programatically updated! This means that Stateful programs that can access these variables in the zurrounding zcope would only be able to catch updates to their properties if they are objects, but not the variable replacement themselves! 
-
-This may eventually change, or not change, for Stateful programs! But certain scopes are always observable:
-
-#### The Global Scope
-
-Given its object-like nature, the global scope is very much observable by the Observer API, and thus, by Stateful programs!
-
-Above, assuming that we've used the `var` keyword outside of a function and module scope, `foo` is declared in the global scope (i.e. `globalThis.foo`)! Now, if we replaced the whole variable itself, it would also be reflected in our stateful program:
+<details><summary>Example</summary>
 
 ```js
-foo = { baz: 1 };
-```
-
-<details><summary>In practice...</summary>
-
-...since the Observer API isn't yet native, the above `foo = { baz: 1 }` update would need to happen via the `Observer.set()` method:
-
-```js
-Observer.set(globalThis, 'foo', { baz: 1 });
+// Intercept specific property
+Observer.intercept(foo, {
+    get:(e, recieved, next) => {
+        if (e.key === 'props') {
+          return next(['prop1', 'prop2']);
+        }
+        return next();
+    },
+});
 ```
 
 </details>
 
-Also, you could observe any updates to `foo` (i.e. side effect) as your stateful program runs:
+### with the Global Scope
+
+For global variables, interactions happening directly at the variable level, not just at the property level this time, are live interactions! (Here we take advantage of the fact that global variables are really *properties* of a real *object* - the `globalThis` - which serves as the global scope!)
+
+This means that:
+
+#### Changes to the Global Scope from the Outside Will Be Automatically Reflected
+
+Stateful JS programs will statically reflect changes to any global variable that they may depend on:
 
 ```js
-Observer.observe(globalThis, 'foo', mutation => {
+// External value
+var baz = 0;
+// Or: globalThis.baz = 0;
+```
+
+...whether it's a reference made from within program body itself:
+
+```js
+function** bar() {
+  let localVar = baz;
+  console.log(localVar);
+}
+bar();
+```
+
+...or from the place of a parameter's *default value*:
+
+```js
+function** bar(localVar = baz) {
+  console.log(localVar);
+}
+bar();
+```
+
+```js
+// Update external dependency
+baz = 1; // This will now be reflected above
+```
+
+<details><summary>In practice...</summary>
+
+...since the Observer API isn't yet native, the above `baz = 1` assignment would need to happen via the `Observer.set()` method:
+
+```js
+Observer.set(globalThis, 'baz', 1);
+```
+
+</details>
+
+#### Interactions with the Global Scope from the Inside Are Observable
+
+Global updates from within a Stateful program may also be observed from the outside:
+
+```js
+// External value
+var baz = 0;
+```
+
+```js
+function** bar() {
+  baz++;
+}
+```
+
+```js
+// Observe specific variable
+Observer.observe(globalThis, 'baz', mutation => {
   console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
 });
 ```
 
 ```js
-function** bar() {
-  foo = { baz: 2 };
-}
+// Run the program
 bar();
 ```
 
-#### Stateful JS Scopes
+And if you'd go further with the Observer API, you could even intercept any global variable access by Stateful programs!
 
-Where a function runs within a Stateful program itself, everything just works; bare variables are live!
+<details><summary>Example</summary>
+
+```js
+// Intercept specific property
+Observer.intercept(globalThis, {
+    get:(e, recieved, next) => {
+        if (e.key === 'props') {
+          return next(['prop1', 'prop2']);
+        }
+        return next();
+    },
+});
+```
+
+</details>
+
+### with Stateful Parent Scopes
+
+While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are stateful themselves.
+
+Where a function runs within a Stateful program itself, any updates it makes to those variables are automatically reflected:
 
 ```js
 (function** () {
-  // Live scope
+  // Stateful scope
 
   let count = 0;
-  setInterval(() => count++, 500); // Live updates, even though not from within a stateful closure
+  setInterval(() => count++, 500); // Live updates, even from within a non-stateful closure
 
   console.log('From main stateful scope: ', count); // Reflected here
 
-  function** bar() {
+  function** nested() {
     console.log('From inner stateful scope: ', count); // Reflected here
   }
-  bar();
+  nested();
 
 })();
 ```
@@ -845,10 +919,9 @@ console.log(url.href); // http://www.example.com/path
 url.hostname = 'foo.dev'; //Observer.set(url, 'hostname', 'foo.dev');
 console.log(url.href); // http://foo.dev/path
 ```
-
 ## Documentation
 
-Visit [project wiki](https://github.com/webqit/stateful-js/wiki).
+Be sure to visit the [docs](https://github.com/webqit/stateful-js/wiki) for the exciting details.
 
 ## Getting Involved
 
