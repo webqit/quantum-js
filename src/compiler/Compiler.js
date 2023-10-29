@@ -632,9 +632,8 @@ export default class Compiler {
     transformUnaryExpression( node ) {
         if ( node.operator === 'typeof' && node.argument.type === 'Identifier' ) {
             node.argument.hint = 'typeof';
-            return Node.unaryExpr( node.operator, this.transformNode( node.argument ) );
         }
-        return { ...node };
+        return Node.unaryExpr( node.operator, this.transformNode( node.argument ) );
     }
 
     /* FLOW CONTROL */
