@@ -6,7 +6,7 @@
 
 <!-- /BADGES --> 
 
-[Overview](#overview) • [Polyfill](#polyfill) • [Examples](#examples) • [Documentation](#documentation) • [Getting Involved](#getting-involved) • [License](#license)
+[Overview](#overview) • [Documentation](#documentation) • [Polyfill](#polyfill) • [Examples](#examples) • [Getting Involved](#getting-involved) • [License](#license)
 
 Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
 
@@ -664,6 +664,10 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 })();
 ```
 
+## Documentation
+
+Visit the [docs](https://github.com/webqit/stateful-js/wiki) for the exciting details.
+
 ## Polyfill
 
 Stateful JS may be used today via a polyfill.
@@ -746,7 +750,7 @@ const program = StatefulFunction(`
 program();
 ```
 
-### Stateful Functions Lite
+### Stateful JS Lite
 
 It is possible to use a lighter version of Stateful JS where you want something *still* feather weight for your initial application load. The *Lite* version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
@@ -807,7 +811,7 @@ Observer.set(globalThis, 'externalVar', 20);
 console.log(state.value); // 40
 ```
 
-But these APIs also take advantage of the fact that they can do compilation for their source types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
+But these APIs also take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
 
 But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
 
@@ -910,18 +914,17 @@ class MyURL {
 ```
 
 ```js
-// Change a property and have it's dependents auto-compute
 const url = new MyURL('https://www.example.com/path');
+```
 
+```js
+// Change a property and have it's dependents auto-compute
 url.protocol = 'http:'; //Observer.set(url, 'protocol', 'http:');
 console.log(url.href); // http://www.example.com/path
 
 url.hostname = 'foo.dev'; //Observer.set(url, 'hostname', 'foo.dev');
 console.log(url.href); // http://foo.dev/path
 ```
-## Documentation
-
-Be sure to visit the [docs](https://github.com/webqit/stateful-js/wiki) for the exciting details.
 
 ## Getting Involved
 
