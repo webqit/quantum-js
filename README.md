@@ -45,7 +45,7 @@ console.log(doubleCount);
 setTimeout(() => count = 10, 500);
 ```
 
-Here, you are able to write code that can *statically* reflect changes to state in *micro* details, such that the state of your program is always in sync with the rest of the program at any given point!
+Here, the code you write is able to *statically* reflect changes to state in *micro* details, such that the state of your program is always in sync with the rest of the program at any given point!
 
 ## Idea
 
@@ -70,7 +70,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 
 </details>
 
-But fun question: does this really work? You want to see!
+So, does this really work? You want to see!
 
 <!--
 
@@ -121,7 +121,7 @@ Armed with this simple principle of operation, you can go pretty any length with
 
 ## Creating Stateful Programs
 
-This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for entire programs: "Stateful Execution Mode" (or "Stateful Mode" for short; much like "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
+This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for whole programs: "Stateful Execution Mode" (or "Stateful Mode" for short; much like "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
 
 Given a language-level feature, no setup or build step is required! (Polyfill just ahead!)
 
@@ -244,7 +244,7 @@ bar();
 
 </details>
 
-### Stateful Mode
+### Stateful Mode; Whole Programs
 
 Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
 
@@ -394,7 +394,7 @@ const program = new StatefulModule(`
 ```
 
 ```js
-const state = await program();
+const state = await program.execute();
 console.log(state.exports); // { module1, module2, module3, ..., localVar }
 ```
 
@@ -410,7 +410,7 @@ const program = new StatefulModule(`
 ```
 
 ```js
-const state = await program();
+const state = await program.execute();
 console.log(state.exports); // { localVar }
 ```
 
@@ -678,9 +678,9 @@ Stateful JS may be used today via a polyfill.
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.js"></script>
 ```
 
-> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-> `53.6` kB min + gz | `184.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js)
+└ `53.6` kB min + gz | `184.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js)
 
 ```js
 // Destructure from the webqit namespace
@@ -760,9 +760,9 @@ It is possible to use a lighter version of Stateful JS where you want something 
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
 ```
 
-> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-> `10.8` kB min + gz | `33.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js@3.0.1-async.0)
+└ `10.8` kB min + gz | `33.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js@3.0.1-async.0)
 
 ```js
 // Destructure from the webqit namespace
