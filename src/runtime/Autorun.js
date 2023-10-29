@@ -202,7 +202,7 @@ export default class Autorun extends EventTarget {
                 let returnValue = signal.state;
                 if ( typeof signal.state === 'function' ) {
                     // We're returning a proxy for functions instead of: signal.context.state[ signal.name ].bind( signal.context.state );
-                    returnValue = Observer.proxy( func, { membrane: signal } );
+                    returnValue = Observer.proxy( signal.state, { membrane: signal } );
                 }
                 return returnValue;
             }
