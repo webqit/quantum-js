@@ -47,7 +47,7 @@ function parseCompileCallback( ...args ) {
     globalThis.webqit = globalThis.webqit || {};
     if ( !globalThis.webqit.$fCompilerWorker ) {
         const customUrl = document.querySelector( 'meta[name="$f-compiler-url"]' );
-        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/stateful-functions/dist/compiler.js' );
+        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/stateful-js/dist/compiler.js' );
         const workerScriptText = `
         const compilerUrls = [ '${ compilerUrls.join( `','` ) }' ];
         ( function importScript() {
