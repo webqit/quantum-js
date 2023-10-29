@@ -1,405 +1,898 @@
-# Reflex Functions
+# Stateful JS
 
 <!-- BADGES/ -->
 
-<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/reflex-functions" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/reflex-functions.svg" alt="NPM version" /></a></span> <span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/reflex-functions" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/reflex-functions.svg" alt="NPM downloads" /></a></span>
+<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/stateful-js" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/stateful-js.svg" alt="NPM version" /></a></span> <span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/stateful-js" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/stateful-js.svg" alt="NPM downloads" /></a></span>
 
 <!-- /BADGES --> 
 
-**[Motivation](#motivation) • [Overview](#an-overview) • [Usecases](#usecases) • [Documentation](#documentation) • [Polyfill](#the-polyfill) • [Getting Involved](#getting-involved) • [License](#license)**
+[Overview](#overview) • [Documentation](#documentation) • [Polyfill](#polyfill) • [Examples](#examples) • [Getting Involved](#getting-involved) • [License](#license)
 
-Reflex Functions are a new type of JavaScript function that enables fine-grained Reactive Programming in the *imperative* form of the language - wherein reactivity is drawn entirely on the dependency graph of your own code!
+Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
 
-This is an upcoming proposal! (Introducing Imperative Reactive Programming (IRP) in JavaScript!)
+## Overview
 
-## Motivation
-
-Reactivity has hostorically relied on a lot of runtime techniques and compiler magics, has required much manual work, and overall, constituted a fundamental paradigm shift to how we build applications. Approaches have often eaten away at the idiomatic use of the language, taken a toll on performance, and fiendishly messed with our brain with tricky runtime behaviours!
-
-This is discussed extensively in [the introductory blog post](https://dev.to/oxharris/re-exploring-reactivity-and-introducing-the-observer-api-and-reflex-functions-4h70)
-
-We realized that we could solve the Language of Reactivity down to plain "JavaScript" - in both the *literal* form and *linear* flow of the language, in a way that translates well to a native language feature! This is what we explore now as Reflex Functions!
-
-## An Overview
-
-Imagine a function that works like any other function - e.g. accepts a number of arguments:
+Whereas you normally would need a couple primitives to model reactive logic...
 
 ```js
-function calculate(a, b) {
-  console.log('Operand #1:', a);
-  console.log('Operand #2:', b);
-  console.log('Total:', a + b);
+import { useState, useMemo, useEffect } from 'react';
+
+// count
+const [ count, setCount ] = useState(5);
+// doubleCount
+const doubleCount = useMemo(() => count * 2, [count]);
+// console.log()
+useEffect(() => {
+  console.log(doubleCount);
+}, [doubleCount]);
+```
+
+```js
+// An update
+setTimeout(() => setCount(10), 500);
+```
+
+Stateful JS lets you acheive the same in the ordinary imperative form of the language:
+
+```js
+let count = 5;
+let doubleCount = count * 2;
+console.log(doubleCount);
+```
+
+```js
+// An update
+setTimeout(() => count = 10, 500);
+```
+
+Here, you are able to write code that can *statically* reflect changes to state in *micro* details, such that the state of your program is always in sync with the rest of the program at any given point!
+
+## Idea
+
+Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives, and sometimes some other means to the same end.
+
+<details><summary>Learn more</summary>
+
+Whether it's an assignment expression that sets or changes the data held in a local variable (`a = b`), or a delete expression that mutates some object property (`delete c.d`), it's all *effect* producing an *end state*! (And a large program is just many of these at play, interspersed with control flow structures!)
+
+What we don't get with how this works naturally is having end state automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is often what we try to acheive in an alternative approach.
+
+</details>
+
+If we could get the JS runtime to add "statefulness" to how it already works - i.e. having each effect automatically maintain their end state (thus giving us a *stateful program* as a whole), we would have unnecessitated the manual way and unlocked many new possibilities!
+
+<details><summary>Learn more</summary>
+
+Many new things here for free when machine-level concepts are indeed left to the machine:
+
++ A level of precision and performance that could never be attained manually
++ A maximum authoring experience and much cleaner, leaner code; by a large margine
+
+</details>
+
+But fun question: does this really work? You want to see!
+
+<!--
+
+It's really a new category here in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
+
+## Update Model
+
+When a change happens, Stateful programs do *just what's needed* to reflect it! Updates will always involve *just the relevant expression*, or sequence of expressions - as entirely determined by your program's dependency graph - that actually need to be touched to keep program state fully in sync!
+
+This means: game on with however your code lends itself to be written, as in below; but only the following sequence of expressions: 4 -> 5, will reflect a change to `count`:
+
+```js
+let outputNode = document.createElement('div');
+let count = 5; // [Statement 2]
+document.body.append(outputNode);
+let doubleCount = count * 2; // [Statement 4]: Dependent on statement 2
+outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 4
+```
+
+```js
+// An update
+setTimeout(() => count = 10, 500);
+```
+
+Now, this translates to eliminating the overheads of doing **_unrelated_** work - as would be the case with having that `div` above recreated and appending each time `count` is updated! 
+
+Of course, this precision just makes us many "x" more performant!
+
+Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
+
+Now, this translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case with having an update below on line 6 moved control up the scope to trigger statements 5 and 3!
+
+```js
+let outputNode = document.createElement('div'); // [Statement 1]
+let count = 5;
+document.body.append(outputNode); // [Statement 3]: Dependent on statement 1
+let doubleCount = count * 2;
+outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 1
+outputNode = document.createElement('span'); // [Statement 6]: Has no dependents and wouldn't move control up the scope to statements 5 and 3, as those aren't dependents
+```
+
+Of course, our current linear update model just makes everything many "x" easier to reason about!
+
+> Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
+
+Armed with this simple principle of operation, you can go pretty any length without breaking a sweat!
+-->
+
+## Creating Stateful Programs
+
+This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for entire programs: "Stateful Execution Mode" (or "Stateful Mode" for short; much like "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
+
+Given a language-level feature, no setup or build step is required! (Polyfill just ahead!)
+
+### Stateful Functions
+
+You can designate a function as stateful using a double star notation; similar to [how generator functions look](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
+
+```js
+// Stateful function declaration
+function** bar() {
+  let count = 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
 }
-let operand1 = 2;
-let operand2 = 3;
-calculate(operand1, operand2);
+bar();
 ```
 
-<details><summary>Console</summary>
-
 ```js
-Operand #1: 2
-Operand #2: 3
-Total: 5
+// Stateful async function declaration
+async function** bar() {
+  let count = await 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+}
+await bar();
 ```
 
-</details>
-
-But has a special ability to statically "reflect" changes to its external dependencies - e.g. those arguments:
+<details><summary>...and in just how a function works in JavaScript</summary>
 
 ```js
-operand2 = 8;
-reflect('b'); // "b" being what the function sees
-```
-
-<details><summary>Console</summary>
-
-```js
-Operand #2: 8
-Total: 10
-```
-
-</details>
-
-Giving you fine-grained reactivity *at the precision of the individual expressions*!
-
-This is what you have of Reflex Functions, and here's how it works:
-
-Reflex Functions have a distinguishing syntax: a double star notation.
-
-```js
-function** calculate() {
+// Stateful function expression, optionally async
+const bar = function** () {
   // Function body
 }
 ```
 
-> See [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax) for details.
-
-Function body is any regular piece of code that should statically reflect changes to its external dependencies:
-
 ```js
-let count = 10; // External dependency
-function** calculate(factor) {
-  // Reactive expressions
-  let doubled = count * factor;
-  console.log(doubled);
-}
-```
-
-Return value is a two-part array that contains both the function's actual return value and a special `reflect` function for getting the function to reflect updates:
-
-```js
-let [ returnValue, reflect ] = calculate(2);
-console.log(returnValue); // undefined
-```
-
-<details><summary>Console</summary>
-
-| doubled | returnValue |
-| ------- | ----------- |
-| `20`    | `undefined` |
-
-</details>
-
-The `reflect()` function takes just the string representation of the external dependencies that have changed:
-
-```js
-count = 20;
-reflect('count');
-```
-
-<details><summary>Console</summary>
-
-| doubled |
-| ------- |
-| `40`    |
-
-</details>
-
-Path dependencies are expressed in array notation. And multiple dependencies can be reflected at once, if they changed at once:
-
-```js
-count++;
-this.property = value;
-reflect('count', [ 'this', 'property' ]);
-```
-
-### Change Propagation
-
-Reactivity exists with Reflex Functions where there are dependencies "up" the scope to respond to! And here's the mental model for that:
-
-`┌─` a change *happens outside* of function scope
-
-`└─` is *propagated into* function, then *self-propagates down* `─┐`
-
-Changes within the function body itself *self-propagate* down the scope, but re-running only those expressions that depend on the specific change, and rippling down the dependency graph!
-
-Below is a good way to see that: a Reflex Function having `score` as an external dependency, with "reflex lines" having been drawn to show the dependency graph for that variable, or, in other words, the deterministic update path for that dependency:
-
-![Code with reflex lines](https://github.com/webqit/reflex-functions/blob/master/resources/reflex-lines-1.png)
-
-<!--
-```js
-let score = 40;
-```
-
-```js
-function** ui() {
-  let divElement = document.createElement('div');
-  // >>─────────┐
-  let tense = score > 50 ? 'passed' : 'failed';
-  //    └─>────────────────────────────────────┐
-  let message = `Hi ${ p.firstName }, you ${ tense } this test!`;
-  //    │
-  let sp│anElement = document.createElement('span');
-  //    └─>──────────────┐
-  let fullMessage = [ message, ' ', 'Thank you!' ].join( '' );
-  //    └─>─────────────────────────────┐
-  let broadcast = { [ p.username ]: fullMessage };
-  //    │
-  let se│ctionElement = document.createElement('section');
-  //    ├─>─────────────────────────────────────────┐
-  let br│oadcastInstance = new BroadcastMessage( broadcast );
-  //    └─>───────┐ └─>──────────┐
-  console.log( broadcast, broadcastInstance );
-
-  document.body.append(divElement, spanElement, sectionElement);
+// Stateful object property, optionally async
+const foo = {
+  bar: function** () {
+    // Function body
+  },
 }
 ```
 
 ```js
-let [ returnValue, reflect ] = ui();
+// Stateful object method, optionally async
+const foo = {
+  **bar() {
+    // Function body
+  },
+}
 ```
--->
-
-It turns out to be the very mental model you would have drawn if you set out to think about your own code! Everything works **in just how anyone would *predict* it**!
-
-Plus, there's a hunble brag: that "pixel-perfect" level of fine-grained reactivity that the same algorithm translates to - which you could never model manually; that precision that means *no more*, *no less* performance - which you could never achieve with manual optimization; yet, all without working for it!
-
-## Usecases
-
-+ [Usecase: *Reactive Custom Elements*](#usecase-reactive-custom-elements)
-+ [Usecase: *Compile Target*](#usecase-compile-target)
-+ [Usecase: *Pure Computations*](#usecase-pure-computations)
-
-### Usecase: *Reactive Custom Elements*
-
-Reactivity with Custom Elements has never been neat! (In [Lit](https://lit.dev/), for example, you still have to follow a "HTML-as-string" approach that mangles JavaScript classes with templating concerns, and things become tightly-coupled!) But what if we could just write JavaScript classes with "neat" rendering logic?
-
-This is one question that Reflex Functions answers.
-
-#### *Example 1:*
-
-Below is a custom element that has Reflex Function as its `render()` method. The `render()` method would be invoked only once and subsequent updates would happen via reflections:
 
 ```js
-customElements.define('click-counter', class extends HTMLElement {
-
-  count = 10;
-  connectedCallback() {
-    // Full rendering at connected time
-    let [ , reflect ] = this.render();
-
-    // Reflex actions at click time (Fine-grained reactivity)
-    this.addEventListener('click', () => {
-      this.count ++;
-      reflect([ 'this', 'count' ]);
-    });
+// Stateful class method, optionally async
+class Foo {
+  **bar() {
+    // Function body
   }
-
-  **render() {
-    let countElement = this.querySelector( '#count' );
-    countElement.innerHTML = this.count;
-    
-    let doubleCount = this.count * 2;
-    let doubleCountElement = this.querySelector( '#double-count' );
-    doubleCountElement.innerHTML = doubleCount;
-    
-    let quadCount = doubleCount * 2;
-    let quadCountElement = this.querySelector( '#quad-count' );
-    quadCountElement.innerHTML = quadCount;
-  }
-
-});
+}
 ```
-
-#### *Example 2:*
-
-Below is a repeat of the example above; this time showing how the [Observer API](https://github.com/webqit/observer) may be used to automatically drive updates into the `render` function:
-
-```js
-customElements.define('click-counter', class extends HTMLElement {
-  
-  count = 10;
-  connectedCallback() {
-    // Full rendering at connected time
-    let [ , reflect ] = this.render();
-
-    // Using the Observer API to automatically drive updates into the render function
-    Observer.observe(this, changes => {
-      changes.forEach(change => reflect([ 'this', change.key ]));
-    });
-
-    // Reflex actions at click time (Fine-grained reactivity)
-    this.addEventListener('click', () => {
-      this.count ++;
-    });
-
-  }
-
-  **render() {
-    let countElement = this.querySelector( '#count' );
-    countElement.innerHTML = this.count;
-    
-    let doubleCount = this.count * 2;
-    let doubleCountElement = this.querySelector( '#double-count' );
-    doubleCountElement.innerHTML = doubleCount;
-    
-    let quadCount = doubleCount * 2;
-    let quadCountElement = this.querySelector( '#quad-count' );
-    quadCountElement.innerHTML = quadCount;
-  }
-
-});
-```
-
-<details><summary>Try it using the polyfills</summary>
-
-The above is possible with the polyfills today with only a few modifications:
-
-1. The above *double star* syntax isn't supported as-is in JavaScript, but you could acheive the same using the `ReflexFunction` constructor as below:
-
-    ```js
-    customElements.define('click-counter', class extends HTMLElement {
-      constructor(href) {
-        const [ , reflect ] = this.render.call(this); // notice the .call(this)
-      }
-
-      render = ReflexFunction(`
-        // code here
-      `);
-    });
-    ```
-
-    Or you can check out the `PlayElement` mixin below.
-
-2. The literal update expression `this.count++` isn't reactive as-is in JavaScript, but you can acheive the same using the Observer API's mutation methods:
-
-    ```js
-    Observer.set(this, 'count', this.count + 1);
-    ```
-
-    Or you can "pre-transform" the `count` property to a reactive property:
-
-    ```js
-    customElements.define('click-counter', class extends HTMLElement {
-      connectedCallback() {
-        Observer.accessorize(this, [ 'count' ]);
-      }
-    });
-    ```
 
 </details>
 
-#### *Example 3:*
-
-Below is how the [`PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element) Custom Element mixin takes this concept further to bring Reflex-based reactivity to Custom Elements:
+And you can acheive the same using Stateful Function constructors:
 
 ```js
-customElements.define( 'count-element', class extends PlayElement( HTMLElement ) {
-  // List of methods that should be transformed to "reflex" functions
-  static get reflexFunctions() {
-    return [ 'render' ];
-  }
-
-  count = 10;
-  connectedCallback() {
-    this.addEventListener('click', () => {
-      this.count ++;
-    });
-  }
-
-  render() {
-    let countElement = this.querySelector( '#count' );
-    countElement.innerHTML = this.count;
-    
-    let doubleCount = this.count * 2;
-    let doubleCountElement = this.querySelector( '#double-count' );
-    doubleCountElement.innerHTML = doubleCount;
-    
-    let quadCount = doubleCount * 2;
-    let quadCountElement = this.querySelector( '#quad-count' );
-    quadCountElement.innerHTML = quadCount;
-  }
-
-});
+// Stateful function constructor
+const bar = StatefulFunction(`
+  let count = 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+`);
+bar();
 ```
 
-└ [Visit `PlayElement`](https://github.com/webqit/playui/tree/master/packages/playui-element)
+```js
+// Stateful async function constructor
+const bar = StatefulAsyncFunction(`
+  let count = await 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+`);
+await bar();
+```
 
-### Usecase: *Compile Target*
+<details><summary>...and in just how <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function">function constructors</a> work in JavaScript</summary>
 
-Template languages have been a means to reactivity on the frontend! But what if we didn't have to re-invent a language - i.e. extend JavaScript with XML-like syntaxes (JSX), or extend HTML with special directives (`ngIf`, `v-if`, `{#each}{/each}`, etc.) - to support things like data binding, event handling, conditional rendering, looping, and others?
+```js
+// With function parameters
+const bar = StatefulFunction( param1, ... paramN, functionBody );
+```
 
-You could simply have "reactive JavaScript" as your template language with Reflex Functions as your *compile target*!
+```js
+// With the new keyword
+const bar = new StatefulFunction( param1, ... paramN, functionBody );
+```
 
-#### *Example 1:*
+```js
+// As class property
+class Foo {
+  bar = StatefulFunction( param1, ... paramN, functionBody );
+}
+```
 
-Below is how the [`<script reflex>`](https://github.com/webqit/oohtml#reactive-html) element in the OOHTML suite brings Reflex-based reactivity to HTML - by simply compiling to Reflex Functions under the hood:
+Well, this also includes the fact that, unlike normal function declarations and expressions that can see their surrounding scope, code in function constructors can see only the global scope:
+
+```js
+let a;
+globalThis.b = 2;
+var c = 'c'; // Equivalent to globalThis.c = 'c' assuming that we aren't running in a function scope or module scope
+const bar = StatefulFunction(`
+  console.log(typeof a); // undefined
+  console.log(typeof b); // number
+  console.log(typeof c); // string
+`);
+bar();
+```
+
+</details>
+
+### Stateful Mode
+
+Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
+
+```js
+// Stateful regular JS
+const program = new StatefulScript(`
+  let count = 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+`);
+program.execute();
+```
+
+```js
+// Stateful module
+const program = new StatefulModule(`
+  let count = await 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+`);
+await program.execute();
+```
+
+These will run in the global scope!
+
+The latter does certainly let you use `import` and `export` statements!
+
+<details><summary>Exanple</summary>
+
+```js
+// Stateful module
+const program = new StatefulModule(`
+  import module1, { module2 } from 'package-name';
+  import { module3 as alias } from 'package-name';
+  ...
+  export * from 'package-name';
+  export let localVar = 0;
+`);
+```
+
+</details>
+
+Now, this goes a step further to let us have "Stateful Scripts" - as may be seen in a related work, [OOHTML](https://github.com/webqit/oohtml):
 
 ```html
-<div>
-  <script reflex scoped>
-    console.log(this) // div
+<!-- Stateful classic script -->
+<script stateful>
+  let count = 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+</script>
+```
 
-    console.log(this.liveProperty) // live expression
+```html
+<!-- Stateful module script -->
+<script type="module" stateful>
+  let count = await 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+</script>
+```
 
-    if (this.bindings.isCollapsed) {
-        // Live block
-        console.log('Section collapsed!');
-    }
+And the ideas there are powerful enough to simplify how we build single page applications!
+
+<details><summary>Sneak peak</summary>
+
+```html
+<main id="page1">
+  <script scoped stateful>
+
+    console.log(this.id); // page1
+
   </script>
-</div>
+</main>
 ```
 
-As a plus, the external dependencies within the script are automatically observed and reflected:
+```html
+<main id="page2">
+  <script type="module" scoped stateful>
 
-```js
-// Mutate a binding:
-divElement.bindings.isCollapsed = true; // Console: "Section collapsed!"
+    console.log(this.id); // page2
+
+  </script>
+</main>
 ```
 
-└ [Visit OOHTML](https://github.com/webqit/oohtml#reactive-html)
+</details>
 
-### Usecase: *Pure Computations*
+Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
 
-Reactivity isn't all a UI thing! Sometimes we find ourselves elsewhere manually wiring callbacks to model depencencies that need to stay in sync! (And often, this is suboptimal!) But what if we could express that same logic in its *imperative* form and let the machine figure out the intrinsic dependecnies and reactivity? (Much like an escape hatch from complexity :))
+## Consuming Stateful Programs
 
-Consider some of these *pure computational* usecases!
+Each call to a stateful function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
-#### *Example 1:*
+### Return Value
 
-Below is a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have interdependent properties! Reflex Functions just lets you express the logic and has it binding automatically:
+The `State` object features a `value` property that carries the program's actual return value:
 
 ```js
-class Url {
+function** sum(a, b) {
+  return a + b;
+}
+```
+
+```js
+const state = sum(5, 4);
+console.log(state.value); // 9
+```
+
+But given a "live" program, the `state.value` property also comes as a "live" property that always reflects the program's new return value should anything make that change:
+
+```js
+function** counter() {
+  let count = 0
+  setInterval(() => count++, 500);
+  return count;
+}
+```
+
+```js
+const state = counter();
+console.log(state.value); // 0
+```
+
+Now, the general-purpose, object-observability API: [Observer API](https://github.com/webqit/observer) puts those changes right in our hand:
+
+```js
+Observer.observe(state, 'value', mutation => {
+  //console.log(state.value); Or:
+  console.log(mutation.value); // 1, 2, 3, 4, etc.
+});
+```
+
+### Module Exports
+
+For module programs, the `State` object also features an `exports` property that exposes the module's exports:
+
+```js
+// Stateful module
+const program = new StatefulModule(`
+  import module1, { module2 } from 'package-name';
+  import { module3 as alias } from 'package-name';
+  ...
+  export * from 'package-name';
+  export let localVar = 0;
+`);
+```
+
+```js
+const state = await program();
+console.log(state.exports); // { module1, module2, module3, ..., localVar }
+```
+
+But given a "live" program, each property in the `state.exports` object also comes as a "live" property that always reflects an export's new value should anything make that change:
+
+```js
+// As module
+const program = new StatefulModule(`
+  export let localVar = 0;
+  ...
+  setInterval(() => localVar++, 500);
+`);
+```
+
+```js
+const state = await program();
+console.log(state.exports); // { localVar }
+```
+
+Now, again, the Observer API puts those changes right in our hand:
+
+```js
+Observer.observe(state.exports, 'localVar', mutation => {
+  //console.log(state.exports.localVar); Or:
+  console.log(mutation.value); // 1, 2, 3, 4, etc.
+});
+```
+
+```js
+// Observe "any" export
+Observer.observe(state.exports, mutations => {
+  mutations.forEach(mutation => console.log(mutation.key, mutation.value));
+});
+```
+
+## Disposing Stateful Programs
+
+Stateful programs may maintain many live relationships and should be disposed when their work is done! The `State` object they return exposes a `dispose()` method that lets us do just that:
+
+```js
+state.dispose();
+```
+
+<!-- TODO: Talk about auto-disposals -->
+
+## Interaction with the Outside World
+
+Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript program can reference outside variables and also make side effects:
+
+```js
+let a = 2, b;
+function** bar() {
+  b = a * 2;
+}
+bar();
+```
+
+But unlike regular JavaScript, Stateful programs maintain a live relationship with the outside world:
+
+### with Arbitrary Objects
+
+With any object, every interaction happening at the property level is a live interaction! This means that:
+
+#### Mutations to Object Properties from the Outside Will Be Automatically Reflected
+
+Stateful JS programs will statically reflect changes to any property that they may depend on:
+
+```js
+// External value
+const foo = { baz: 0 };
+```
+
+...whether it's a reference made from within program body itself:
+
+```js
+function** bar() {
+  let localVar = foo.baz;
+  console.log(localVar);
+}
+bar();
+```
+
+...or from the place of a parameter's *default value*:
+
+```js
+function** bar(localVar = foo.baz) {
+  console.log(localVar);
+}
+bar();
+```
+
+```js
+// Update external dependency
+foo.baz = 1; // This will now be reflected above
+```
+
+<details><summary>In practice...</summary>
+
+...since the Observer API isn't yet native, the above `foo.baz = 1` assignment would need to happen via the `Observer.set()` method:
+
+```js
+Observer.set(foo, 'baz', 1);
+```
+
+</details>
+
+#### Interactions with an Object from the Inside Are Observable
+
+Mutations from within a Stateful program may also be observed from the outside:
+
+```js
+// External value
+const foo = { baz: 0 };
+```
+
+```js
+function** bar() {
+  foo.baz++;
+}
+```
+
+```js
+// Observe specific property
+Observer.observe(foo, 'baz', mutation => {
+  console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
+});
+```
+
+```js
+// Run the program
+bar();
+```
+
+And if you'd go further with the Observer API, you could even intercept any property access by Stateful programs!
+
+<details><summary>Example</summary>
+
+```js
+// Intercept specific property
+Observer.intercept(foo, {
+    get:(e, recieved, next) => {
+        if (e.key === 'props') {
+          return next(['prop1', 'prop2']);
+        }
+        return next();
+    },
+});
+```
+
+</details>
+
+### with the Global Scope
+
+For global variables, interactions happening directly at the variable level, not just at the property level this time, are live interactions! (Here we take advantage of the fact that global variables are really *properties* of a real *object* - the `globalThis` - which serves as the global scope!)
+
+This means that:
+
+#### Changes to the Global Scope from the Outside Will Be Automatically Reflected
+
+Stateful JS programs will statically reflect changes to any global variable that they may depend on:
+
+```js
+// External value
+var baz = 0;
+// Or: globalThis.baz = 0;
+```
+
+...whether it's a reference made from within program body itself:
+
+```js
+function** bar() {
+  let localVar = baz;
+  console.log(localVar);
+}
+bar();
+```
+
+...or from the place of a parameter's *default value*:
+
+```js
+function** bar(localVar = baz) {
+  console.log(localVar);
+}
+bar();
+```
+
+```js
+// Update external dependency
+baz = 1; // This will now be reflected above
+```
+
+<details><summary>In practice...</summary>
+
+...since the Observer API isn't yet native, the above `baz = 1` assignment would need to happen via the `Observer.set()` method:
+
+```js
+Observer.set(globalThis, 'baz', 1);
+```
+
+</details>
+
+#### Interactions with the Global Scope from the Inside Are Observable
+
+Global updates from within a Stateful program may also be observed from the outside:
+
+```js
+// External value
+var baz = 0;
+```
+
+```js
+function** bar() {
+  baz++;
+}
+```
+
+```js
+// Observe specific variable
+Observer.observe(globalThis, 'baz', mutation => {
+  console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
+});
+```
+
+```js
+// Run the program
+bar();
+```
+
+And if you'd go further with the Observer API, you could even intercept any global variable access by Stateful programs!
+
+<details><summary>Example</summary>
+
+```js
+// Intercept specific property
+Observer.intercept(globalThis, {
+    get:(e, recieved, next) => {
+        if (e.key === 'props') {
+          return next(['prop1', 'prop2']);
+        }
+        return next();
+    },
+});
+```
+
+</details>
+
+### with Stateful Parent Scopes
+
+While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are stateful themselves.
+
+Where a function runs within a Stateful program itself, any updates it makes to those variables are automatically reflected:
+
+```js
+(function** () {
+  // Stateful scope
+
+  let count = 0;
+  setInterval(() => count++, 500); // Live updates, even from within a non-stateful closure
+
+  console.log('From main stateful scope: ', count); // Reflected here
+
+  function** nested() {
+    console.log('From inner stateful scope: ', count); // Reflected here
+  }
+  nested();
+
+})();
+```
+
+## Documentation
+
+Visit the [docs](https://github.com/webqit/stateful-js/wiki) for the exciting details.
+
+## Polyfill
+
+Stateful JS may be used today via a polyfill.
+
+<details><summary>Load from a CDN</summary>
+
+```html
+<script src="https://unpkg.com/@webqit/stateful-js/dist/main.js"></script>
+```
+
+> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+
+> `53.6` kB min + gz | `184.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js)
+
+```js
+// Destructure from the webqit namespace
+const { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, State } = window.webqit;
+```
+
+</details>
+
+<details><summary>Install from NPM</summary>
+
+```js
+// npm install
+npm i @webqit/stateful-js
+```
+
+```js
+// Import API
+import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, State } from '@webqit/stateful-js';
+```
+
+</details>
+
+While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
+
+| API | Runs as... |
+| :------- | :----------- |
+| `StatefulFunction` | `function** () {}` |
+| `StatefulAsyncFunction` | `async function** () {}` |
+| `StatefulScript` | `<script>` |
+| `StatefulModule` | `<script type="module">` |
+
+```js
+// External dependency
+globalThis.externalVar = 10;
+// StatefulFunction
+const sum = StatefulFunction(`a`, `b`, `
+  return a + b + externalVar;
+`);
+const state = sum(10, 10);
+
+// Inspect
+console.log(state.value); // 30
+// Reflect and inspect again
+Observer.set(globalThis, 'externalVar', 20);
+console.log(state.value); // 40
+```
+
+But the double star syntax is supported from within a Stateful program itself:
+
+```js
+const program = StatefulFunction(`
+  // External dependency
+  let externalVar = 10;
+
+  // StatefulFunction
+  function** sum(a, b) {
+    return a + b + externalVar;
+  }
+  const state = sum(10, 10);
+
+  // Inspect
+  console.log(state.value); // 30
+  // Reflect and inspect again
+  externalVar = 20;
+  console.log(state.value); // 40
+`);
+program();
+```
+
+### Stateful JS Lite
+
+It is possible to use a lighter version of Stateful JS where you want something *still* feather weight for your initial application load. The *Lite* version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
+
+<details><summary>Load from a CDN</summary>
+
+```html
+<script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
+```
+
+> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+
+> `10.8` kB min + gz | `33.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js@3.0.1-async.0)
+
+```js
+// Destructure from the webqit namespace
+const { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule } = window.webqit;
+```
+
+</details>
+
+<details><summary>Install from a NPM</summary>
+
+```js
+// npm install
+npm i @webqit/stateful-js
+```
+
+```js
+// Import Lite API
+import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State } from '@webqit/stateful-js/src/index.async.js';
+```
+
+</details>
+
+<details><summary>See details</summary>
+
+The lazy-loading strategy here could only comfortably give you equivalent APIs to "async" program types!
+
+| API | Runs as... |
+| :------- | :----------- |
+| `StatefulAsyncFunction` | `async function** () {}` |
+| `StatefulAsyncScript` | `<script async>` |
+| `StatefulModule` | `<script type="module">` |
+
+```js
+// External dependency
+globalThis.externalVar = 10;
+// StatefulFunction
+const sum = StatefulAsyncFunction(`a`, `b`, `
+  return a + b + externalVar;
+`);
+const state = await sum(10, 10);
+
+// Inspect
+console.log(state.value); // 30
+// Reflect and inspect again
+Observer.set(globalThis, 'externalVar', 20);
+console.log(state.value); // 40
+```
+
+But these APIs also take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
+
+But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+
+```html
+<head>
+  <script src="https://unpkg.com/@webqit/stateful-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+  <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
+</head>
+```
+
+</details>
+
+## Examples
+
+Using the polyfill, the following examples work today.
+
++ [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
++ [Example 2: *Pure Computations*](#example-2-pure-computations)
+
+### Example 1: *Reactive Custom Elements*
+
+Manual reactivity accounts for a large part of the UI code we write today. Now, we can simply write *Stateful* code!
+
+In this example, we demonstrate a custom element that has Stateful Function as its `render()` method. We invoke the `render()` method only once and let it statically reflect subsequent updates:
+
+```js
+customElements.define('click-counter', class extends HTMLElement {
+
+  count = 10;
+
+  connectedCallback() {
+    // Initial rendering
+    this._state = this.render();
+    // Static reflect at click time
+    this.addEventListener('click', () => {
+      this.count++;
+      //Observer.set(this, 'count', this.count + 1);
+    });
+  }
+
+  disconnectCallback() {
+    // Cleanup
+    this._state.dispose();
+  }
+
+  // Using the StatefulFunction constructor
+  render = StatefulFunction(`
+    let countElement = this.querySelector( '#count' );
+    countElement.innerHTML = this.count;
+    
+    let doubleCount = this.count * 2;
+    let doubleCountElement = this.querySelector( '#double-count' );
+    doubleCountElement.innerHTML = doubleCount;
+    
+    let quadCount = doubleCount * 2;
+    let quadCountElement = this.querySelector( '#quad-count' );
+    quadCountElement.innerHTML = quadCount;
+  `);
+
+});
+```
+
+### Example 2: *Pure Computations*
+
+Even outside of UI code, we often still need to write reactive logic!
+
+In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
+
+```js
+class MyURL {
 
   constructor(href) {
     // The raw url
     this.href = href;
     // Initial computations
-    const [ , reflect ] = this.compute();
-
-    // Detect updates and reflect them
-    Observer.observe(this, changes => {
-      changes.forEach(change => reflect([ 'this', change.key ]));
-    });
-
+    this.compute();
   }
 
-  **compute() {
+  compute = StatefulFunction(`
     // These will be re-computed from this.href always
-    let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
+    let [ protocol, hostname, port, pathname, search, hash ] = new URL(this.href);
 
     this.protocol = protocol;
     this.hostname = hostname;
@@ -415,271 +908,32 @@ class Url {
     if (href !== this.href) { // Prevent unnecessary update
       this.href = href;
     }
-  }
+  `);
 
 }
 ```
 
 ```js
-// Change a property and have it's dependents auto-compute
-const url = new Url('https://www.example.com/path');
+const url = new MyURL('https://www.example.com/path');
+```
 
-url.protocol = 'http:';
+```js
+// Change a property and have it's dependents auto-compute
+url.protocol = 'http:'; //Observer.set(url, 'protocol', 'http:');
 console.log(url.href); // http://www.example.com/path
 
-url.hostname = 'foo.dev';
+url.hostname = 'foo.dev'; //Observer.set(url, 'hostname', 'foo.dev');
 console.log(url.href); // http://foo.dev/path
-```
-
-#### *Example 2:*
-
-Below is a repeat of the example above; this time showing how we could take advantage of the Observer API's **batching** feature to batch updates and be even more performant:
-
-```js
-class Url {
-
-  constructor(href) {
-    // The raw url
-    this.href = href;
-    // Initial computations
-    const [ , reflect ] = this.compute();
-
-    // Detect updates and reflect them
-    Observer.observe(this, changes => {
-      // All the updates from batch() below will now also be reflected as one batch
-      let paths = changes.map(change => ([ 'this', change.key ]));
-      reflect(...paths);
-    });
-
-  }
-
-  **compute() {
-    // These will be re-computed from this.href always
-    let [ protocol, hostname, port, pathname, search, hash ] = parseUrl(this.href);
-
-    // We batch the operations here so that they're delivered and reflected above as one batch
-    Observer.batch(this, () => {
-      this.protocol = protocol;
-      this.hostname = hostname;
-      this.port = port;
-      this.pathname = pathname;
-      this.search = search;
-      this.hash = hash;
-    });
-
-    // These individual property assignments each depend on the previous 
-    this.host = this.hostname + (this.port ? ':' + this.port : '');
-    this.origin = this.protocol + '//' + this.host;
-    let href = this.origin + this.pathname + this.search + this.hash;
-    if (href !== this.href) { // Prevent unnecessary update
-      this.href = href;
-    }
-  }
-
-}
-```
-
-```js
-// Change a property and have it's dependents auto-compute
-const url = new Url('https://www.example.com/path');
-
-url.port = 1914;
-console.log(url.href); // https://www.example.com:1914/path
-
-url.pathname = '/level1/level2';
-console.log(url.href); // https://www.example.com:1914//level1/level2
-```
-
-<details><summary>Try it using the polyfills</summary>
-
-The above is possible with the polyfills today with only a few modifications:
-
-1. The above *double star* syntax isn't supported as-is in JavaScript, but you could acheive the same using the `ReflexFunction` constructor as below:
-    &ensp;
-
-    ```js
-    class Url {
-      constructor(href) {
-        const [ , reflect ] = this.compute.call(this); // notice the .call(this)
-      }
-
-      compute = ReflexFunction(`
-        // code here
-      `);
-    }
-    ```
-    &ensp;
-
-2. The literal update expressions like `this.href = href` aren't reactive as-is in JavaScript, but you can acheive the same using the Observer API's mutation methods:
-    &ensp;
-
-    ```js
-    Observer.set(this, 'href', href);
-    ```
-    &ensp;
-
-    Or you can "pre-transform" the properties to reactive properties:
-    &ensp;
-
-    ```js
-    customElements.define('click-counter', class extends HTMLElement {
-      connectedCallback() {
-        Observer.accessorize(this, [ 'protocol', 'hostname', 'port', 'pathname', 'search', 'hash', 'host', 'origin', 'href' ]);
-      }
-    });
-    ```
-
-</details>
-
-#### *Example 3:*
-
-Check out how the [`ReflexFunction.inspect()`](https://github.com/webqit/reflex-functions/wiki#example-usecase) method ties in with the [Observer API](https://github.com/webqit/observer)!
-
-## Documentation
-
-Visit the [docs](https://github.com/webqit/reflex-functions/wiki) for details around [Formal Syntax](https://github.com/webqit/reflex-functions/wiki#formal-syntax), [Heuristics](https://github.com/webqit/reflex-functions/wiki#heuristics), [Flow Control](https://github.com/webqit/reflex-functions/wiki#flow-control) and [Functions](https://github.com/webqit/reflex-functions/wiki#functions), [API](https://github.com/webqit/reflex-functions/wiki#api), etc.
-
-## The Polyfill
-
-Reflex Functions is being developed as something to be used today - via a polyfill. The polyfill features a specialized compiler and a small *runtime* that work together to enable all of Reflex Functions as documented, with quite a few exceptions. Known limitations are in the area of syntax, and these can be found in the relevant parts of the [docs](https://github.com/webqit/reflex-functions/wiki).
-
-<details><summary>Load from a CDN</summary>
-
-```html
-<script src="https://unpkg.com/@webqit/reflex-functions/dist/main.js"></script>
-```
-
-> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
-
-> `47.8` kB min + gz | `167` KB min [↗](https://bundlephobia.com/package/@webqit/reflex-functions)
-
-```js
-// Destructure from the webqit namespace
-const { ReflexFunction } = window.webqit;
-```
-
-</details>
-
-<details><summary>Install from NPM</summary>
-
-```js
-// npm install
-npm i @webqit/reflex-functions
-```
-
-```js
-// Import API
-import { ReflexFunction } from '@webqit/reflex-functions';
-```
-
-</details>
-
-The current polyfill only supports the constructable form of Reflex Functions:
-
-```js
-// External dependency
-globalThis.externalVar = 10;
-
-// Initial run
-let sum = ReflexFunction( `a`, `b`, `return a + b + externalVar;` );
-let [ result, reflect ] = sum(10, 10); // 30
-
-// Reflections
-externalVar = 20;
-result = reflect( 'externalVar' ); // 40
-```
-
-But the double star syntax is supported from within the function itself:
-
-```js
-const reflex = ReflexFunction(`
-  // External dependency
-  let externalVar = 10;
-
-  // Initial run
-  function** sum( a, b ) {
-    return a + b + externalVar;
-  }
-  let [ result, reflect ] = sum( 10, 10 ); // 30
-
-  // Reflections
-  externalVar = 20;
-  result = reflect( 'externalVar' ); // 40
-`);
-reflex();
-```
-
-### Reflex Functions Lite
-
-It is possible to use a lighter version of Reflex Functions where the bundle size of the main build above will impact *initial* application loading. The *Lite* version initially comes without the compiler and yet let's you work with Reflex Functions ahead of that.
-
-This lazy-loading strategy **also means that the Reflex Functions API will *only* be available in [*async* mode](https://github.com/webqit/reflex-functions/wiki#async-mode)**! (This *async* mode is what makes it possible to load the compiler lazily!) And it comes with an additional perk: the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations are able to happen off the main thread!
-
-<details><summary>Load from a CDN</summary>
-
-```html
-<script src="https://unpkg.com/@webqit/reflex-functions/dist/lite.js"></script>
-```
-
-> This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
-
-<!--
-> 47.8 kB min + gz | 167 KB min [↗](https://bundlephobia.com/package/@webqit/reflex-functions/dist/lite.js)
--->
-
-```js
-// Destructure from the webqit namespace
-const { ReflexFunction: ReflexFunctionLite } = window.webqit;
-```
-
-</details>
-
-<details><summary>Install from a NPM</summary>
-
-```js
-// npm install
-npm i @webqit/reflex-functions
-```
-
-```js
-// Import Lite API
-import { ReflexFunctionLite } from '@webqit/reflex-functions';
-```
-
-</details>
-
-Reflex Functions Lite is an *async* API:
-
-```js
-// External dependency
-globalThis.externalVar = 10;
-
-// Initial run
-let sum = ReflexFunctionLite( `a`, `b`, `return a + b + externalVar;` );
-let [ result, reflect ] = await sum(10, 10); // 30
-
-// Reflections
-externalVar = 20;
-result = await reflect( 'externalVar' ); // 40
-```
-
-But being that the Reflex Functions Compiler is designed as a movable peice, it is all still possible to explicitly and synchronously load it alongside the *Lite* script - thus acheiving the exact same thing about the main build above, including being usable in **sync** mode.
-
-```html
-<head>
-  <script src="https://unpkg.com/@webqit/reflex-functions/dist/compiler.js"></script> <!-- Must come before the polyfil -->
-  <script src="https://unpkg.com/@webqit/reflex-functions/dist/lite.js"></script>
-</head>
 ```
 
 ## Getting Involved
 
 All forms of contributions are welcome at this time. For example, syntax and other implementation details are all up for discussion. Also, help is needed with more formal documentation. And here are specific links:
 
-+ [Project](https://github.com/webqit/reflex-functions)
-+ [Documentation](https://github.com/webqit/reflex-functions/wiki)
-+ [Discusions](https://github.com/webqit/reflex-functions/discussions)
-+ [Issues](https://github.com/webqit/reflex-functions/issues)
++ [Project](https://github.com/webqit/stateful-js)
++ [Documentation](https://github.com/webqit/stateful-js/wiki)
++ [Discusions](https://github.com/webqit/stateful-js/discussions)
++ [Issues](https://github.com/webqit/stateful-js/issues)
 
 ## License
 

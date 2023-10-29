@@ -1,96 +1,82 @@
-
 /**
  * @imports
  */
-import Common from './Common.js';
-import EffectReference from './EffectReference.js';
+import $fIdentifier from "./$fIdentifier.js";
+import Node from './Node.js';
 
 /**
  * @Scope
  */
-export default class Scope extends Common {
+export default class Scope {
 
-    constructor( ownerContext, id, def = {} ) {
-        super( id, def );
-        this.ownerContext = ownerContext;
-        this.ownerScope = ownerContext && ( ownerContext.currentScope || ownerContext.ownerScope );
-        // signals
-        this.effectReferences = [];
+    constructor( context, { type } ) {
+        this.context = context;
+        Object.assign( this, { type } );
+        this.vars = new Set;
+        this.$fIdentifiers = new Map;
+        this.$fIdentifiersCursors = { ...( this.context?.$fIdentifiersCursors || {} ) };
+        this.locations = [];
     }
 
-    // ---------------
-
-    pushEffectReference( effectReference ) {
-        this.effectReferences.push( effectReference );
-    }
-
-    // -----------------
-
-    doSubscribe( signalReference, remainderRefs = null ) {
-        remainderRefs = this.effectReferences.reduce( ( _remainderRefs, effectReference ) => {
-            return effectReference.doSubscribe( signalReference, _remainderRefs );
-        }, remainderRefs || [ ...signalReference.refs ] );
-        if ( !remainderRefs.length ) return true;
-        // Statements within functions can not subscribe to outside variables
-        if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
-            remainderRefs = this.ownerContext.references.reduce( ( _remainderRefs, reference ) => {
-                if ( !( reference instanceof EffectReference ) ) return _remainderRefs;
-                return reference.doSubscribe( signalReference, _remainderRefs );
-            }, remainderRefs );
-            if ( !remainderRefs.length ) return true;
-            return this.ownerContext.effectReference( {}, effectReference => {
-                remainderRefs.forEach( signalRef => {
-                    this.canObserveGlobal( signalRef ) && effectReference.addRef().push( ...signalRef.path );
-                } );
-                signalReference.inUse( true );
-                return effectReference.doSubscribe( signalReference, remainderRefs ), true;
-            }, false/* resolveInScope; a false prevents calling this.doUpdate() */ );
-        }
-        if ( this.ownerScope ) {
-            return this.ownerScope.doSubscribe( signalReference, remainderRefs );
-        }
-    }
-
-    doUpdate( _effectReference, remainderRefs = null ) {
-        // Not forEach()... but reduce() - only first one must be updated
-        remainderRefs = this.effectReferences.reduce( ( _remainderRefs, effectReference ) => {
-            return effectReference.doUpdate( _effectReference, _remainderRefs );
-        }, remainderRefs || [ ..._effectReference.refs ] );
-        if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
-            if ( _effectReference.type === 'VariableDeclaration' /* and ofcourse, kind: var */ ) return;
-            _effectReference.ownerReflex.$sideEffects = true;
-            let sideEffects = remainderRefs.length && remainderRefs || [ ..._effectReference.refs ];
-            return this.ownerContext.sideEffects.push( { reference: _effectReference, remainderRefs: sideEffects } ), true;
-        }
-        if ( !remainderRefs.length ) return true;
-        if ( this.ownerScope ) {
-            return this.ownerScope.doUpdate( _effectReference, remainderRefs );
-        }
-    }
-
-    doSideEffectUpdates( _effectReference, remainderRefs ) {
-        // Not reduce()... but forEach() - all must be updated
-        this.effectReferences.forEach( effectReference => {
-            let _remainderRefs = effectReference.doUpdate( _effectReference, remainderRefs, true /*isSideEffects*/ );
-            if ( effectReference.type === 'VariableDeclaration' ) {
-                // It is only here remainderRefs gets to reduce
-                remainderRefs = _remainderRefs;
+    index( node, withLineColumn = false ) {
+        if ( !this.type.includes( 'Function' ) && this.context ) return this.context.index( ...arguments );
+        const locations = [ 'start', 'end' ].map( offset => {
+            const elements = [ Node.literal( node[ offset ] ) ];
+            if ( withLineColumn && node.loc ) {
+                elements.push( Node.literal( node.loc[ offset ].line ) );
+                elements.push( Node.literal( node.loc[ offset ].column ) );
             }
+            return Node.arrayExpr( elements );
         } );
-        if ( !remainderRefs.length ) return true;
-        if ( !this.ownerScope || [ 'FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression' ].includes( this.type ) ) {
-            return this.ownerContext.sideEffects.push( { reference: _effectReference, remainderRefs, isSideEffects: true } ), true;
-        }
-        if ( this.ownerScope ) {
-            return this.ownerScope.doSideEffectUpdates( _effectReference, remainderRefs );
-        }
+        this.locations.push( Node.arrayExpr( locations ) );
+        return Node.literal( this.locations.length - 1 );
     }
 
-    canObserveGlobal( ref ) {
-        return (
-            !this.ownerContext.$params.globalsOnlyPathsExcept?.length || ref.path.length > 1
-            || ( this.ownerContext.$params.globalsOnlyPathsExcept || [] ).includes( ref.path[ 0 ].name )
-        ) && !( this.ownerContext.$params.globalsNoObserve || [] ).includes( ref.path[ 0 ].name );
+    get$fIdentifier( name, globally = true, random = false ) {
+        let identifer = this.$fIdentifiers.get( name );
+        if ( !identifer ) {
+            if ( globally && this.context ) return this.context.get$fIdentifier( name, globally );
+            if ( random ) {
+                if ( typeof this.$fIdentifiersCursors[ name ] === 'undefined' ) { this.$fIdentifiersCursors[ name ] = 0; }
+                name += ( this.$fIdentifiersCursors[ name ] ++ );
+            }
+            this.$fIdentifiers.set( name, identifer = new $fIdentifier( name ) );
+        }
+        return identifer;
+    }
+
+    getRandomIdentifier( name, globally = true ) {
+        return this.get$fIdentifier( name, globally, true );
+    }
+
+    $fIdentifiersNoConflict( name ) {
+        for ( let [ , identifer ] of this.$fIdentifiers ) { identifer.noConflict( name );  }
+        this.context && this.context.$fIdentifiersNoConflict( name );
+    }
+
+    push( identifier, type, willUpdate = false ) {
+        let def;
+        if ( [ 'var', 'update' ].includes( type ) && ( def = this.find( identifier, false ) ) && def.type !== 'const' ) {
+            def.willUpdate = true;
+        } else if ( type !== 'update' || !this.context ) {
+            if ( !( identifier instanceof $fIdentifier ) ) {
+                this.$fIdentifiersNoConflict( identifier.name + '' );
+            }
+            this.vars.add( { identifier, type, willUpdate: willUpdate || type === 'update' } );
+        }
+        if ( this.context && ( type === 'update' || ( type === 'var' && !this.type.includes( 'Function' ) ) ) ) {
+            return this.context.push( identifier, type );
+        }
+        return true;
+    }
+
+    find( identifier, globally = true ) {
+        let def;
+        for ( const _var of this.vars ) {
+            if ( _var.identifier.name + '' === identifier.name + '' ) { def = _var; break; }
+        }
+        if ( !def && globally ) return this.context?.find( identifier, globally );
+        return def;
     }
 
 }

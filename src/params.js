@@ -3,7 +3,7 @@
  * @exports
  */
 export function resolveParams( ...extensions ) {
-    let params = { runtimeParams, compilerParams, parserParams }, extension;
+    let extension, params = { runtimeParams, compilerParams, parserParams };
     while( extension = extensions.shift() ) {
         const {
             runtimeParams: _runtimeParams = {},
@@ -20,12 +20,12 @@ export function resolveParams( ...extensions ) {
     return params;
 }
 export const parserParams = {
-    ecmaVersion: '2020',
+    ecmaVersion: 'latest',
     allowReturnOutsideFunction: true,
-    allowAwaitOutsideFunction: true,
-    allowSuperOutsideMethod: true,
+    allowAwaitOutsideFunction: false,
+    allowSuperOutsideMethod: false,
     preserveParens: false,
-    locations: false,
+    locations: true,
 };
 export const compilerParams = {
     globalsNoObserve: [ 'arguments', 'debugger', ],
@@ -35,5 +35,5 @@ export const compilerParams = {
     compact: 2,
 };
 export const runtimeParams = {
-    apiVersion: 2,
+    apiVersion: 3,
 };

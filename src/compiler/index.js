@@ -15,7 +15,14 @@ export function parse( source, params = {} ) {
     const cacheKey = `${ source }${ JSON.stringify( params ) }`;
     let ast = parseCache.get( cacheKey );
     if ( !ast ) {
-        ast = Parser.parse( source, params );
+        try { ast = Parser.parse( source, params );  }
+        catch( e ) {
+            const message = `${ e.message || e }`;
+            const { pos, loc: { line, column } } = e;
+            const expr = source.slice( Math.max( 0, pos - 15 ), pos + 15 );
+            throw new ( globalThis[ e.name ] || Error )( message, { cause: [ { expr, line, column }, { source } ] } );
+        }
+        ast.originalSource = source;
         parseCache.set( cacheKey, ast );
     }
     return ast;
@@ -24,7 +31,7 @@ export function parse( source, params = {} ) {
 // Compiler
 export function compile( ast, params = {} ) {
     const compiler = new Compiler( params );
-    return compiler.generate( ast );
+    return compiler.transform( ast );
 }
 
 // Serialize
