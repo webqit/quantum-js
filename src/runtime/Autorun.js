@@ -199,10 +199,13 @@ export default class Autorun extends EventTarget {
             }
             // Return bare value here?
             if ( !depth || !signal.state || typeof signal.state !== 'object' ) {
-                return typeof signal.state === 'function'
+                let returnValue = signal.state, func;
+                if ( typeof signal.state === 'function' && ( func = signal.context?.state[ signal.name ] ) === signal.state ) {
+                    console.log('------------------==============',signal.context?.state, func);
                     // We're returning a proxy for functions instead of: signal.context.state[ signal.name ].bind( signal.context.state );
-                    ? Observer.proxy( signal.state, { membrane: signal } )
-                    : signal.state;
+                    returnValue = Observer.proxy( func, { membrane: signal } );
+                }
+                return returnValue;
             }
             // Return dynamic value
             let propertyAlreadyBound;

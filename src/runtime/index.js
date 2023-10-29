@@ -40,6 +40,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
     runtimeParams.packageName = packageName;
     runtimeParams.fileName = fileName;
     return _await( compiledSource, compiledSource => {
+        console.log('--------------', compiledSource + '');
         // Below, "async-function" would already has async in the returned function
         // And no need to ask compiledSource.topLevelAwait
         const asyncEval = [ 'async-script', 'module' ].includes( sourceType );
