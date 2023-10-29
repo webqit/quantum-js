@@ -108,10 +108,10 @@ export default class Runtime extends Autorun {
         } );
     }
 
-    spawn( isStatefulFunction, closure ) {
+    spawn( isStatefulFunction, thisContext, closure ) {
         const context = this.nowRunning || this;
         const params = {  ...this.$params, $serial: this.$serial + 1, isStatefulFunction };
-        const scope = new Scope( context.scope, 'function' );
+        const scope = new Scope( context.scope, 'function', { [ 'this' ]: thisContext } );
         const subRuntime = new this.constructor( context, 'function', params, scope, closure );
         return subRuntime.execute();
     }

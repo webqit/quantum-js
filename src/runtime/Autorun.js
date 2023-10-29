@@ -173,7 +173,10 @@ export default class Autorun extends EventTarget {
         let lexicalScope = this.scope;
         while( lexicalScope && !Observer.has( lexicalScope.state, name ) ) { lexicalScope = lexicalScope.context; }
         // Not found?
-        if ( !lexicalScope ) { throw new ( `${ name } is not defined.` ); }
+        if ( !lexicalScope ) {
+            if ( hint.hint === 'typeof' ) return;
+            throw new Error( `${ name } is not defined.` );
+        }
         // Bind now?
         const kind = lexicalScope.symbols.get( name )?.kind;
         const baseSignal = lexicalScope.signal( name, kind );

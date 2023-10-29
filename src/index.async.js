@@ -58,13 +58,22 @@ function parseCompileCallback( ...args ) {
             const { source, params } = e.data;
             const ast = parse( source, params.parserParams );
             const compilation = compile( ast, params.compilerParams );
-            e.ports[ 0 ]?.postMessage( compilation );
+            e.ports[ 0 ]?.postMessage( {
+                identifier: compilation.identifier,
+                originalSource: compilation.originalSource,
+                compiledSource: compilation + '',
+                topLevelAwait: compilation.topLevelAwait
+            } );
         };`;
         globalThis.webqit.$fCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
     }
     return new Promise( res => {
         let messageChannel = new MessageChannel;
         webqit.$fCompilerWorker.postMessage( { source, params }, [ messageChannel.port2 ] );
-        messageChannel.port1.onmessage = e => res( e.data );
+        messageChannel.port1.onmessage = e => {
+            const { compiledSource, ...compilation } = e.data;
+            Object.defineProperty( compilation, 'toString', { value: () => compiledSource } );
+            res( compilation );
+        }
     } );
 }

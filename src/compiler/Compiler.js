@@ -271,7 +271,7 @@ export default class Compiler {
 
         const isStatefulFunctionFlag = Node.identifier( node.isStatefulFunction || false );
         const isDeclaration = Node.identifier( node.type === 'FunctionDeclaration' );
-        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', isStatefulFunctionFlag, closure ) ) ] );
+        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', isStatefulFunctionFlag, Node.thisExpr(), closure ) ) ] );
 
         const metarisation = reference => this.$call( 'function', isDeclaration, isStatefulFunctionFlag, $serial, reference/* reference to the declaration */ );
         let resultNode = transform.call( Node, id, params, $body, node.async, node.expresion, node.generator );
@@ -376,8 +376,8 @@ export default class Compiler {
             this.exports.add( specifiers( node.specifiers ) );
             return;
         }
-        if ( node.type === 'ExportDefaultDeclaration' && node.declaration.type === 'Identifier' ) {  
-            const spec = [ Node.literal( node.declaration.name ), this.$serial( node ), Node.literal( 'default' ) ];
+        if ( node.type === 'ExportDefaultDeclaration' && [ 'Identifier', 'ThisExpression' ].includes( node.declaration.type ) ) {  
+            const spec = [ Node.literal( node.declaration.name || 'this' ), this.$serial( node ), Node.literal( 'default' ) ];
             this.exports.add( [ Node.arrayExpr( spec ) ] );
             return;
         }
@@ -423,7 +423,9 @@ export default class Compiler {
         }
         // We're now dealing with an identifier or path that can change
         this.history.forEach( state => state.refs?.add( node ) );
-        return this.$call( 'ref', Node.literal( node ), ...this.$trail() );
+        const hintArg = [];
+        if ( node.hint ) { hintArg.push( this.$obj( { hint: Node.literal( node.hint ) } ) ); }
+        return this.$call( 'ref', Node.literal( node ), ...this.$trail(), ...hintArg );
     }
 
     transformMemberExpression( node ) {
@@ -625,6 +627,14 @@ export default class Compiler {
             return this.$call( 'update', Node.literal( node.argument.name ), this.$closure( [ currentValueLocalIdentifier ], expr ), this.$obj( { kind: Node.literal( kind ) } ) );
         }
         return transform.call( Node, node.operator, this.transformNode( node.argument ), node.prefix );
+    }
+
+    transformUnaryExpression( node ) {
+        if ( node.operator === 'typeof' && node.argument.type === 'Identifier' ) {
+            node.argument.hint = 'typeof';
+            return Node.unaryExpr( node.operator, this.transformNode( node.argument ) );
+        }
+        return { ...node };
     }
 
     /* FLOW CONTROL */
