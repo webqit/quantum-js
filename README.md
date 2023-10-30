@@ -1,11 +1,5 @@
 # Stateful JS
 
-<!-- BADGES/ -->
-
-<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/stateful-js" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/stateful-js.svg" alt="NPM version" /></a></span> <span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/stateful-js" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/stateful-js.svg" alt="NPM downloads" /></a></span>
-
-<!-- /BADGES --> 
-
 [Overview](#overview) • [Documentation](#documentation) • [Polyfill](#polyfill) • [Examples](#examples) • [Getting Involved](#getting-involved) • [License](#license)
 
 Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
