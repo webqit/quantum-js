@@ -174,7 +174,7 @@ export default class Autorun extends EventTarget {
         while( lexicalScope && !Observer.has( lexicalScope.state, name ) ) { lexicalScope = lexicalScope.context; }
         // Not found?
         if ( !lexicalScope ) {
-            if ( hint.hint === 'typeof' ) return;
+            if ( hint.isTypeCheck ) return;
             throw new Error( `${ name } is not defined.` );
         }
         // Bind now?

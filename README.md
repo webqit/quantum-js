@@ -39,22 +39,23 @@ console.log(doubleCount);
 setTimeout(() => count = 10, 500);
 ```
 
-Here, the code you write is able to *statically* reflect changes to state in *micro* details, such that the state of your program is always in sync with the rest of the program at any given point!
+Here, the code you write is able to *statically* reflect changes to state in *micro* details, such that the state of that piece of program is always in sync with the rest of the program at any given point!
 
 ## Idea
 
-Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives, and sometimes some other means to the same end.
+Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives as seen above, and sometimes some other means to the very end. But, that's really to say **what we do is, for the most part, a case of replicating _existing machine-level concepts_**!
 
 <details><summary>Learn more</summary>
 
-Whether it's an assignment expression that sets or changes the data held in a local variable (`a = b`), or a delete expression that mutates some object property (`delete c.d`), it's all *effect* producing an *end state*! (And a large program is just many of these at play, interspersed with control flow structures!)
+Whether it's an assignment expression that sets or changes the data held in a local variable (`count = 10`), or a delete expression that mutates some object property (`delete object.value`), it's all "effect", and the end is always "change in state"! (And a large program is just many of these at play, interspersed with control flow structures!)
 
-What we don't get with how this works naturally is having end state automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is often what we try to acheive in an alternative approach.
+What we don't get with how this works naturally is having "end state" automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is often what we try to acheive in an alternative approach - wherein `count = 10` has to be something like: `setCount(10)`.
 
 </details>
 
-If we could get the JS runtime to add "statefulness" to how it already works - i.e. having each effect automatically maintain their end state (thus giving us a *stateful program* as a whole), we would have unnecessitated the manual way and unlocked many new possibilities!
+If we could get the JS runtime to add "statefulness" to how it already works - this time, having each effect automatically maintain their own end state (to, as a whole, give us a *stateful program*), **we would have unnecessitated the manual way and would be actually leaving existing _machine-level concepts_ to the _machine_**!
 
+<!--
 <details><summary>Learn more</summary>
 
 Many new things here for free when machine-level concepts are indeed left to the machine:
@@ -63,8 +64,9 @@ Many new things here for free when machine-level concepts are indeed left to the
 + A maximum authoring experience and much cleaner, leaner code; by a large margine
 
 </details>
+-->
 
-So, does this really work? You want to see!
+But how viable? You want to see!
 
 <!--
 

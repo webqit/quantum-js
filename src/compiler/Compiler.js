@@ -166,8 +166,9 @@ export default class Compiler {
 
     $var( kind, $serial, id, init, ...$rest ) {
         const closure = init ? this.$closure( [ this.currentScope.get$fIdentifier( '$f' ) ], init ) : Node.identifier( 'undefined' );
-        const autorunExpr = Node.exprStmt( this.$call( kind, Node.literal( id ), $serial, closure, ...$rest ) );
-        return [ autorunExpr ];
+        let autorunExpr = this.$call( kind, Node.literal( id ), $serial, closure, ...$rest );
+        if ( closure.async ) { autorunExpr = Node.awaitExpr( autorunExpr ); }
+        return Node.exprStmt( autorunExpr );
     }
 
     $update( left, right, ...$rest ) {
@@ -181,9 +182,9 @@ export default class Compiler {
         const spec = rest.pop() || {};
         const $spec = Object.keys( spec ).length ? [ this.$obj( spec ) ] : [];;
         const closure = this.$closure( [ this.currentScope.get$fIdentifier( '$f' ) ], body );
-        let autorun = this.$call( 'autorun', Node.literal( type ), ...$spec, $serial, closure );
-        if ( closure.async ) { autorun = Node.awaitExpr( autorun ); }
-        return Node.exprStmt( autorun );
+        let autorunExpr = this.$call( 'autorun', Node.literal( type ), ...$spec, $serial, closure );
+        if ( closure.async ) { autorunExpr = Node.awaitExpr( autorunExpr ); }
+        return Node.exprStmt( autorunExpr );
     }
 
     $iteration( kind, $serial, body ) {
@@ -400,6 +401,10 @@ export default class Compiler {
         return Node.exprStmt( this.$call( 'import', ...specifiers.concat( this.$obj( { source: node.source, serial: this.$serial( node ) } ) ) ) );
     }
 
+    transformImportExpression( node ) {
+        return this.$call( 'import', this.$obj( { source: node.source, isDynamic: Node.identifier( 'true' ), serial: this.$serial( node ) } ) );
+    }
+
     /* IDENTIFIERS & PATHS */
 
     transformSignal( node, mode, signals = null ) {
@@ -424,7 +429,7 @@ export default class Compiler {
         // We're now dealing with an identifier or path that can change
         this.history.forEach( state => state.refs?.add( node ) );
         const hintArg = [];
-        if ( node.hint ) { hintArg.push( this.$obj( { hint: Node.literal( node.hint ) } ) ); }
+        if ( node.hint ) { hintArg.push( this.$obj( { [ node.hint ]: Node.identifier( true ) } ) ); }
         return this.$call( 'ref', Node.literal( node ), ...this.$trail(), ...hintArg );
     }
 
@@ -631,7 +636,7 @@ export default class Compiler {
 
     transformUnaryExpression( node ) {
         if ( node.operator === 'typeof' && node.argument.type === 'Identifier' ) {
-            node.argument.hint = 'typeof';
+            node.argument.hint = 'isTypeCheck';
         }
         return Node.unaryExpr( node.operator, this.transformNode( node.argument ) );
     }

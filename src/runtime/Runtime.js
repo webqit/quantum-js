@@ -120,7 +120,7 @@ export default class Runtime extends Autorun {
         const source = args.pop();
         const $source = typeof source === 'string' ? { source } : source;
         const onload = modules => {
-            if ( $source.forExport ) return modules;
+            if ( $source.forExport || $source.isDynamic ) return modules;
             this.assignModules( args, this.scope.state, modules, source.serial );
         };
         if ( $source.source.startsWith( '#' ) && this.$params.experimentalFeatures !== false && registry[ $source.source.slice( 1 ) ] ) {
@@ -133,7 +133,9 @@ export default class Runtime extends Autorun {
                 throw e;
             }
         } )();
-        this.$promises[ $source.forExport ? 'exports' : 'imports' ].push( promise );
+        if ( !$source.isDynamic ) {
+            this.$promises[ $source.forExport ? 'exports' : 'imports' ].push( promise );
+        }
         return promise;
     }
 
