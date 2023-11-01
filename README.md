@@ -71,7 +71,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-But is language-level reactivity really possible? Here we go!
+But is language-level reactivity really possible? Well, here we go!
 
 <!--
 
@@ -288,7 +288,7 @@ const program = new StatefulModule(`
 
 </details>
 
-Now, this goes a step further to let us have "Stateful Scripts" - made possible in a related work [OOHTML](https://github.com/webqit/oohtml):
+Now, this goes a step further to let us have "Stateful Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml):
 
 ```html
 <!-- Stateful classic script -->
@@ -443,7 +443,7 @@ state.dispose();
 
 ## Interaction with the Outside World
 
-Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript functions can reference outside variables and also make side effects:
+Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript function can reference outside variables and also make side effects:
 
 ```js
 let a = 2, b;
@@ -831,7 +831,7 @@ Using the polyfills, the following examples work today.
 
 ### Example 1: *Reactive Custom Elements*
 
-Manual reactivity accounts for a large part of the UI code we write today. Now, what if we could simply write *Stateful* code?
+Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write *Stateful* code?
 
 In this example, we demonstrate a custom element that has Stateful Function as its `render()` method. We invoke the `render()` method only once and let it statically reflect subsequent updates:
 
