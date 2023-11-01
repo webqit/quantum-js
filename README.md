@@ -946,5 +946,5 @@ MIT.
 [npm-downloads-href]: https://npmjs.com/package/@webqit/stateful-js
 [bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
 [bundle-href]: https://bundlephobia.com/result?p=@webqit/stateful-js
-[license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=18181B&colorB=F0DB4F
+[license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=blue&colorB=aqua
 [license-href]: https://github.com/webqit/stateful-js/blob/master/LICENSE
