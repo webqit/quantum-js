@@ -58,7 +58,7 @@ What we don't get with how this works naturally is having "end state" automatica
 
 </details>
 
-If we could get the JS runtime to add "statefulness" to how it already works - this time, having each effect automatically maintain their own end state (to, as a whole, give us a *stateful program*), **we would have unnecessitated the manual way and would be actually leaving existing _machine-level concepts_ to the _machine_**!
+If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state (to, as a whole, give us a *stateful program*), **we would have unnecessitated the manual way and would be actually leaving _machine-level concepts_ to the _machine_**!
 
 <!--
 <details><summary>Learn more</summary>
@@ -71,7 +71,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-But is language-level reactivity really viable? Here we go!
+But is language-level reactivity really possible? Here we go!
 
 <!--
 
