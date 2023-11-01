@@ -308,7 +308,7 @@ Now, this goes a step further to let us have "Stateful Scripts" - which ships in
 </script>
 ```
 
-And the ideas there are powerful enough to simplify how we build single page applications!
+And the ideas there are coming to simplify how we build single page applications!
 
 <details><summary>Sneak peak</summary>
 
@@ -468,8 +468,6 @@ Stateful JS programs will statically reflect changes to any property that they m
 const foo = { baz: 0 };
 ```
 
-...whether it's a reference made from within program body itself:
-
 ```js
 function** bar() {
   let localVar = foo.baz;
@@ -478,7 +476,7 @@ function** bar() {
 bar();
 ```
 
-...or from the place of a parameter's *default value*:
+...whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
 
 ```js
 function** bar(localVar = foo.baz) {
@@ -487,9 +485,11 @@ function** bar(localVar = foo.baz) {
 bar();
 ```
 
+This will now be reflected:
+
 ```js
 // Update external dependency
-foo.baz = 1; // This will now be reflected above
+foo.baz = 1;
 ```
 
 <details><summary>In practice...</summary>
@@ -512,16 +512,16 @@ const foo = { baz: 0 };
 ```
 
 ```js
-function** bar() {
-  foo.baz++;
-}
-```
-
-```js
 // Observe specific property
 Observer.observe(foo, 'baz', mutation => {
   console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
 });
+```
+
+```js
+function** bar() {
+  foo.baz++;
+}
 ```
 
 ```js
@@ -563,8 +563,6 @@ var baz = 0;
 // Or: globalThis.baz = 0;
 ```
 
-...whether it's a reference made from within program body itself:
-
 ```js
 function** bar() {
   let localVar = baz;
@@ -573,7 +571,7 @@ function** bar() {
 bar();
 ```
 
-...or from the place of a parameter's *default value*:
+...whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
 
 ```js
 function** bar(localVar = baz) {
@@ -582,9 +580,11 @@ function** bar(localVar = baz) {
 bar();
 ```
 
+This will now be reflected:
+
 ```js
 // Update external dependency
-baz = 1; // This will now be reflected above
+baz = 1;
 ```
 
 <details><summary>In practice...</summary>
@@ -607,16 +607,16 @@ var baz = 0;
 ```
 
 ```js
-function** bar() {
-  baz++;
-}
-```
-
-```js
 // Observe specific variable
 Observer.observe(globalThis, 'baz', mutation => {
   console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
 });
+```
+
+```js
+function** bar() {
+  baz++;
+}
 ```
 
 ```js
