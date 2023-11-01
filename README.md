@@ -476,7 +476,7 @@ function** bar() {
 bar();
 ```
 
-...whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
+whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
 
 ```js
 function** bar(localVar = foo.baz) {
@@ -522,10 +522,6 @@ Observer.observe(foo, 'baz', mutation => {
 function** bar() {
   foo.baz++;
 }
-```
-
-```js
-// Run the program
 bar();
 ```
 
@@ -571,7 +567,7 @@ function** bar() {
 bar();
 ```
 
-...whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
+whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
 
 ```js
 function** bar(localVar = baz) {
@@ -617,10 +613,6 @@ Observer.observe(globalThis, 'baz', mutation => {
 function** bar() {
   baz++;
 }
-```
-
-```js
-// Run the program
 bar();
 ```
 
