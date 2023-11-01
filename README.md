@@ -940,11 +940,11 @@ All forms of contributions are welcome at this time. For example, syntax and oth
 
 MIT.
 
-[npm-version-src]: https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-version-src]: https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&colorA=5D3FD3&colorB=aqua
 [npm-version-href]: https://npmjs.com/package/@webqit/stateful-js
-[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=5D3FD3&colorB=aqua
 [npm-downloads-href]: https://npmjs.com/package/@webqit/stateful-js
-[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=5D3FD3&colorB=aqua
 [bundle-href]: https://bundlephobia.com/result?p=@webqit/stateful-js
 [license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=5D3FD3&colorB=aqua
 [license-href]: https://github.com/webqit/stateful-js/blob/master/LICENSE
