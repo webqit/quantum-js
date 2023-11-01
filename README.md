@@ -485,7 +485,7 @@ function** bar(localVar = foo.baz) {
 bar();
 ```
 
-This will now be reflected:
+This will now be reflected above:
 
 ```js
 // Update external dependency
@@ -517,6 +517,8 @@ Observer.observe(foo, 'baz', mutation => {
   console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
 });
 ```
+
+The following operation will now be reported above:
 
 ```js
 function** bar() {
@@ -576,7 +578,7 @@ function** bar(localVar = baz) {
 bar();
 ```
 
-This will now be reflected:
+This will now be reflected above:
 
 ```js
 // Update external dependency
@@ -608,6 +610,8 @@ Observer.observe(globalThis, 'baz', mutation => {
   console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
 });
 ```
+
+The following operation will now be reported above:
 
 ```js
 function** bar() {
