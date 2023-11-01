@@ -28,6 +28,11 @@ export class StatefulScript extends AbstractStatefulScript {
     static parseCompileCallback = parseCompileCallback;
 }
 
+export class StatefulAsyncScript extends AbstractStatefulScript {
+    static sourceType = 'async-script';
+    static parseCompileCallback = parseCompileCallback;
+}
+
 export class StatefulModule extends AbstractStatefulScript {
     static sourceType = 'module';
     static parseCompileCallback = parseCompileCallback;

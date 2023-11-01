@@ -5,8 +5,7 @@
   "keywords": [
     "fine-grained reactivity",
     "js-runner",
-    "js-parser",
-    "DSL"
+    "js-parser"
   ],
   "homepage": "https://webqit.io/tooling/stateful-js",
   "version": "3.0.14",
@@ -19,8 +18,12 @@
     "url": "https://github.com/webqit/stateful-js/issues"
   },
   "type": "module",
-  "sideEffects": true,
-  "main": "./src/index.js",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.js",
+    "./async": "./src/index.async.js",
+    "./params": "./src/params.js"
+  },
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",

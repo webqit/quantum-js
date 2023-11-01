@@ -1,6 +1,11 @@
 # Stateful JS
 
-[Overview](#overview) • [Documentation](#documentation) • [Polyfill](#polyfill) • [Examples](#examples) • [Getting Involved](#getting-involved) • [License](#license)
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![bundle][bundle-src]][bundle-href]
+[![License][license-src]][license-href]
+
+[Overview](#overview) • [Creating Stateful Programs](#creating-stateful-programs) • [Polyfill](#polyfill) • [Examples](#examples) • [Getting Involved](#getting-involved) • [License](#license)
 
 Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
 
@@ -43,7 +48,7 @@ Here, the code you write is able to *statically* reflect changes to state in *mi
 
 ## Idea
 
-Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives as seen above, and sometimes some other means to the very end. But, that's really to say **what we do is, for the most part, a case of replicating _existing machine-level concepts_**!
+Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the very end. But, that's really to say **what we do is, for the most part, replicating _existing machine-level concepts_**!
 
 <details><summary>Learn more</summary>
 
@@ -66,7 +71,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-But how viable? You want to see!
+But is language-level reactivity really viable? Here we go!
 
 <!--
 
@@ -117,9 +122,9 @@ Armed with this simple principle of operation, you can go pretty any length with
 
 ## Creating Stateful Programs
 
-This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for whole programs: "Stateful Execution Mode" (or "Stateful Mode" for short; much like "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
+This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for whole programs: "Stateful Execution Mode" (or "Stateful Mode" for short; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
 
-Given a language-level feature, no setup or build step is required! (Polyfill just ahead!)
+Given a language-level feature, no setup or build step is required! Polyfill just ahead!
 
 ### Stateful Functions
 
@@ -240,7 +245,7 @@ bar();
 
 </details>
 
-### Stateful Mode; Whole Programs
+### Stateful Execution Mode; Whole Programs
 
 Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
 
@@ -283,7 +288,7 @@ const program = new StatefulModule(`
 
 </details>
 
-Now, this goes a step further to let us have "Stateful Scripts" - as may be seen in a related work, [OOHTML](https://github.com/webqit/oohtml):
+Now, this goes a step further to let us have "Stateful Scripts" - made possible in a related work [OOHTML](https://github.com/webqit/oohtml):
 
 ```html
 <!-- Stateful classic script -->
@@ -438,7 +443,7 @@ state.dispose();
 
 ## Interaction with the Outside World
 
-Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript program can reference outside variables and also make side effects:
+Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript functions can reference outside variables and also make side effects:
 
 ```js
 let a = 2, b;
@@ -450,9 +455,9 @@ bar();
 
 But unlike regular JavaScript, Stateful programs maintain a live relationship with the outside world:
 
-### with Arbitrary Objects
+### ...with Arbitrary Objects
 
-With any object, every interaction happening at the property level is a live interaction! This means that:
+With any object, every interaction happening at the property level is reactive! This means that:
 
 #### Mutations to Object Properties from the Outside Will Be Automatically Reflected
 
@@ -497,9 +502,9 @@ Observer.set(foo, 'baz', 1);
 
 </details>
 
-#### Interactions with an Object from the Inside Are Observable
+#### Interactions with Arbitrary Objects from the Inside Are Observable
 
-Mutations from within a Stateful program may also be observed from the outside:
+Mutations from within a Stateful program may conversely be observed from the outside:
 
 ```js
 // External value
@@ -524,7 +529,7 @@ Observer.observe(foo, 'baz', mutation => {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept any property access by Stateful programs!
+And if you'd go further with the Observer API, you could even intercept property access by Stateful programs!
 
 <details><summary>Example</summary>
 
@@ -542,9 +547,9 @@ Observer.intercept(foo, {
 
 </details>
 
-### with the Global Scope
+### ...with the Global Scope
 
-For global variables, interactions happening directly at the variable level, not just at the property level this time, are live interactions! (Here we take advantage of the fact that global variables are really *properties* of a real *object* - the `globalThis` - which serves as the global scope!)
+For global variables, interactions happening directly at the variable level, not just at the property level this time, are reactive! (Here we take advantage of the fact that global variables are really *properties* of a real *object* - the `globalThis` - which serves as JavaScript's global scope!)
 
 This means that:
 
@@ -594,7 +599,7 @@ Observer.set(globalThis, 'baz', 1);
 
 #### Interactions with the Global Scope from the Inside Are Observable
 
-Global updates from within a Stateful program may also be observed from the outside:
+Updates to global variables from within a Stateful program may conversely be observed from the outside:
 
 ```js
 // External value
@@ -619,7 +624,7 @@ Observer.observe(globalThis, 'baz', mutation => {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept any global variable access by Stateful programs!
+And if you'd go further with the Observer API, you could even intercept global variable access by Stateful programs!
 
 <details><summary>Example</summary>
 
@@ -637,9 +642,9 @@ Observer.intercept(globalThis, {
 
 </details>
 
-### with Stateful Parent Scopes
+### ...with Stateful Parent Scopes
 
-While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are stateful themselves.
+While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are reactive.
 
 Where a function runs within a Stateful program itself, any updates it makes to those variables are automatically reflected:
 
@@ -660,9 +665,9 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 })();
 ```
 
-## Documentation
+## Continue Reading...
 
-Visit the [docs](https://github.com/webqit/stateful-js/wiki) for the exciting details.
++ this story continues [right here](https://github.com/webqit/stateful-js/wiki).
 
 ## Polyfill
 
@@ -676,11 +681,9 @@ Stateful JS may be used today via a polyfill.
 
 └ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-└ `53.6` kB min + gz | `184.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js)
-
 ```js
 // Destructure from the webqit namespace
-const { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, State } = window.webqit;
+const { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, State, Observer } = window.webqit;
 ```
 
 </details>
@@ -694,7 +697,7 @@ npm i @webqit/stateful-js
 
 ```js
 // Import API
-import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, State } from '@webqit/stateful-js';
+import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncScript, StatefulModule, State, Observer } from '@webqit/stateful-js';
 ```
 
 </details>
@@ -706,6 +709,7 @@ While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, 
 | `StatefulFunction` | `function** () {}` |
 | `StatefulAsyncFunction` | `async function** () {}` |
 | `StatefulScript` | `<script>` |
+| `StatefulAsyncScript` | `<script async>` |
 | `StatefulModule` | `<script type="module">` |
 
 ```js
@@ -748,7 +752,7 @@ program();
 
 ### Stateful JS Lite
 
-It is possible to use a lighter version of Stateful JS where you want something *still* feather weight for your initial application load. The *Lite* version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
+It is possible to use a lighter version of Stateful JS (`10.8` kB min + gz) where you want something *further* feather weight for your initial application load. The Lite version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>Load from a CDN</summary>
 
@@ -758,11 +762,9 @@ It is possible to use a lighter version of Stateful JS where you want something 
 
 └ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
 
-└ `10.8` kB min + gz | `33.8` KB min [↗](https://bundlephobia.com/package/@webqit/stateful-js@3.0.1-async.0)
-
 ```js
 // Destructure from the webqit namespace
-const { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule } = window.webqit;
+const { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Observer } = window.webqit;
 ```
 
 </details>
@@ -776,7 +778,7 @@ npm i @webqit/stateful-js
 
 ```js
 // Import Lite API
-import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State } from '@webqit/stateful-js/src/index.async.js';
+import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Observer } from '@webqit/stateful-js/async';
 ```
 
 </details>
@@ -822,14 +824,14 @@ But having been designed as a movable peice, the Stateful JS Compiler is all sti
 
 ## Examples
 
-Using the polyfill, the following examples work today.
+Using the polyfills, the following examples work today.
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
 
 ### Example 1: *Reactive Custom Elements*
 
-Manual reactivity accounts for a large part of the UI code we write today. Now, we can simply write *Stateful* code!
+Manual reactivity accounts for a large part of the UI code we write today. Now, what if we could simply write *Stateful* code?
 
 In this example, we demonstrate a custom element that has Stateful Function as its `render()` method. We invoke the `render()` method only once and let it statically reflect subsequent updates:
 
@@ -872,7 +874,7 @@ customElements.define('click-counter', class extends HTMLElement {
 
 ### Example 2: *Pure Computations*
 
-Even outside of UI code, we often still need to write reactive logic!
+Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write *Stateful* code?
 
 In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
 
@@ -909,12 +911,15 @@ class MyURL {
 }
 ```
 
+Instantiate `MyURL`:
+
 ```js
 const url = new MyURL('https://www.example.com/path');
 ```
 
+Change a property and have it's dependents auto-update:
+
 ```js
-// Change a property and have it's dependents auto-compute
 url.protocol = 'http:'; //Observer.set(url, 'protocol', 'http:');
 console.log(url.href); // http://www.example.com/path
 
@@ -934,3 +939,12 @@ All forms of contributions are welcome at this time. For example, syntax and oth
 ## License
 
 MIT.
+
+[npm-version-src]: https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-version-href]: https://npmjs.com/package/@webqit/stateful-js
+[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-downloads-href]: https://npmjs.com/package/@webqit/stateful-js
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=18181B&colorB=F0DB4F
+[bundle-href]: https://bundlephobia.com/result?p=@webqit/stateful-js
+[license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=18181B&colorB=F0DB4F
+[license-href]: https://github.com/webqit/stateful-js/blob/master/LICENSE
