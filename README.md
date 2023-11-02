@@ -245,9 +245,11 @@ bar();
 
 </details>
 
-### Stateful Execution Mode; Whole Programs
+### Stateful Execution Mode (Whole Programs)
 
-Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
+Think "Strict Mode", but for reactivity!
+
+Here, given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
 
 ```js
 // Stateful regular JS
@@ -661,13 +663,20 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 })();
 ```
 
-## Continue Reading...
+## Life in a Stateful Program (The Concepts)
 
-+ this story continues [right here](https://github.com/webqit/stateful-js/wiki).
+To put everything up in one reasoning, Stateful programs are *self-managed* programs - such that if you can write the code, everything else is *machine-level* concern that's best left to the machine!
+
+To take full advantage of that (and do less manual work), here's how Stateful programs work:
+
++ [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
++ [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
++ [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
++ [Update Model](https://github.com/webqit/stateful-js/wiki#update-model)
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. And good a thing, while this absolutely must be a compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
+Stateful JS may be used today via a polyfill. And good a thing, while this is an absolutely powerful compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
