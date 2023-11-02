@@ -949,4 +949,4 @@ MIT.
 [license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=black&colorB=teal
 [license-href]: https://github.com/webqit/stateful-js/blob/master/LICENSE
 
-[polyfill-async-src]: https://img.shields.io/badge/10.8%20kb%20minzipped-000000
+[polyfill-async-src]: https://img.shields.io/badge/10.8%20kb%20min+gz-000000
