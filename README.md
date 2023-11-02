@@ -800,12 +800,6 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obse
 
 The lazy-loading strategy here could only comfortably give you equivalent APIs to "async" program types!
 
-| API | Runs as... |
-| :------- | :----------- |
-| `StatefulAsyncFunction` | `async function** () {}` |
-| `StatefulAsyncScript` | `<script async>` |
-| `StatefulModule` | `<script type="module">` |
-
 <details><summary>Code</summary>
   
 ```js
@@ -826,7 +820,13 @@ console.log(state.value); // 40
 
 </details>
 
-But these APIs also take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
+| API | Runs as... |
+| :------- | :----------- |
+| `StatefulAsyncFunction` | `async function** () {}` |
+| `StatefulAsyncScript` | `<script async>` |
+| `StatefulModule` | `<script type="module">` |
+
+Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
 
 > But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
 > 
