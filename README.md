@@ -751,7 +751,7 @@ program();
 It is possible to use a lighter version of Stateful JS where you want something *further* feather weight for your initial application load. The Lite version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>
-Load from a CDN <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
+Load from a CDN <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="bottom" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
