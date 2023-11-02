@@ -667,7 +667,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 This is an optional section not required to write Stateful programs! TL;DR: Stateful programs are *self-managed* programs - such that if you can just write the code, everything else is *machine-level* concern that's best left to the machine!
 
-But interestingly, the details here should also provide a better way to reason about your code, and a better backdrop for taking full advantage of the above to never do manual work against!
+But interestingly, the details here should also provide a better way to reason about your code, and a better backdrop for taking full advantage of the above to never again do manual work!
 
 + [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
 + [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
@@ -860,7 +860,7 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the polyfills, the following examples work today. (Hopefully, you can have a lot of fun here!)
+Using the Stateful JS and Observer API polyfills, the following examples work today. (And hopefully, you can have a lot of fun with that!)
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
