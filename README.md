@@ -860,7 +860,7 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the Stateful JS and Observer API polyfills, the following examples work today. (And hopefully, you can have a lot of fun with that!)
+Using the Stateful JS and Observer API polyfills, the following examples work today. (Now, hopefully, you can have a lot of fun with that!)
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
