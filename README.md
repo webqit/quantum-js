@@ -667,7 +667,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. And good a thing, while this absolutely must be a compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser! (Hopefully, you can have a lot of fun with that! 😋)
+Stateful JS may be used today via a polyfill. And good a thing, while this absolutely must be a compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
@@ -702,19 +702,32 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 <details><summary>See details</summary>
 
-While fully supporting program-level APIs - `StatefulScript`, `StatefulAsyncScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
+| API | Runs as... |
+| :------- | :----------- |
+| `StatefulFunction` | `function** () {}` |
+| `StatefulAsyncFunction` | `async function** () {}` |
+| `StatefulScript` | `<script>` |
+| `StatefulAsyncScript` | `<script async>` |
+| `StatefulModule` | `<script type="module">` |
+
+While fully supporting program-level APIs - `StatefulScript`, `StatefulAsyncScript`, `StatefulModule`, the current polyfill only supports the constructor forms - `StatefulFunction`, `StatefulAsyncFunction` - of Stateful Functions - which give you the equivalent of the normal function forms!
 
 <details><summary>Code</summary>
 
 ```js
 // External dependency
 globalThis.externalVar = 10;
+```
+
+```js
 // StatefulFunction
 const sum = StatefulFunction(`a`, `b`, `
   return a + b + externalVar;
 `);
 const state = sum(10, 10);
+```
 
+```js
 // Inspect
 console.log(state.value); // 30
 // Reflect and inspect again
@@ -723,14 +736,6 @@ console.log(state.value); // 40
 ```
 
 </details>
-
-| API | Runs as... |
-| :------- | :----------- |
-| `StatefulFunction` | `function** () {}` |
-| `StatefulAsyncFunction` | `async function** () {}` |
-| `StatefulScript` | `<script>` |
-| `StatefulAsyncScript` | `<script async>` |
-| `StatefulModule` | `<script type="module">` |
 
 But the double star syntax is supported from within a Stateful program itself:
 
@@ -798,6 +803,12 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obse
 
 <details><summary>See details</summary>
 
+| API | Runs as... |
+| :------- | :----------- |
+| `StatefulAsyncFunction` | `async function** () {}` |
+| `StatefulAsyncScript` | `<script async>` |
+| `StatefulModule` | `<script type="module">` |
+
 The lazy-loading strategy here could only comfortably give you equivalent APIs to "async" program types!
 
 <details><summary>Code</summary>
@@ -805,12 +816,17 @@ The lazy-loading strategy here could only comfortably give you equivalent APIs t
 ```js
 // External dependency
 globalThis.externalVar = 10;
+```
+
+```js
 // StatefulFunction
 const sum = StatefulAsyncFunction(`a`, `b`, `
   return a + b + externalVar;
 `);
 const state = await sum(10, 10);
+```
 
+```js
 // Inspect
 console.log(state.value); // 30
 // Reflect and inspect again
@@ -819,12 +835,6 @@ console.log(state.value); // 40
 ```
 
 </details>
-
-| API | Runs as... |
-| :------- | :----------- |
-| `StatefulAsyncFunction` | `async function** () {}` |
-| `StatefulAsyncScript` | `<script async>` |
-| `StatefulModule` | `<script type="module">` |
 
 Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
 
@@ -841,7 +851,7 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the polyfills, the following examples work today.
+Using the polyfills, the following examples work today. (Hopefully, you can have a lot of fun here!)
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
@@ -966,11 +976,11 @@ All forms of contributions are welcome at this time. For example, syntax and oth
 
 MIT.
 
-[npm-version-src]: https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&colorA=black&colorB=teal
+[npm-version-src]: https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&colorA=5800B0&colorB=teal
 [npm-version-href]: https://npmjs.com/package/@webqit/stateful-js
-[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=black&colorB=teal
+[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=5800B0&colorB=teal
 [npm-downloads-href]: https://npmjs.com/package/@webqit/stateful-js
-[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=000000&colorB=teal
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=5800B0&colorB=teal
 [bundle-href]: https://bundlephobia.com/result?p=@webqit/stateful-js
-[license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=black&colorB=teal
+[license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=5800B0&colorB=teal
 [license-href]: https://github.com/webqit/stateful-js/blob/master/LICENSE
