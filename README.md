@@ -670,13 +670,13 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 Stateful JS may be used today via a polyfill.
 
 <details><summary>Load from a CDN<br>
-└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=teal"></a></summary>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.js"></script>
 ```
 
-└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
 
 ```js
 // Destructure from the webqit namespace
@@ -686,7 +686,7 @@ const { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule,
 </details>
 
 <details><summary>Install from NPM<br>
-└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&label=&colorB=teal"></a></summary>
+└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&label=&colorB=black"></a></summary>
 
 ```js
 // npm install
@@ -754,7 +754,7 @@ It is possible to use a lighter version of Stateful JS where you want something 
 
 <details><summary>
 Load from a CDN<br>
-└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-black"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
@@ -770,7 +770,7 @@ const { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obser
 </details>
 
 <details><summary>Install from NPM<br>
-└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&label=&colorB=teal"></a></summary>
+└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&label=&colorB=black"></a></summary>
 
 ```js
 // npm install
