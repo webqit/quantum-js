@@ -669,7 +669,8 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 Stateful JS may be used today via a polyfill.
 
-<details><summary>Load from a CDN <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=teal"></a></summary>
+<details><summary>Load from a CDN<br>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=teal"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.js"></script>
@@ -684,7 +685,8 @@ const { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule,
 
 </details>
 
-<details><summary>Install from NPM</summary>
+<details><summary>Install from NPM<br>
+└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&label=&colorB=teal"></a></summary>
 
 ```js
 // npm install
@@ -751,8 +753,8 @@ program();
 It is possible to use a lighter version of Stateful JS where you want something *further* feather weight for your initial application load. The Lite version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>
-Load from a CDN <br>
-└─────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
+Load from a CDN<br>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
@@ -767,7 +769,8 @@ const { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obser
 
 </details>
 
-<details><summary>Install from NPM</summary>
+<details><summary>Install from NPM<br>
+└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&label=&colorB=teal"></a></summary>
 
 ```js
 // npm install
