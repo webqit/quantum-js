@@ -669,7 +669,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 Stateful JS may be used today via a polyfill.
 
-<details><summary>Load from a CDN</summary>
+<details><summary>Load from a CDN <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=000000&colorB=black"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.js"></script>
@@ -751,7 +751,7 @@ program();
 It is possible to use a lighter version of Stateful JS where you want something *further* feather weight for your initial application load. The Lite version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>
-Load from a CDN   <img src="https://img.shields.io/badge/10.8%20kB%20minzipped-000000"></summary>
+Load from a CDN <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img src="https://img.shields.io/badge/minzipped%20size-10.8%20kB-000000"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
