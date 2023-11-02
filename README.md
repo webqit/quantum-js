@@ -752,7 +752,7 @@ It is possible to use a lighter version of Stateful JS where you want something 
 
 <details><summary>
 Load from a CDN <br>
-└ <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
+└────────────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
