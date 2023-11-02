@@ -667,7 +667,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill.
+Stateful JS may be used today via a polyfill. (Hopefully, you can have a lot of fun with that 😋)
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
@@ -700,6 +700,8 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 </details>
 
+<details><summary>See details</summary>
+
 While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
 
 | API | Runs as... |
@@ -709,6 +711,8 @@ While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, 
 | `StatefulScript` | `<script>` |
 | `StatefulAsyncScript` | `<script async>` |
 | `StatefulModule` | `<script type="module">` |
+
+<details><summary>Code</summary>
 
 ```js
 // External dependency
@@ -726,7 +730,11 @@ Observer.set(globalThis, 'externalVar', 20);
 console.log(state.value); // 40
 ```
 
+</details>
+
 But the double star syntax is supported from within a Stateful program itself:
+
+<details><summary>Code</summary>
 
 ```js
 const program = StatefulFunction(`
@@ -747,6 +755,10 @@ const program = StatefulFunction(`
 `);
 program();
 ```
+
+</details>
+
+</details>
 
 ### Stateful JS Lite
 
@@ -794,6 +806,8 @@ The lazy-loading strategy here could only comfortably give you equivalent APIs t
 | `StatefulAsyncScript` | `<script async>` |
 | `StatefulModule` | `<script type="module">` |
 
+<details><summary>Code</summary>
+  
 ```js
 // External dependency
 globalThis.externalVar = 10;
@@ -810,16 +824,18 @@ Observer.set(globalThis, 'externalVar', 20);
 console.log(state.value); // 40
 ```
 
+</details>
+
 But these APIs also take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
 
-But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
-
-```html
-<head>
-  <script src="https://unpkg.com/@webqit/stateful-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
-  <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
-</head>
-```
+> But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+> 
+> ```html
+> <head>
+>  <script src="https://unpkg.com/@webqit/stateful-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+>   <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
+> </head>
+> ```
 
 </details>
 
