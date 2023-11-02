@@ -667,7 +667,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. (Hopefully, you can have a lot of fun with that! 😋) And good a thing, while this is a powerful compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
+Stateful JS may be used today via a polyfill. And good a thing, while this absolutely must be a compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser! (Hopefully, you can have a lot of fun with that! 😋)
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
