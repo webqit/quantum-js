@@ -667,7 +667,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. Good a thing, there is no build step required, and you can have all of Stateful JS live in the browser! (Hopefully, you can have a lot of fun with that! 😋)
+Stateful JS may be used today via a polyfill. (Hopefully, you can have a lot of fun with that! 😋) And good a thing, while this is a powerful compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
@@ -704,14 +704,6 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 While fully supporting program-level APIs - `StatefulScript`, `StatefulAsyncScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
 
-| API | Runs as... |
-| :------- | :----------- |
-| `StatefulFunction` | `function** () {}` |
-| `StatefulAsyncFunction` | `async function** () {}` |
-| `StatefulScript` | `<script>` |
-| `StatefulAsyncScript` | `<script async>` |
-| `StatefulModule` | `<script type="module">` |
-
 <details><summary>Code</summary>
 
 ```js
@@ -731,6 +723,14 @@ console.log(state.value); // 40
 ```
 
 </details>
+
+| API | Runs as... |
+| :------- | :----------- |
+| `StatefulFunction` | `function** () {}` |
+| `StatefulAsyncFunction` | `async function** () {}` |
+| `StatefulScript` | `<script>` |
+| `StatefulAsyncScript` | `<script async>` |
+| `StatefulModule` | `<script type="module">` |
 
 But the double star syntax is supported from within a Stateful program itself:
 
