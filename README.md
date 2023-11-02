@@ -71,7 +71,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-Now, this is really a radically different thinking which gives us a category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
+Now, this comes as a radically different thinking that occupies its own category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
 
 <!--
 ## Update Model
