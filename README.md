@@ -58,7 +58,7 @@ What we don't get with how this works naturally is having "end state" automatica
 
 </details>
 
-If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state (to, as a whole, give us a *stateful program*), **we would have unnecessitated the manual way and would be actually leaving _machine-level concepts_ to the _machine_**!
+If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state, **we would have unnecessitated the manual way and would be actually leaving _machine-level concepts_ to the _machine_**!
 
 <!--
 <details><summary>Learn more</summary>
@@ -71,12 +71,9 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-But is language-level reactivity really possible? Well, here we go!
+Now, this is really a radically different thinking which gives us a category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
 
 <!--
-
-It's really a new category here in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
-
 ## Update Model
 
 When a change happens, Stateful programs do *just what's needed* to reflect it! Updates will always involve *just the relevant expression*, or sequence of expressions - as entirely determined by your program's dependency graph - that actually need to be touched to keep program state fully in sync!
@@ -665,9 +662,9 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Inside a Stateful Program (The Concepts)
 
-This is an optional section not required to write Stateful programs! TL;DR: Stateful programs are *self-managed* programs - such that if you can just write the code, everything else is *machine-level* concern that's best left to the machine!
+This is an optional section that isn't required to write Stateful programs! TL;DR: Stateful programs are *self-managed* programs - such that if you can just write the code, everything else is *machine-level* concern that's best left to the machine!
 
-But interestingly, the details here should also provide a better way to reason about your code, and a better backdrop for taking full advantage of the above to never again do manual work!
+But interestingly, the details here should also provide a better way to reason about your code, and a better backdrop for taking full advantage of Stateful programs to never again do manual work!
 
 + [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
 + [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
@@ -954,13 +951,13 @@ class MyURL {
 }
 ```
 
-Instantiate `MyURL`:
+└ Instantiate `MyURL`:
 
 ```js
 const url = new MyURL('https://www.example.com/path');
 ```
 
-Change a property and have it's dependents auto-update:
+└ Change a property and have it's dependents auto-update:
 
 ```js
 url.protocol = 'http:'; //Observer.set(url, 'protocol', 'http:');
@@ -971,6 +968,10 @@ console.log(url.href); // http://foo.dev/path
 ```
 
 </details>
+
+## Relationship with Other Concepts
+
+*TODO*
 
 ## Getting Involved
 
