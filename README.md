@@ -665,9 +665,9 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Inside a Stateful Program (The Concepts)
 
-This is an optional section and not required to write Stateful programs! This is because, to put all of it in one reasoning: Stateful programs are *self-managed* programs - such that if you can just write the code, everything else is *machine-level* concern that's best left to the machine!
+This is an optional section not required to write Stateful programs! TL;DR: Stateful programs are *self-managed* programs - such that if you can just write the code, everything else is *machine-level* concern that's best left to the machine!
 
-But interestingly, the details here should also provide a better backdrop for taking full advantage of the above to do less manual work!
+But interestingly, the details here should also provide a better way to reason about your code, and a better backdrop for taking full advantage of the above to never do manual work against!
 
 + [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
 + [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
