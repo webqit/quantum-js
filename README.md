@@ -751,14 +751,14 @@ program();
 It is possible to use a lighter version of Stateful JS where you want something *further* feather weight for your initial application load. The Lite version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
 
 <details><summary>
-Load from a CDN 
+Load from a CDN <br>
 └ <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-teal"></a></summary>
 
 ```html
 <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
 ```
 
-└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives:
+└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
 
 ```js
 // Destructure from the webqit namespace
