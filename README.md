@@ -667,7 +667,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. (Hopefully, you can have a lot of fun with that 😋)
+Stateful JS may be used today via a polyfill. Good a thing, there is no build step required, and you can have all of Stateful JS live in the browser! (Hopefully, you can have a lot of fun with that! 😋)
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
@@ -702,7 +702,7 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 <details><summary>See details</summary>
 
-While fully supporting program-level APIs - `StatefulScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
+While fully supporting program-level APIs - `StatefulScript`, `StatefulAsyncScript`, `StatefulModule`, the current polyfill only supports the constructor form of Stateful Functions - which give you the equivalent of the normal function forms!
 
 | API | Runs as... |
 | :------- | :----------- |
@@ -852,6 +852,9 @@ Manual reactivity accounts for a large part of the UI code we write today. But, 
 
 In this example, we demonstrate a custom element that has Stateful Function as its `render()` method. We invoke the `render()` method only once and let it statically reflect subsequent updates:
 
+
+<details><summary>Code</summary>
+
 ```js
 customElements.define('click-counter', class extends HTMLElement {
 
@@ -889,11 +892,15 @@ customElements.define('click-counter', class extends HTMLElement {
 });
 ```
 
+</details>
+
 ### Example 2: *Pure Computations*
 
 Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write *Stateful* code?
 
 In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
+
+<details><summary>Code</summary>
 
 ```js
 class MyURL {
@@ -943,6 +950,8 @@ console.log(url.href); // http://www.example.com/path
 url.hostname = 'foo.dev'; //Observer.set(url, 'hostname', 'foo.dev');
 console.log(url.href); // http://foo.dev/path
 ```
+
+</details>
 
 ## Getting Involved
 
