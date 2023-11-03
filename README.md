@@ -662,7 +662,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Inside a Stateful Program (The Concepts)
 
-Going by how Stateful programs can already entirely manage themselves, knowledge of how they work can very much optional! But, for the curious, this section covers just that: the very *awesome* part!
+In how Stateful programs can already entirely manage themselves, knowledge of how they work can very much be optional! But, for the curious, this section covers just that: the very *awesome* part!
 
 Knowing how things work could provide a better way to reason about your own code, and a better backdrop for taking full advantage of your new-found magical Stateful runtime to never again do manual work!
 
