@@ -637,7 +637,7 @@ Observer.intercept(globalThis, {
 
 </details>
 
-### ...with Stateful Parent Scopes
+### ...with Stateful Parent Scopes Themselves
 
 While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are reactive.
 
