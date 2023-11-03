@@ -666,7 +666,7 @@ Going by how Stateful programs can already entirely manage themselves, knowledge
 
 Knowing how things work could provide a better way to reason about your own code, and a better backdrop for taking full advantage of your new-found magical Stateful runtime to never again do manual work!
 
-+ [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
++ [Reactivity](https://github.com/webqit/stateful-js/wiki#reactivity)
 + [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
 + [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
 + [Update Model](https://github.com/webqit/stateful-js/wiki#update-model)
