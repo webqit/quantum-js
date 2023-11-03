@@ -706,7 +706,7 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 <details><summary>See details</summary>
 
-| API | Runs as... |
+| API | Program type... |
 | :------- | :----------- |
 | `StatefulFunction` | `function** () {}` |
 | `StatefulAsyncFunction` | `async function** () {}` |
@@ -807,13 +807,13 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obse
 
 <details><summary>See details</summary>
 
-| API | Runs as... |
+| API | Program type... |
 | :------- | :----------- |
 | `StatefulAsyncFunction` | `async function** () {}` |
 | `StatefulAsyncScript` | `<script async>` |
 | `StatefulModule` | `<script type="module">` |
 
-The lazy-loading strategy here could only comfortably give you equivalent APIs to "async" program types!
+Here, you're only able to have APIs for just the "async" program types!
 
 <details><summary>Code</summary>
   
