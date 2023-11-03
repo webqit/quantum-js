@@ -48,17 +48,17 @@ Here, the code you write is able to *statically* reflect changes to state in *mi
 
 ## Idea
 
-Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the very end. But, that's really to say **what we do is, for the most part, replicating _existing machine-level concepts_**!
+Imperative programs are really the foundation for *state*, *effect* and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. Now, that's really to say: **much of the code we write is a replication of _existing machine-level concepts_; an overhead**!
 
 <details><summary>Learn more</summary>
 
-Whether it's an assignment expression that sets or changes the data held in a local variable (`count = 10`), or a delete expression that mutates some object property (`delete object.value`), it's all "effect", and the end is always "change in state"! (And a large program is just many of these at play, interspersed with control flow structures!)
+Right in the fundamentals of a programming language - from the assignment expression that sets or changes the data held in a local variable (`count = 10`) to the delete expression that mutates some object property (`delete object.value`) - you can already see "state" and "effect" at play! (And a large program is simply many of these interspersed with control flow structures!)
 
-What we don't get with how this works naturally is having "end state" automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is often what we try to acheive in an alternative approach - wherein `count = 10` has to be something like: `setCount(10)`.
+What we don't get with how this works is having "end state" automatically maintained by the effects that produce them as other parts of the program change! (That relationship is simply not maintained by the runtime!) And that's where a whole new way of doing even basic things becomes necessary - wherein we approach every imperative operation programmatically: `setCount(10)` vs `count = 10`.
 
 </details>
 
-If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state, **we would have unnecessitated the manual way and would be actually leaving _machine-level concepts_ to the _machine_**!
+If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state, **we would have unnecessitated the manual way and would be fully leaving _machine-level concepts_ to the _machine_**!
 
 <!--
 <details><summary>Learn more</summary>
@@ -71,7 +71,7 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-Now, this comes as a radically different thinking that occupies its own category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
+This comes as a radically different thinking that occupies its own category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
 
 <!--
 ## Update Model
