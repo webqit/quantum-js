@@ -245,7 +245,7 @@ bar();
 
 </details>
 
-### Stateful Execution Mode; Whole Programs
+### Stateful Execution Mode (Whole Programs)
 
 Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
 
@@ -660,6 +660,11 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 })();
 ```
+
+## Life in a Stateful Program (Concepts)
+
+For a great way to reason about everything: Stateful programs are *self-managed* programs! If you can already write the code, the rest can always be left to the machine as machine-level concerns! Now, this is an optional section that covers the basic concepts that may help you take full advantage of that!
+
 
 ## Continue Reading...
 
