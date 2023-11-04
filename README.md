@@ -660,7 +660,7 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 })();
 ```
 
-## Inside a Stateful Program (The Concepts)
+## Inside a Stateful Program (How It Works!)
 
 In how Stateful programs can already entirely manage themselves, knowledge of how they work can very much be optional! But, for the curious, this section covers just that: the very *awesome* part!
 
