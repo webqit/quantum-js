@@ -670,6 +670,7 @@ Knowing how things work could give you a better way to reason about your own cod
 + [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
 + [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
 + [Update Model](https://github.com/webqit/stateful-js/wiki#update-model)
++ [Experimental Features](https://github.com/webqit/stateful-js/wiki#experimental-features)
 
 ## Polyfill
 
