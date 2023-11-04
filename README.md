@@ -48,17 +48,17 @@ Here, the code you write is able to *statically* reflect changes to state in *mi
 
 ## Idea
 
-Imperative programs are really the foundation for *state* and *effect* and the relationship between them - the very things we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the very end. But, that's really to say **what we do is, for the most part, replicating _existing machine-level concepts_**!
+Imperative programs are really the foundation for *state*, *effect* and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. Now, that's really to say: **much of the code we write is a replication of _existing machine-level concepts_; an overhead**!
 
 <details><summary>Learn more</summary>
 
-Whether it's an assignment expression that sets or changes the data held in a local variable (`count = 10`), or a delete expression that mutates some object property (`delete object.value`), it's all "effect", and the end is always "change in state"! (And a large program is just many of these at play, interspersed with control flow structures!)
+Right in the fundamentals of a programming language - from the assignment expression that sets or changes the data held in a local variable (`count = 10`) to the delete expression that mutates some object property (`delete object.value`) - you can already see "state" and "effect" at play! (And a large program is simply many of these interspersed with control flow structures!)
 
-What we don't get with how this works naturally is having "end state" automatically maintained by the effects that produce them as other parts of the program change! That's a relationship not maintained by the runtime! And that idea is often what we try to acheive in an alternative approach - wherein `count = 10` has to be something like: `setCount(10)`.
+What we don't get with how this works is having "end state" automatically maintained by the effects that produce them as other parts of the program change! (That relationship is simply not maintained by the runtime!) And that's where a whole new way of doing even basic things becomes necessary - wherein we approach every imperative operation programmatically: `setCount(10)` vs `count = 10`.
 
 </details>
 
-If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state (to, as a whole, give us a *stateful program*), **we would have unnecessitated the manual way and would be actually leaving _machine-level concepts_ to the _machine_**!
+If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state, **we would have unnecessitated the manual way and would be fully leaving _machine-level concepts_ to the _machine_**!
 
 <!--
 <details><summary>Learn more</summary>
@@ -71,12 +71,9 @@ Many new things here for free when machine-level concepts are indeed left to the
 </details>
 -->
 
-But is language-level reactivity really possible? Well, here we go!
+This comes as a radically different thinking that occupies its own category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
 
 <!--
-
-It's really a new category here in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
-
 ## Update Model
 
 When a change happens, Stateful programs do *just what's needed* to reflect it! Updates will always involve *just the relevant expression*, or sequence of expressions - as entirely determined by your program's dependency graph - that actually need to be touched to keep program state fully in sync!
@@ -247,7 +244,9 @@ bar();
 
 ### Stateful Execution Mode (Whole Programs)
 
-Given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
+Think "Strict Mode", but for reactivity!
+
+Here, given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
 
 ```js
 // Stateful regular JS
@@ -638,7 +637,7 @@ Observer.intercept(globalThis, {
 
 </details>
 
-### ...with Stateful Parent Scopes
+### ...with Stateful Parent Scopes Themselves
 
 While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are reactive.
 
@@ -661,18 +660,20 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 })();
 ```
 
-## Life in a Stateful Program (Concepts)
+## Inside a Stateful Program (The Concepts)
 
-For a great way to reason about everything: Stateful programs are *self-managed* programs! If you can already write the code, the rest can always be left to the machine as machine-level concerns! Now, this is an optional section that covers the basic concepts that may help you take full advantage of that!
+In how Stateful programs can already entirely manage themselves, knowledge of how they work can very much be optional! But, for the curious, this section covers just that: the very *awesome* part!
 
+Knowing how things work could provide a better way to reason about your own code, and a better backdrop for taking full advantage of your new-found magical runtime to never again do manual work!
 
-## Continue Reading...
-
-+ this story continues [right here](https://github.com/webqit/stateful-js/wiki).
++ [Reactivity](https://github.com/webqit/stateful-js/wiki#reactivity)
++ [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
++ [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
++ [Update Model](https://github.com/webqit/stateful-js/wiki#update-model)
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. And good a thing, while this absolutely must be a compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
+Stateful JS may be used today via a polyfill. And good a thing, while this is an absolutely powerful compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
@@ -707,7 +708,7 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 <details><summary>See details</summary>
 
-| API | Runs as... |
+| API | Program type... |
 | :------- | :----------- |
 | `StatefulFunction` | `function** () {}` |
 | `StatefulAsyncFunction` | `async function** () {}` |
@@ -808,13 +809,13 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obse
 
 <details><summary>See details</summary>
 
-| API | Runs as... |
+| API | Program type... |
 | :------- | :----------- |
 | `StatefulAsyncFunction` | `async function** () {}` |
 | `StatefulAsyncScript` | `<script async>` |
 | `StatefulModule` | `<script type="module">` |
 
-The lazy-loading strategy here could only comfortably give you equivalent APIs to "async" program types!
+Here, you're only able to have APIs for just the "async" program types!
 
 <details><summary>Code</summary>
   
@@ -856,7 +857,7 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the polyfills, the following examples work today. (Hopefully, you can have a lot of fun here!)
+Using the Stateful JS and Observer API polyfills, the following examples work today. (Now, hopefully, you can have a lot of fun with that!)
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
@@ -950,13 +951,13 @@ class MyURL {
 }
 ```
 
-Instantiate `MyURL`:
+└ Instantiate `MyURL`:
 
 ```js
 const url = new MyURL('https://www.example.com/path');
 ```
 
-Change a property and have it's dependents auto-update:
+└ Change a property and have it's dependents auto-update:
 
 ```js
 url.protocol = 'http:'; //Observer.set(url, 'protocol', 'http:');
@@ -967,6 +968,10 @@ console.log(url.href); // http://foo.dev/path
 ```
 
 </details>
+
+## Relationship with Other Concepts
+
+*TODO*
 
 ## Getting Involved
 
