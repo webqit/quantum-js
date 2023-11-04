@@ -662,9 +662,9 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Inside a Stateful Program (How It Works!)
 
-In how Stateful programs can already entirely manage themselves, knowledge of how they work can very much be optional! But, for the curious, this section covers just that: the very *awesome* part!
+In how Stateful programs can already entirely manage themselves, knowledge of how they work can very much be optional! But, if you may, this section covers just that: the very *awesome* part!
 
-Knowing how things work could provide a better way to reason about your own code, and a better backdrop for taking full advantage of your new-found magical runtime to never again do manual work!
+Knowing how things work could give you a better way to reason about your own code, and a better background for taking full advantage of the "Stateful" magic to never again do manual work!
 
 + [Reactivity](https://github.com/webqit/stateful-js/wiki#reactivity)
 + [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
