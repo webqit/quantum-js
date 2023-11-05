@@ -52,7 +52,7 @@ Imperative programs are really the foundation for "state", "effect" and much of 
 
 <details><summary>Learn more</summary>
 
-Right in how the instructions in an imperative program act on data - from the assignment expression that sets or changes the data held in a local variable (`count = 10`) to the `delete` operator that mutates some object property (`delete object.value`) and the "if" construct that determines the program's execution path based on a certain value - you can see "state" (data) and "effect" (instruction) at play!
+Right in how the instructions in an imperative program act on data - from the assignment expression that sets or changes the data held in a local variable (`count = 10`) to the `delete` operator that mutates some object property (`delete object.value`), or the "if" construct that determines the program's execution path based on a certain value - you can see "state" (data) and "effect" (instruction) at play!
 
 But what we don't get with how this works naturally is having the said instructions stay sensitive to changes to the data they individually act on! (The runtime simply not maintaining that relationship!) And that's where the problem lies; where a whole new way of doing things becomes necessary - wherein we have to approach fundamental operations programmatically: `setCount(10)` vs `count = 10`.
 
