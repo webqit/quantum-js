@@ -459,7 +459,7 @@ But unlike regular JavaScript, Stateful programs maintain a live relationship wi
 
 ### ...with Arbitrary Objects
 
-With any object, every interaction happening at the property level is reactive! This means that:
+With any given object, every interaction happening at the property level is potentially reactive! This means that:
 
 #### Mutations to Object Properties from the Outside Will Be Automatically Reflected
 
