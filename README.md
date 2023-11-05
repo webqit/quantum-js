@@ -369,7 +369,7 @@ const state = counter();
 console.log(state.value); // 0
 ```
 
-Now, the general-purpose, object-observability API: [Observer API](https://github.com/webqit/observer) puts those changes right in our hand:
+Now, the general-purpose, object-observability API: [Observer API](https://github.com/webqit/observer) puts those changes right in our hands:
 
 ```js
 Observer.observe(state, 'value', mutation => {
@@ -414,7 +414,7 @@ const state = await program.execute();
 console.log(state.exports); // { localVar }
 ```
 
-Now, again, the Observer API puts those changes right in our hand:
+Now, again, the Observer API puts those changes right in our hands:
 
 ```js
 Observer.observe(state.exports, 'localVar', mutation => {
