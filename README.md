@@ -48,7 +48,7 @@ Here, the code you write is able to *statically* reflect changes to state in *mi
 
 ## Idea
 
-Imperative programs are really the foundation for "state", "effect" and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. But that's really us _re-implementing existing machine-level concepts_ that should be best left to the machine!
+Imperative programs are really the foundation for "state", "effect" and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. Now, that's really us _re-implementing existing machine-level concepts_ that should be best left to the machine!
 
 <details><summary>Learn more</summary>
 
