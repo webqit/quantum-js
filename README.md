@@ -249,7 +249,7 @@ bar();
 
 Think "Strict Mode", but for reactivity!
 
-Here, given the same underlying infrastructure, any piece of code can be made to run in stateful mode. Stateful JS exposes two APIs that let us have that:
+Here, given the same underlying infrastructure, any piece of code should be able to run in stateful mode. Stateful JS exposes two APIs that enable just that:
 
 ```js
 // Stateful regular JS
