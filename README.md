@@ -48,17 +48,17 @@ Here, the code you write is able to *statically* reflect changes to state in *mi
 
 ## Idea
 
-Imperative programs are really the foundation for *state*, *effect* and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. Now, that's really to say: **much of the code we write is a replication of _existing machine-level concepts_; an overhead**!
+Imperative programs are really the foundation for *state*, *effect* and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. Why do we have to replicate _existing machine-level concepts_ when that should be something best left to the machine?
 
 <details><summary>Learn more</summary>
 
-Right in the fundamentals of a programming language - from the assignment expression that sets or changes the data held in a local variable (`count = 10`) to the delete expression that mutates some object property (`delete object.value`) - you can already see "state" and "effect" at play! (And a large program is simply many of these interspersed with control flow structures!)
+Right in how the instructions in an imperative program act on data - from the assignment expression that sets or changes the data held in a local variable (`count = 10`), or the `delete` operator that mutates some object property (`delete object.value`), to the "if" construct that determines the execution path based on a certain value - you can see "state" (data) and "effect" (instruction) at play!
 
-What we don't get with how this works is having "end state" automatically maintained by the effects that produce them as other parts of the program change! (That relationship is simply not maintained by the runtime!) And that's where a whole new way of doing even basic things becomes necessary - wherein we approach every imperative operation programmatically: `setCount(10)` vs `count = 10`.
+But what we don't get with how this works naturally is having the instructions stay sensitive to changes to the data they individually act on! (That relationship is simply not maintained by the runtime!) And that's where a whole new way of doing the same fundamental things becomes necessary - wherein we approach every imperative operation programmatically: `setCount(10)` vs `count = 10`.
 
 </details>
 
-If we could get the JS runtime to add "reactivity" to how it already works - this time, having each effect automatically maintain their own end state, **we would have unnecessitated the manual way and would be fully leaving _machine-level concepts_ to the _machine_**!
+If we could get the JS runtime to add "reactivity" to how it already works - this time, having the instructions stay sensitive to changes to the data they individually act on - **we would be absolutely enabling reactive programming in the imperative form of the language and entirely unnecessitating the manual way**!
 
 <!--
 <details><summary>Learn more</summary>
