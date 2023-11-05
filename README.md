@@ -69,9 +69,12 @@ Many new things here for free when machine-level concepts are indeed left to the
 + A maximum authoring experience and much cleaner, leaner code; by a large margine
 
 </details>
--->
 
 This comes as a radically different thinking that occupies its own category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
+
+-->
+
+But this is where we are now!
 
 <!--
 ## Update Model
