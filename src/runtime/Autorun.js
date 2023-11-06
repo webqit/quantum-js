@@ -326,7 +326,8 @@ export default class Autorun extends EventTarget {
         if ( returnees.size ) { this.runtime.schedule( ...returnees ); }
         if ( !sizeAfter && sizeBefore ) {
             this.runtime.on( 'reflection', () => {
-                if ( this.context.iterating ) return; this.context.iterate();
+                if ( this.context.iterating ) return;
+                this.context.iterate();
             }, { once: true } );
         }
     }
