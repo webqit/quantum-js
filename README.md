@@ -529,7 +529,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept property access by Stateful programs!
+And if you'd go further with the Observer API, you could even intercept every access to object properties happening within a Stateful program!
 
 <details><summary>Example</summary>
 
@@ -549,7 +549,7 @@ Observer.intercept(foo, {
 
 ### ...with the Global Scope
 
-For global variables, interactions happening directly at the variable level, not just at the property level this time, are reactive! (Here we take advantage of the fact that global variables are really *properties* of a real *object* - the `globalThis` - which serves as JavaScript's global scope!)
+For global variables, interactions happening directly at the variable level, not just at the property level this time, are potentially reactive! (Here we take advantage of the fact that global variables are actually *properties* of a real *object* - the `globalThis` - which serves as JavaScript's global scope!)
 
 This means that:
 
@@ -622,7 +622,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept global variable access by Stateful programs!
+And if you'd go further with the Observer API, you could even intercept every access to global variables happening a Stateful program!
 
 <details><summary>Example</summary>
 
@@ -642,7 +642,7 @@ Observer.intercept(globalThis, {
 
 ### ...with Stateful Parent Scopes Themselves
 
-While bare variables in a local scope in JavaScript can't be observed or programatically updated, bare variables in a Stateful scope are reactive.
+While bare variables in a local scope in JavaScript don't map to a physical, observable object like we have of global variables, bare variables in a Stateful scope are potentially reactive like we have of global variables.
 
 Where a function runs within a Stateful program itself, any updates it makes to those variables are automatically reflected:
 
@@ -665,9 +665,9 @@ Where a function runs within a Stateful program itself, any updates it makes to 
 
 ## Inside a Stateful Program (How It Works!)
 
-In how Stateful programs can already entirely manage themselves, knowledge of how they work can very much be optional! But, if you may, this section covers just that: the very *awesome* part!
+In how Stateful programs can already entirely manage themselves, knowledge of how they work is very much optional! But, if you may look, this section covers just that very *awesome* part!
 
-Knowing how things work could give you a better way to reason about your own code, and a better background for taking full advantage of the "Stateful" magic to never again do manual work!
+Knowing how things work presents a great way to reason about Stateful programs, and a better background for taking full advantage of the "Stateful" magic to never again do manual work!
 
 + [Reactivity](https://github.com/webqit/stateful-js/wiki#reactivity)
 + [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
@@ -677,7 +677,7 @@ Knowing how things work could give you a better way to reason about your own cod
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. And good a thing, while this is an absolutely powerful compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
+Stateful JS may be used today via a polyfill. And good a thing, while this is a fully-featured compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
@@ -712,7 +712,7 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 <details><summary>See details</summary>
 
-| API | Program type... |
+| API | Equivalent semantics... |
 | :------- | :----------- |
 | `StatefulFunction` | `function** () {}` |
 | `StatefulAsyncFunction` | `async function** () {}` |
@@ -777,7 +777,7 @@ program();
 
 ### Stateful JS Lite
 
-It is possible to use a lighter version of Stateful JS where you want something *further* feather weight for your initial application load. The Lite version initially comes without the compiler and yet let's you work with Stateful JS ahead of that.
+It is possible to use a lighter version of Stateful JS where you want something further feather weight for your initial application load. The Lite version initially comes without the compiler and yet lets you work with Stateful JS ahead of that.
 
 <details><summary>
 Load from a CDN<br>
@@ -813,13 +813,13 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obse
 
 <details><summary>See details</summary>
 
-| API | Program type... |
+| API | Equivalent semantics... |
 | :------- | :----------- |
 | `StatefulAsyncFunction` | `async function** () {}` |
 | `StatefulAsyncScript` | `<script async>` |
 | `StatefulModule` | `<script type="module">` |
 
-Here, you're only able to have APIs for just the "async" program types!
+Here, only the "async" program types can possibly be obtained this way!
 
 <details><summary>Code</summary>
   
@@ -861,16 +861,16 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the Stateful JS and Observer API polyfills, the following examples work today. (Now, hopefully, you can have a lot of fun with that!)
+Using the Stateful JS and Observer API polyfills, the following examples work today.
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
 
 ### Example 1: *Reactive Custom Elements*
 
-Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write *Stateful* code?
+Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write "Stateful" logic?
 
-In this example, we demonstrate a custom element that has Stateful Function as its `render()` method. We invoke the `render()` method only once and let it statically reflect subsequent updates:
+In this example, we demonstrate a custom element that has a Stateful `render()` method. We invoke the `render()` method only once and let every subsequent *prop* change be statically reflected:
 
 
 <details><summary>Code</summary>
@@ -916,7 +916,7 @@ customElements.define('click-counter', class extends HTMLElement {
 
 ### Example 2: *Pure Computations*
 
-Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write *Stateful* code?
+Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write "Stateful" logic?
 
 In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
 
