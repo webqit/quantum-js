@@ -529,7 +529,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept every access to object properties happening within a Stateful program!
+And if you'd go further with the Observer API, you could even intercept every access to an object's properties ahead of Stateful programs!
 
 <details><summary>Example</summary>
 
@@ -622,7 +622,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept every access to global variables happening a Stateful program!
+And if you'd go further with the Observer API, you could even intercept every access to global variables ahead of programs!
 
 <details><summary>Example</summary>
 
@@ -653,10 +653,12 @@ Where a function runs within a Stateful program itself, any updates it makes to 
   let count = 0;
   setInterval(() => count++, 500); // Live updates, even from within a non-stateful closure
 
-  console.log('From main stateful scope: ', count); // Reflected here
+  // "count" is automatically reflected here
+  console.log('From main stateful scope: ', count);
 
   function** nested() {
-    console.log('From inner stateful scope: ', count); // Reflected here
+    // "count" is automatically reflected here
+    console.log('From inner stateful scope: ', count);
   }
   nested();
 
@@ -677,7 +679,7 @@ Knowing how things work presents a great way to reason about Stateful programs, 
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. And good a thing, while this is a fully-featured compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
+Stateful JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
