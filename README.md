@@ -622,7 +622,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept every access to global variables ahead of programs!
+And if you'd go further with the Observer API, you could even intercept every access to global variables ahead of Stateful programs!
 
 <details><summary>Example</summary>
 
