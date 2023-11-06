@@ -10,7 +10,7 @@
 Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
 
 ## Overview
-
+ 
 Whereas you normally would need a couple primitives to model reactive logic...
 
 ```js
