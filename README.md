@@ -670,9 +670,9 @@ In how Stateful programs can already entirely manage themselves, knowledge of ho
 Knowing how things work could give you a better way to reason about your own code, and a better background for taking full advantage of the "Stateful" magic to never again do manual work!
 
 + [Reactivity](https://github.com/webqit/stateful-js/wiki#reactivity)
-+ [Granularity](https://github.com/webqit/stateful-js/wiki#granularity)
-+ [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
++ [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
 + [Update Model](https://github.com/webqit/stateful-js/wiki#update-model)
++ [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
 + [Experimental Features](https://github.com/webqit/stateful-js/wiki#experimental-features)
 
 ## Polyfill
