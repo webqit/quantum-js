@@ -60,65 +60,7 @@ But what we don't get with how this works naturally is having the said instructi
 
 If we could get the JS runtime to add "reactivity" to how it already works - i.e. having the very instructions stay sensitive to changes to the data they individually act on - we absolutely would be enabling reactive programming in the imperative form of the language and entirely unnecessitating the manual way!
 
-<!--
-<details><summary>Learn more</summary>
-
-Many new things here for free when machine-level concepts are indeed left to the machine:
-
-+ A level of precision and performance that could never be attained manually
-+ A maximum authoring experience and much cleaner, leaner code; by a large margine
-
-</details>
-
-This comes as a radically different thinking that occupies its own category in the reactivity spectrum! (You can learn more in the [Relationship with Other Concepts](#relationship-with-other-concepts) section.)
-
--->
-
 But this is where we are now!
-
-<!--
-## Update Model
-
-When a change happens, Stateful programs do *just what's needed* to reflect it! Updates will always involve *just the relevant expression*, or sequence of expressions - as entirely determined by your program's dependency graph - that actually need to be touched to keep program state fully in sync!
-
-This means: game on with however your code lends itself to be written, as in below; but only the following sequence of expressions: 4 -> 5, will reflect a change to `count`:
-
-```js
-let outputNode = document.createElement('div');
-let count = 5; // [Statement 2]
-document.body.append(outputNode);
-let doubleCount = count * 2; // [Statement 4]: Dependent on statement 2
-outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 4
-```
-
-```js
-// An update
-setTimeout(() => count = 10, 500);
-```
-
-Now, this translates to eliminating the overheads of doing **_unrelated_** work - as would be the case with having that `div` above recreated and appending each time `count` is updated! 
-
-Of course, this precision just makes us many "x" more performant!
-
-Also, update sequence is always ordered and *linear*! Reflection will always happen in the same top-down sequence of "control flow" in imperative programs, ensuring familiar and predictable runtime behaviour.
-
-Now, this translates to eliminating the often **_tricky_** reactivity in non-linear update models - as would be the case with having an update below on line 6 moved control up the scope to trigger statements 5 and 3!
-
-```js
-let outputNode = document.createElement('div'); // [Statement 1]
-let count = 5;
-document.body.append(outputNode); // [Statement 3]: Dependent on statement 1
-let doubleCount = count * 2;
-outputNode.innerHTML = doubleCount; // [Statement 5]: Dependent on statement 1
-outputNode = document.createElement('span'); // [Statement 6]: Has no dependents and wouldn't move control up the scope to statements 5 and 3, as those aren't dependents
-```
-
-Of course, our current linear update model just makes everything many "x" easier to reason about!
-
-> Note that, earlier, the update to `count` didn't happen as an operation in the same flow as the dependents themselves, but as an operation driven by an external event: `setTimeout(() => count = 10, 500);`!
-
-Armed with this simple principle of operation, you can go pretty any length without breaking a sweat!
--->
 
 ## Creating Stateful Programs
 

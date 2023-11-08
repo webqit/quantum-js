@@ -664,7 +664,7 @@ describe( 'Module imports/exports', function() {
                 counter1 ++;
                 counter2 += 2;
             }, 500 );
-        `, { packageName: 'counter', env } );
+        `, { exportNamespace: '#counter', env } );
 
         //console.log( '----------------', script1.toString( true ) );
         // Initial execution1

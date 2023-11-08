@@ -4,7 +4,7 @@
  */
 import Observer from '@webqit/observer';
 import { _await } from '../util.js';
-import { registry } from './hot-modules-registry.js';
+import { registry } from './hot-module-registry.js';
 import AutoAsyncIterator from './AutoAsyncIterator.js';
 import AutoIterator from './AutoIterator.js';
 import Autorun from './Autorun.js';
@@ -50,7 +50,7 @@ export default class Runtime extends Autorun {
         const cause = serials.map( serial => serial !== -1 && this.extractSource( serial, true ) ).filter( x => x );
         cause.push( { source: this.$params.originalSource } );
         error = new ( ErrorClass || Error )( $message, { cause } );
-        const fileName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.packageName || this.$params.fileName;
+        const fileName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
         if ( fileName ) { error.fileName = fileName; }
         if ( errorCode ) { error.code = errorCode; }
         throw error;
@@ -123,11 +123,11 @@ export default class Runtime extends Autorun {
             if ( $source.forExport || $source.isDynamic ) return modules;
             this.assignModules( args, this.scope.state, modules, source.serial );
         };
-        if ( $source.source.startsWith( '#' ) && this.$params.experimentalFeatures !== false && registry[ $source.source.slice( 1 ) ] ) {
-            return onload( registry[ $source.source.slice( 1 ) ] );
+        if ( this.$params.experimentalFeatures !== false && registry[ $source.source ] ) {
+            return onload( registry[ $source.source ] );
         }
         const promise = ( async () => {
-            const moduleName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.packageName || this.$params.fileName;
+            const moduleName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
             try { return onload( await import( $source.source ) ); } catch( e ) {
                 if ( e.code === 'ERR_MODULE_NOT_FOUND' ) { this.throw( `Cannot find package "${ $source.source }"${ moduleName ? ` imported at "${ moduleName }"` : '' }.`, [ $source.serial ], null, e.code ); }
                 throw e;
@@ -170,10 +170,9 @@ export default class Runtime extends Autorun {
     }
     
     afterExecute( ...args ) {
-        if ( this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.packageName ) {
-            if ( this.$params.packageName.startsWith( '#' ) ) throw new Error( `Experimental hot package names cannot start with a "#".` );
-            registry[ this.$params.packageName ] = this.exports;
-            this.once( () => { delete registry[ this.$params.packageName ]; } );
+        if ( this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace ) {
+            registry[ this.$params.exportNamespace ] = this.exports;
+            this.once( () => { delete registry[ this.$params.exportNamespace ]; } );
         }
         return super.afterExecute( ...args );
     }

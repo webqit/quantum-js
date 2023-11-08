@@ -12,7 +12,7 @@ export { State, Runtime }
 
 export function $eval( sourceType, parseCompileCallback, source, params ) {
     // params could have: env, functionParams, parserParams, compilerParams, runtimeParams
-    const { env, functionParams = [], packageName, fileName } = params;
+    const { env, functionParams = [], exportNamespace, fileName } = params;
     const { parserParams, compilerParams, runtimeParams, } = resolveParams( params );
 
     // Format source? Mode can be: function, async-function, script, async-script, module
@@ -37,7 +37,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
 
     // Proceed to eval
     runtimeParams.sourceType = sourceType;
-    runtimeParams.packageName = packageName;
+    runtimeParams.exportNamespace = exportNamespace;
     runtimeParams.fileName = fileName;
     return _await( compiledSource, compiledSource => {
         // Below, "async-function" would already has async in the returned function
