@@ -14,16 +14,16 @@ Stateful JS is a runtime extension to JavaScript that enables us do [Imperative 
 Whereas you normally would need a couple primitives to model reactive logic...
 
 ```js
-import { useState, useMemo, useEffect } from 'react';
+import { createSignal, createMemo, createEffect } from 'solid-js;
 
 // count
-const [ count, setCount ] = useState(5);
+const [ count, setCount ] = createSignal(5);
 // doubleCount
-const doubleCount = useMemo(() => count * 2, [count]);
+const doubleCount = createMemo(() => count * 2, [count]);
 // console.log()
-useEffect(() => {
+createEffect(() => {
   console.log(doubleCount);
-}, [doubleCount]);
+});
 ```
 
 ```js
