@@ -19,10 +19,10 @@ import { createSignal, createMemo, createEffect } from 'solid-js';
 // count
 const [ count, setCount ] = createSignal(5);
 // doubleCount
-const doubleCount = createMemo(() => count * 2, [count]);
+const doubleCount = createMemo(() => count() * 2);
 // console.log()
 createEffect(() => {
-  console.log(doubleCount);
+  console.log(doubleCount());
 });
 ```
 
