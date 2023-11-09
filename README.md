@@ -48,6 +48,8 @@ Here, the code you write is able to *statically* reflect changes to state in *mi
 
 ## Idea
 
+<details><summary>Show</summary>
+
 Imperative programs are really the foundation for "state", "effect" and much of what we try to model today at an abstract level using, sometimes, functional reactive primitives as above, and sometimes some other means to the same end. Now, that's really us _re-implementing existing machine-level concepts_ that should be best left to the machine!
 
 <details><summary>Learn more</summary>
@@ -60,7 +62,9 @@ But what we don't get with how this works naturally is having the said instructi
 
 If we could get the JS runtime to add "reactivity" to how it already works - i.e. having the very instructions stay sensitive to changes to the data they individually act on - we absolutely would be enabling reactive programming in the imperative form of the language and entirely unnecessitating the manual way!
 
-But this is where we are now!
+This is what we're exploring with Stateful JS!
+
+</details>
 
 ## Creating Stateful Programs
 
