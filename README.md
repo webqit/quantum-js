@@ -5,7 +5,7 @@
 [![bundle][bundle-src]][bundle-href]
 [![License][license-src]][license-href]
 
-[Overview](#overview) • [Creating Stateful Programs](#creating-stateful-programs) • [Polyfill](#polyfill) • [Examples](#examples) • [Getting Involved](#getting-involved) • [License](#license)
+[Overview](#overview) • [Creating Stateful Programs](#creating-stateful-programs) • [Polyfill](#polyfill) • [Examples](#examples) • [License](#license)
 
 Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
 
