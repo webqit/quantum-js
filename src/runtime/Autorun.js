@@ -181,12 +181,21 @@ export default class Autorun extends EventTarget {
         const kind = lexicalScope.symbols.get( name )?.kind;
         const baseSignal = lexicalScope.signal( name, kind );
         if ( hint.typed ) { this.typed( hint.typed, baseSignal.state, name ); }
-        return this.autobind( baseSignal, depth );
+        return this.autobind( baseSignal, depth, hint );
     }
 
-    obj( val, depth ) { return this.autobind( this.runtime.$objects.signal( val, 'object' ), depth ); }
+    obj( val, ...rest ) {
+        let depth = 0, hint = {};
+        if ( typeof rest[ 0 ] === 'number' ) {
+            depth = rest.shift();
+            hint = rest.shift() || {};
+        } else if ( typeof rest[ 0 ] === 'object' ) {
+            hint = rest.shift();
+        }
+        return this.autobind( this.runtime.$objects.signal( val, 'object' ), depth, hint );
+    }
 
-    autobind( baseSignal, depth ) {
+    autobind( baseSignal, depth, hint ) {
         const isStatefulFunction = this.runtime.$params.isStatefulFunction;
         const isConst = baseSignal.type  === 'const';
         const isRuntime = this === this.runtime;
@@ -200,7 +209,7 @@ export default class Autorun extends EventTarget {
             // Return bare value here?
             if ( !depth || !signal.state || typeof signal.state !== 'object' ) {
                 let returnValue = signal.state;
-                if ( typeof signal.state === 'function' ) {
+                if ( !depth && hint.funCall && typeof signal.state === 'function' ) {
                     // We're returning a proxy for functions instead of: signal.context.state[ signal.name ].bind( signal.context.state );
                     returnValue = Observer.proxy( signal.state, { membrane: signal } );
                 }

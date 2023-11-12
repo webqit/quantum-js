@@ -18,6 +18,7 @@ const env = { log: [], iteratee: [ '0', '1', '2', '3' ], breakpoint: '2', br: 10
 /*
 const script = new StatefulModule(`
     let kk, rest;
+    console.log('In operator', 'length' in log);
     [ kk, , ...rest ] = iteratee;
     let Observer = await import('@webqit/observer');
     log.push( rest, typeof restkkkk, Observer );

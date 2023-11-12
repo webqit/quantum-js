@@ -17,7 +17,7 @@ export function StatefulAsyncFunction( ...args ) {
     const compiledFunction = $eval( 'async-function', parseCompileCallback, source, params );
     if ( !( compiledFunction instanceof Promise ) ) return compiledFunction;
     // Introduce a wrapper function that awaits main function
-    const wrapperFunction = async function( ...args ) { return ( await compiledFunction ).apply( this, ...args ); }
+    const wrapperFunction = async function( ...args ) { return ( await compiledFunction ).call( this, ...args ); }
     Object.defineProperty( wrapperFunction, 'toString', { value: async function( ...args ) { return ( await compiledFunction ).toString( ...args ) } } )
     return wrapperFunction;
 }

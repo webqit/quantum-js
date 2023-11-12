@@ -421,15 +421,18 @@ export default class Compiler {
     transformIdentifier( node ) {
         const ref = this.currentScope.find( node );
         if ( !ref && node.name ) { this.currentScope.$fIdentifiersNoConflict( node.name ); }
+        const hintArg = [];
+        if ( node.hint ) { hintArg.push( this.$obj( { [ node.hint ]: Node.identifier( true ) } ) ); }
+        else if ( this.currentEntry.mode === 'callee' ) {
+            hintArg.push( this.$obj( { funCall: Node.identifier( true ) } ) );
+        }
         // Static mode?
         if ( node.type === 'ThisExpression' || [ 'param', 'self' ].includes( ref?.type ) || [ 'arguments' ].includes( node.name ) ) {
-            if ( this.currentEntry.trail ) return this.$call( 'obj', node, ...this.$trail() );
+            if ( this.currentEntry.trail ) return this.$call( 'obj', node, ...this.$trail(), ...hintArg );
             return node;
         }
         // We're now dealing with an identifier or path that can change
         this.history.forEach( state => state.refs?.add( node ) );
-        const hintArg = [];
-        if ( node.hint ) { hintArg.push( this.$obj( { [ node.hint ]: Node.identifier( true ) } ) ); }
         return this.$call( 'ref', Node.literal( node ), ...this.$trail(), ...hintArg );
     }
 
@@ -884,7 +887,7 @@ export default class Compiler {
         let { key, value } = node;
         if ( node.computed ) { key = this.transformNode( key ); }
         value = this.transformNode( value );
-        return Node.property( key, value, node.kind, node.shorthand, node.computed, false/* node.method. due to the transformation */ );
+        return Node.property( key, value, node.kind, false/* node.shorthand. due to the transformation */, node.computed, false/* node.method. due to the transformation */ );
     }
 
     transformArrayExpression( node ) {
