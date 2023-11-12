@@ -424,7 +424,7 @@ export default class Compiler {
         const hintArg = [];
         if ( node.hint ) { hintArg.push( this.$obj( { [ node.hint ]: Node.identifier( true ) } ) ); }
         else if ( this.currentEntry.mode === 'callee' ) {
-            hintArg.push( this.$obj( { funCall: Node.identifier( true ) } ) );
+            //hintArg.push( this.$obj( { funCall: Node.identifier( true ) } ) );
         }
         // Static mode?
         if ( node.type === 'ThisExpression' || [ 'param', 'self' ].includes( ref?.type ) || [ 'arguments' ].includes( node.name ) ) {
