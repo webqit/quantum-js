@@ -787,7 +787,7 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the Quantum JS and Observer API polyfills, the following examples work today.
+Using the Quantum JS and Observer API polyfills, the following examples work today. While we'll demonstrate the most basic forms of these scenarios, it takes roughly the same principles to build more intricate equivalents.
 
 <details><summary>Example 1: <i>Reactive Custom Elements</i><br>
 └───────── </summary>
