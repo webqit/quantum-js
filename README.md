@@ -703,7 +703,7 @@ program();
 
 ### Quantum JS Lite
 
-It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite version initially comes without the compiler and yet lets you work with Quantum JS ahead of that.
+It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that.
 
 <details><summary>
 Load from a CDN<br>
