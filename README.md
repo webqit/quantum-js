@@ -260,30 +260,6 @@ Now, this goes a step further to let us have "Quantum Scripts" - which ships in 
 
 And the ideas there are coming to simplify how we build single page applications!
 
-<details><summary>Sneak peak</summary>
-
-```html
-<main id="page1">
-  <script scoped quantum>
-
-    console.log(this.id); // page1
-
-  </script>
-</main>
-```
-
-```html
-<main id="page2">
-  <script type="module" scoped quantum>
-
-    console.log(this.id); // page2
-
-  </script>
-</main>
-```
-
-</details>
-
 Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
 
 ## Consuming Quantum Programs
@@ -813,17 +789,12 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 Using the Quantum JS and Observer API polyfills, the following examples work today.
 
-+ [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
-+ [Example 2: *Pure Computations*](#example-2-pure-computations)
-
-### Example 1: *Reactive Custom Elements*
+<details><summary>Example 1: <i>Reactive Custom Elements</i><br>
+└───────── </summary>
 
 Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write "Quantum" logic?
 
 In this example, we demonstrate a custom element that has a Quantum `render()` method. We invoke the `render()` method only once and let every subsequent *prop* change be statically reflected:
-
-
-<details><summary>Code</summary>
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -864,13 +835,12 @@ customElements.define('click-counter', class extends HTMLElement {
 
 </details>
 
-### Example 2: *Pure Computations*
+<details><summary>Example 2: <i>Pure Computations</i><br>
+└───────── </summary>
 
 Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write "Quantum" logic?
 
 In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
-
-<details><summary>Code</summary>
 
 ```js
 class MyURL {
