@@ -940,7 +940,7 @@ MIT.
 
 [npm-version-src]: https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&colorA=black&colorB=F0DB4F
 [npm-version-href]: https://npmjs.com/package/@webqit/quantum-js
-[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/quantum-js?style=flat&colorA=black&colorB=F0DB4F
+[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=black&colorB=F0DB4F
 [npm-downloads-href]: https://npmjs.com/package/@webqit/quantum-js
 [bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?style=flat&colorA=black&colorB=F0DB4F
 [bundle-href]: https://bundlephobia.com/result?p=@webqit/quantum-js
