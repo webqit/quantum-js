@@ -156,7 +156,7 @@ const bar = QuantumAsyncFunction(`
 await bar();
 ```
 
-<details><summary>...and in just how <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function">function constructors</a> work in JavaScript</summary>
+<details><summary>...and in just how function constructors work in JavaScript</summary>
 
 ```js
 // With function parameters
@@ -188,6 +188,8 @@ const bar = QuantumFunction(`
 `);
 bar();
 ```
+
+Learn more about [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function).
 
 </details>
 
@@ -236,7 +238,7 @@ const program = new QuantumModule(`
 
 </details>
 
-Now, this goes a step further to let us have "Quantum Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml):
+Now, this goes a step further to let us have "Quantum Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml#quantum-scripts):
 
 ```html
 <!-- Quantum classic script -->
