@@ -5,14 +5,14 @@
 import { Parser } from 'acorn';
 
 export default Parser.extend( function( Parser ) {
-    let isStatefulFunction = false;
+    let isQuantumFunction = false;
     let parsingClassElement = false;
     let parsingProperty = false;
     return class extends Parser {
 
         parseFunction( node, statement, allowExpressionBody, isAsync, forInit ) {
             if ( this.type.label === '**' ) {
-                node.isStatefulFunction = true;
+                node.isQuantumFunction = true;
                 this.next();
             }
             return super.parseFunction( node, statement, allowExpressionBody, isAsync, forInit );
@@ -20,7 +20,7 @@ export default Parser.extend( function( Parser ) {
 
         isClassElementNameStart() {
             if ( this.type.label === '**' ) {
-                isStatefulFunction = true;
+                isQuantumFunction = true;
                 this.next();
             }
             return super.isClassElementNameStart();
@@ -28,7 +28,7 @@ export default Parser.extend( function( Parser ) {
 
         isAsyncProp( prop ) {
             if ( this.type.label === '**' ) {
-                isStatefulFunction = true;
+                isQuantumFunction = true;
                 this.next();
             }
             return super.isAsyncProp( prop );
@@ -39,7 +39,7 @@ export default Parser.extend( function( Parser ) {
                 ( parsingProperty && token.label === ':' ) 
                 || ( ( parsingProperty || parsingClassElement ) && token.label === '*' ) 
             ) && this.type.label === '**' ) {
-                isStatefulFunction = true;
+                isQuantumFunction = true;
                 this.next();
                 return false;
             }
@@ -50,9 +50,9 @@ export default Parser.extend( function( Parser ) {
             parsingProperty = true;
             let node = super.parseProperty( isPattern, refDestructuringErrors );
             parsingProperty = false;
-            if ( isStatefulFunction ) {
-                node.value.isStatefulFunction = true;
-                isStatefulFunction = false;
+            if ( isQuantumFunction ) {
+                node.value.isQuantumFunction = true;
+                isQuantumFunction = false;
             }
             return node;
         }
@@ -61,9 +61,9 @@ export default Parser.extend( function( Parser ) {
             parsingClassElement = true;
             let node = super.parseClassElement( constructorAllowsSuper );
             parsingClassElement = false;
-            if ( isStatefulFunction ) {
-                node.value.isStatefulFunction = true;
-                isStatefulFunction = false;
+            if ( isQuantumFunction ) {
+                node.value.isQuantumFunction = true;
+                isQuantumFunction = false;
             }
             return node;
         }

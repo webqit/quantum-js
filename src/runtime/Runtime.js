@@ -101,16 +101,16 @@ export default class Runtime extends Autorun {
 
     execute( callback = null ) {
         return super.execute( returnValue => {
-            const actualReturnValue = this.$params.isStatefulFunction
+            const actualReturnValue = this.$params.isQuantumFunction
                 ? new State( this )
                 : returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
         } );
     }
 
-    spawn( isStatefulFunction, thisContext, closure ) {
+    spawn( isQuantumFunction, thisContext, closure ) {
         const context = this.nowRunning || this;
-        const params = {  ...this.$params, $serial: this.$serial + 1, isStatefulFunction };
+        const params = {  ...this.$params, $serial: this.$serial + 1, isQuantumFunction };
         const scope = new Scope( context.scope, 'function', { [ 'this' ]: thisContext } );
         const subRuntime = new this.constructor( context, 'function', params, scope, closure );
         return subRuntime.execute();

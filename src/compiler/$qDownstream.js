@@ -1,6 +1,6 @@
 import Node from "./Node.js";
 
-export default class $fDownstream {
+export default class $qDownstream {
 
     type = 'BlockStatement';
     $body = [];

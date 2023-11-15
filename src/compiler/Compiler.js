@@ -3,8 +3,8 @@
  * @imports
  */
 import { generate as astringGenerate } from 'astring';
-import $fIdentifier from './$fIdentifier.js';
-import $fDownstream from './$fDownstream.js';
+import $qIdentifier from './$qIdentifier.js';
+import $qDownstream from './$qDownstream.js';
 import Scope from './Scope.js';
 import Node from './Node.js';
 
@@ -71,7 +71,7 @@ export default class Compiler {
             const compiledSource = this.serialize( newAst, { startingIndentLevel: this.params.startingIndentLevel } );
             return {
                 toString()  { return compiledSource },
-                identifier: this.currentScope.get$fIdentifier( '$f' ).name,
+                identifier: this.currentScope.get$qIdentifier( '$q' ).name,
                 topLevelAwait: this.topLevelAwait,
                 get originalSource() { return ast.originalSource || '' },
             };
@@ -105,7 +105,7 @@ export default class Compiler {
             if ( $state.flowControl?.size && $state.node.type === 'IfStatement' ) {
                 const restNodes = nodes.slice( i + 1 );
                 if ( restNodes.length ) {
-                    const downstream = new $fDownstream( restNodes );
+                    const downstream = new $qDownstream( restNodes );
                     return build.concat( this.transformNode( downstream ) );
                 }
             }
@@ -143,7 +143,7 @@ export default class Compiler {
 
     $serial( node ) { return this.currentScope.index( node, this.params.locations ); }
  
-    $path( path ) { return  path.split( '.' ).reduce( ( obj, prop ) => Node.memberExpr( obj, Node.identifier( prop ) ), this.currentScope.get$fIdentifier( '$f' ) ); }
+    $path( path ) { return  path.split( '.' ).reduce( ( obj, prop ) => Node.memberExpr( obj, Node.identifier( prop ) ), this.currentScope.get$qIdentifier( '$q' ) ); }
     
     $trail() { return this.currentEntry.trail ? [ Node.literal( this.currentEntry.trail ) ] : []; }
 
@@ -165,7 +165,7 @@ export default class Compiler {
     }
 
     $var( kind, $serial, id, init, ...$rest ) {
-        const closure = init ? this.$closure( [ this.currentScope.get$fIdentifier( '$f' ) ], init ) : Node.identifier( 'undefined' );
+        const closure = init ? this.$closure( [ this.currentScope.get$qIdentifier( '$q' ) ], init ) : Node.identifier( 'undefined' );
         let autorunExpr = this.$call( kind, Node.literal( id ), $serial, closure, ...$rest );
         if ( closure.async ) { autorunExpr = Node.awaitExpr( autorunExpr ); }
         return Node.exprStmt( autorunExpr );
@@ -181,7 +181,7 @@ export default class Compiler {
         const $serial = rest.pop();
         const spec = rest.pop() || {};
         const $spec = Object.keys( spec ).length ? [ this.$obj( spec ) ] : [];;
-        const closure = this.$closure( [ this.currentScope.get$fIdentifier( '$f' ) ], body );
+        const closure = this.$closure( [ this.currentScope.get$qIdentifier( '$q' ) ], body );
         let autorunExpr = this.$call( 'autorun', Node.literal( type ), ...$spec, $serial, closure );
         if ( closure.async ) { autorunExpr = Node.awaitExpr( autorunExpr ); }
         return Node.exprStmt( autorunExpr );
@@ -243,17 +243,17 @@ export default class Compiler {
             if ( id ) { this.currentScope.push( id, 'self' ); } // Before anything
             // Params
             const $params = params.map( param => {
-                if ( param.type === 'AssignmentPattern' && node.isStatefulFunction ) {
+                if ( param.type === 'AssignmentPattern' && node.isQuantumFunction ) {
                     const $rand = this.currentScope.getRandomIdentifier( '$rand', false );
                     const $param = this.transformSignal( $rand, 'param' ); // Must be registered as a param before line below
                     const declaration = Node.varDeclarator( param.left, Node.withLoc( Node.logicalExpr( '||', $rand, param.right ), param ) );
-                    $body.push( ...this.transformNode( Node.varDeclaration( 'let', [ Node.withLoc( declaration, param ) ] ), { static: !node.isStatefulFunction } ) );
+                    $body.push( ...this.transformNode( Node.varDeclaration( 'let', [ Node.withLoc( declaration, param ) ] ), { static: !node.isQuantumFunction } ) );
                     return $param;
                 }
                 return this.transformSignal( param, 'param' );
             } );
             // Body
-            const $$body = this.transformNode( body, { static: !node.isStatefulFunction } );
+            const $$body = this.transformNode( body, { static: !node.isQuantumFunction } );
             $body.push( ...( $$body.type === 'BlockStatement' ? $$body.body : [ Node.returnStmt( $$body ) ] ) );
             // -------------
             // Function body comment
@@ -267,14 +267,14 @@ export default class Compiler {
             return [ id, $params, Node.blockStmt( $body ), ];
         } );
 
-        const $fIdentifier = this.currentScope.get$fIdentifier( '$f' );
-        const closure = this.$closure( [ $fIdentifier ], body );
+        const $qIdentifier = this.currentScope.get$qIdentifier( '$q' );
+        const closure = this.$closure( [ $qIdentifier ], body );
 
-        const isStatefulFunctionFlag = Node.identifier( node.isStatefulFunction || false );
+        const isQuantumFunctionFlag = Node.identifier( node.isQuantumFunction || false );
         const isDeclaration = Node.identifier( node.type === 'FunctionDeclaration' );
-        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', isStatefulFunctionFlag, Node.thisExpr(), closure ) ) ] );
+        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', isQuantumFunctionFlag, Node.thisExpr(), closure ) ) ] );
 
-        const metarisation = reference => this.$call( 'function', isDeclaration, isStatefulFunctionFlag, $serial, reference/* reference to the declaration */ );
+        const metarisation = reference => this.$call( 'function', isDeclaration, isQuantumFunctionFlag, $serial, reference/* reference to the declaration */ );
         let resultNode = transform.call( Node, id, params, $body, node.async, node.expresion, node.generator );
         if ( node.type === 'FunctionDeclaration' ) {
             this.currentScope.push( id, 'static' ); // On outer scope
@@ -334,7 +334,7 @@ export default class Compiler {
         this.currentEntry.methods.add( {
             name: node.computed ? key : Node.literal( key ),
             static: Node.identifier( node.static ),
-            isStatefulFunction: Node.identifier( value.isStatefulFunction || false ),
+            isQuantumFunction: Node.identifier( value.isQuantumFunction || false ),
             serial: this.$serial( node ),
         } );
         return Node.methodDefinition( key, $value, node.kind, node.static, node.computed );
@@ -420,7 +420,7 @@ export default class Compiler {
     transformThisExpression( node ) { return this.transformIdentifier( ...arguments ); }
     transformIdentifier( node ) {
         const ref = this.currentScope.find( node );
-        if ( !ref && node.name ) { this.currentScope.$fIdentifiersNoConflict( node.name ); }
+        if ( !ref && node.name ) { this.currentScope.$qIdentifiersNoConflict( node.name ); }
         const hintArg = [];
         if ( node.hint ) { hintArg.push( this.$obj( { [ node.hint ]: Node.identifier( true ) } ) ); }
         else if ( this.currentEntry.mode === 'callee' ) {
@@ -469,7 +469,7 @@ export default class Compiler {
             }
             const $stmts = stmts.concat( this.$var( node.kind, $serial, dec.id, $init, ...$rest ) );
             // Is export?
-            if ( isExport && !( dec.id instanceof $fIdentifier ) ) {
+            if ( isExport && !( dec.id instanceof $qIdentifier ) ) {
                 const spec = [ Node.literal( dec.id ), $serial ];
                 this.exports.add( [ Node.arrayExpr( spec ) ] );
             }
@@ -505,7 +505,7 @@ export default class Compiler {
                 // Actual operation
                 let $init = this.transformNode( dec.init );
                 // As intermediate variable?
-                if ( dec.id instanceof $fIdentifier ) {
+                if ( dec.id instanceof $qIdentifier ) {
                     const $serial = this.$serial( dec );
                     return stmts.concat( this.$var( 'let', $serial, dec.id, $init ) );
                 }
@@ -703,7 +703,7 @@ export default class Compiler {
         const kind = node.type === 'WhileStatement' ? 'while' : ( node.type === 'DoWhileStatement' ? 'do-while' : 'for' );
         const $serial = this.$serial( node );
         return this.pushScope( node, () => {
-            const $fIdentifier = this.currentScope.get$fIdentifier( '$f' );
+            const $qIdentifier = this.currentScope.get$qIdentifier( '$q' );
             let createNodeCallback;
             const spec = {
                 kind: Node.literal( kind ),
@@ -711,15 +711,15 @@ export default class Compiler {
             };
             if ( kind === 'for' ) {
                 const init = Node.blockStmt( this.transformNode( node.init ) );
-                spec.init = this.$closure( [ $fIdentifier ], init );
+                spec.init = this.$closure( [ $qIdentifier ], init );
                 const test = this.transformNode( node.test );
-                spec.test = this.$closure( [ $fIdentifier ], test );
+                spec.test = this.$closure( [ $qIdentifier ], test );
                 const update = this.transformNode( node.update );
-                spec.advance = this.$closure( [ $fIdentifier ], update );
+                spec.advance = this.$closure( [ $qIdentifier ], update );
                 createNodeCallback = $body => transform.call( Node, init, test, update, $body );
             } else {
                 const test = this.transformNode( node.test );
-                spec.test = this.$closure( [ $fIdentifier ], test );
+                spec.test = this.$closure( [ $qIdentifier ], test );
                 createNodeCallback = $body => transform.call( Node, test, $body );
             }
             const body = this.transformNode( node.body );
@@ -741,12 +741,12 @@ export default class Compiler {
                 return transform.call( Node, left, right, body );
             }
             // Iteration driver
-            const $fIdentifier = this.currentScope.get$fIdentifier( '$f' );
-            const production = this.currentScope.get$fIdentifier( kind === 'for-of' ? '$val' : '$key', false );
+            const $qIdentifier = this.currentScope.get$qIdentifier( '$q' );
+            const production = this.currentScope.get$qIdentifier( kind === 'for-of' ? '$val' : '$key', false );
             const spec = {
                 kind: Node.literal( kind ),
                 label: this.currentEntry.parentNode.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
-                parameters: this.$closure( [ $fIdentifier ], Node.arrayExpr( [ Node.literal( production ), right ] ) ),
+                parameters: this.$closure( [ $qIdentifier ], Node.arrayExpr( [ Node.literal( production ), right ] ) ),
             };
             // Iteration round...
             let originalLeft;
@@ -797,7 +797,7 @@ export default class Compiler {
     /* GENERAL */
 
     transformBlockStatement( node ) {
-        if ( node instanceof $fDownstream ) {
+        if ( node instanceof $qDownstream ) {
             const $serial = this.$serial( node );
             const body = this.transformNodes( node.body );
             return this.$autorun( 'downstream', $serial, Node.blockStmt( body ) );

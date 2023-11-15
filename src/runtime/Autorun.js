@@ -196,14 +196,14 @@ export default class Autorun extends EventTarget {
     }
 
     autobind( baseSignal, depth, hint ) {
-        const isStatefulFunction = this.runtime.$params.isStatefulFunction;
+        const isQuantumFunction = this.runtime.$params.isQuantumFunction;
         const isConst = baseSignal.type  === 'const';
         const isRuntime = this === this.runtime;
         const isAborted = this.state === 'aborted';
         const nowRunning = this;
         return ( function proxy( signal, depth ) {
             // Do bindings first
-            if ( isStatefulFunction && !isConst && !isRuntime && !isAborted ) {
+            if ( isQuantumFunction && !isConst && !isRuntime && !isAborted ) {
                 signal.subscribe( nowRunning );
             }
             // Return bare value here?
@@ -252,25 +252,25 @@ export default class Autorun extends EventTarget {
         return autorun.execute();
     }
 
-    function( isDeclaration, isStatefulFunction, serial, $function ) {
+    function( isDeclaration, isQuantumFunction, serial, $qFunction ) {
         // Declare in current scope
-        if ( isDeclaration ) { Observer.set( this.scope.state, $function.name, $function ); }
+        if ( isDeclaration ) { Observer.set( this.scope.state, $qFunction.name, $qFunction ); }
         // Metarise function
         const _this = this;
-        Object.defineProperty( $function, 'toString', { value: function( $fSource = false ) {
-            if ( $fSource && isStatefulFunction ) return Function.prototype.toString.call( $function );
+        Object.defineProperty( $qFunction, 'toString', { value: function( $qSource = false ) {
+            if ( $qSource && isQuantumFunction ) return Function.prototype.toString.call( $qFunction );
             const originalSource = _this.runtime.extractSource( serial );
             return originalSource.startsWith( 'static ' ) ? originalSource.replace( 'static ', '' ) : originalSource;
         } } );
-        return $function;
+        return $qFunction;
     }
 
     class( isDeclaration, $class, methodsSpec ) {
         // Declare in current scope
         if ( isDeclaration ) { Observer.set( this.scope.state, $class.name, $class ); }
         // Metarise methods
-        methodsSpec.forEach( ( { name, static: isStatic, isStatefulFunction, serial } ) => {
-            this.function( false, isStatefulFunction, serial, isStatic ? $class[ name ] : $class.prototype[ name ] )
+        methodsSpec.forEach( ( { name, static: isStatic, isQuantumFunction, serial } ) => {
+            this.function( false, isQuantumFunction, serial, isStatic ? $class[ name ] : $class.prototype[ name ] )
         } );
         return $class;
     }

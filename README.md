@@ -1,13 +1,13 @@
-# Stateful JS
+# Quantum JS
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
 [![License][license-src]][license-href]
 
-[Overview](#overview) • [Creating Stateful Programs](#creating-stateful-programs) • [Polyfill](#polyfill) • [Examples](#examples) • [License](#license)
+[Overview](#overview) • [Creating Quantum Programs](#creating-quantum-programs) • [Polyfill](#polyfill) • [Examples](#examples) • [License](#license)
 
-Stateful JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
+Quantum JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
 
 ## Overview
  
@@ -31,7 +31,7 @@ createEffect(() => {
 setTimeout(() => setCount(10), 500);
 ```
 
-Stateful JS lets you acheive the same in the ordinary imperative form of the language:
+Quantum JS lets you acheive the same in the ordinary imperative form of the language:
 
 ```js
 let count = 5;
@@ -62,22 +62,22 @@ But what we don't get with how this works naturally is having the said instructi
 
 If we could get the JS runtime to add "reactivity" to how it already works - i.e. having the very instructions stay sensitive to changes to the data they individually act on - we absolutely would be enabling reactive programming in the imperative form of the language and entirely unnecessitating the manual way!
 
-This is what we're exploring with Stateful JS!
+This is what we're exploring with Quantum JS!
 
 </details>
 
-## Creating Stateful Programs
+## Creating Quantum Programs
 
-This feature comes both as a new function type: "Stateful Functions" and as a new execution mode for whole programs: "Stateful Execution Mode" (or "Stateful Mode" for short; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
+This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Execution Mode" (or "Quantum Mode" for short; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
 
 Given a language-level feature, no setup or build step is required! Polyfill just ahead!
 
-### Stateful Functions
+### Quantum Functions
 
-You can designate a function as stateful using a double star notation; similar to [how generator functions look](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
+You can designate a function as *quantum* using a double star notation; similar to [how generator functions look](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
 ```js
-// Stateful function declaration
+// Quantum function declaration
 function** bar() {
   let count = 5;
   let doubleCount = count * 2;
@@ -87,7 +87,7 @@ bar();
 ```
 
 ```js
-// Stateful async function declaration
+// Quantum async function declaration
 async function** bar() {
   let count = await 5;
   let doubleCount = count * 2;
@@ -99,14 +99,14 @@ await bar();
 <details><summary>...and in just how a function works in JavaScript</summary>
 
 ```js
-// Stateful function expression, optionally async
+// Quantum function expression, optionally async
 const bar = function** () {
   // Function body
 }
 ```
 
 ```js
-// Stateful object property, optionally async
+// Quantum object property, optionally async
 const foo = {
   bar: function** () {
     // Function body
@@ -115,7 +115,7 @@ const foo = {
 ```
 
 ```js
-// Stateful object method, optionally async
+// Quantum object method, optionally async
 const foo = {
   **bar() {
     // Function body
@@ -124,7 +124,7 @@ const foo = {
 ```
 
 ```js
-// Stateful class method, optionally async
+// Quantum class method, optionally async
 class Foo {
   **bar() {
     // Function body
@@ -134,11 +134,11 @@ class Foo {
 
 </details>
 
-And you can acheive the same using Stateful Function constructors:
+And you can acheive the same using Quantum Function constructors:
 
 ```js
-// Stateful function constructor
-const bar = StatefulFunction(`
+// Quantum function constructor
+const bar = QuantumFunction(`
   let count = 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -147,8 +147,8 @@ bar();
 ```
 
 ```js
-// Stateful async function constructor
-const bar = StatefulAsyncFunction(`
+// Quantum async function constructor
+const bar = QuantumAsyncFunction(`
   let count = await 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -160,18 +160,18 @@ await bar();
 
 ```js
 // With function parameters
-const bar = StatefulFunction( param1, ... paramN, functionBody );
+const bar = QuantumFunction( param1, ... paramN, functionBody );
 ```
 
 ```js
 // With the new keyword
-const bar = new StatefulFunction( param1, ... paramN, functionBody );
+const bar = new QuantumFunction( param1, ... paramN, functionBody );
 ```
 
 ```js
 // As class property
 class Foo {
-  bar = StatefulFunction( param1, ... paramN, functionBody );
+  bar = QuantumFunction( param1, ... paramN, functionBody );
 }
 ```
 
@@ -181,7 +181,7 @@ Well, this also includes the fact that, unlike normal function declarations and 
 let a;
 globalThis.b = 2;
 var c = 'c'; // Equivalent to globalThis.c = 'c' assuming that we aren't running in a function scope or module scope
-const bar = StatefulFunction(`
+const bar = QuantumFunction(`
   console.log(typeof a); // undefined
   console.log(typeof b); // number
   console.log(typeof c); // string
@@ -191,15 +191,15 @@ bar();
 
 </details>
 
-### Stateful Execution Mode (Whole Programs)
+### Quantum Execution Mode (Whole Programs)
 
 Think "Strict Mode", but for reactivity!
 
-Here, given the same underlying infrastructure, any piece of code should be able to run in stateful mode. Stateful JS exposes two APIs that enable just that:
+Here, given the same underlying infrastructure, any piece of code should be able to run in *quantum* mode. Quantum JS exposes two APIs that enable just that:
 
 ```js
-// Stateful regular JS
-const program = new StatefulScript(`
+// Quantum regular JS
+const program = new QuantumScript(`
   let count = 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -208,8 +208,8 @@ program.execute();
 ```
 
 ```js
-// Stateful module
-const program = new StatefulModule(`
+// Quantum module
+const program = new QuantumModule(`
   let count = await 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -224,8 +224,8 @@ The latter does certainly let you use `import` and `export` statements!
 <details><summary>Exanple</summary>
 
 ```js
-// Stateful module
-const program = new StatefulModule(`
+// Quantum module
+const program = new QuantumModule(`
   import module1, { module2 } from 'package-name';
   import { module3 as alias } from 'package-name';
   ...
@@ -236,11 +236,11 @@ const program = new StatefulModule(`
 
 </details>
 
-Now, this goes a step further to let us have "Stateful Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml):
+Now, this goes a step further to let us have "Quantum Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml):
 
 ```html
-<!-- Stateful classic script -->
-<script stateful>
+<!-- Quantum classic script -->
+<script quantum>
   let count = 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -248,8 +248,8 @@ Now, this goes a step further to let us have "Stateful Scripts" - which ships in
 ```
 
 ```html
-<!-- Stateful module script -->
-<script type="module" stateful>
+<!-- Quantum module script -->
+<script type="module" quantum>
   let count = await 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -262,7 +262,7 @@ And the ideas there are coming to simplify how we build single page applications
 
 ```html
 <main id="page1">
-  <script scoped stateful>
+  <script scoped quantum>
 
     console.log(this.id); // page1
 
@@ -272,7 +272,7 @@ And the ideas there are coming to simplify how we build single page applications
 
 ```html
 <main id="page2">
-  <script type="module" scoped stateful>
+  <script type="module" scoped quantum>
 
     console.log(this.id); // page2
 
@@ -284,9 +284,9 @@ And the ideas there are coming to simplify how we build single page applications
 
 Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
 
-## Consuming Stateful Programs
+## Consuming Quantum Programs
 
-Each call to a stateful function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
+Each call to a Quantum function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
 ### Return Value
 
@@ -332,8 +332,8 @@ Observer.observe(state, 'value', mutation => {
 For module programs, the `State` object also features an `exports` property that exposes the module's exports:
 
 ```js
-// Stateful module
-const program = new StatefulModule(`
+// Quantum module
+const program = new QuantumModule(`
   import module1, { module2 } from 'package-name';
   import { module3 as alias } from 'package-name';
   ...
@@ -351,7 +351,7 @@ But given a "live" program, each property in the `state.exports` object also com
 
 ```js
 // As module
-const program = new StatefulModule(`
+const program = new QuantumModule(`
   export let localVar = 0;
   ...
   setInterval(() => localVar++, 500);
@@ -379,9 +379,9 @@ Observer.observe(state.exports, mutations => {
 });
 ```
 
-## Disposing Stateful Programs
+## Disposing Quantum Programs
 
-Stateful programs may maintain many live relationships and should be disposed when their work is done! The `State` object they return exposes a `dispose()` method that lets us do just that:
+Quantum programs may maintain many live relationships and should be disposed when their work is done! The `State` object they return exposes a `dispose()` method that lets us do just that:
 
 ```js
 state.dispose();
@@ -391,7 +391,7 @@ state.dispose();
 
 ## Interaction with the Outside World
 
-Stateful programs can read and write to the given scope in which they run; just in how a regular JavaScript function can reference outside variables and also make side effects:
+Quantum programs can read and write to the given scope in which they run; just in how a regular JavaScript function can reference outside variables and also make side effects:
 
 ```js
 let a = 2, b;
@@ -401,7 +401,7 @@ function** bar() {
 bar();
 ```
 
-But unlike regular JavaScript, Stateful programs maintain a live relationship with the outside world:
+But unlike regular JavaScript, Quantum programs maintain a live relationship with the outside world:
 
 ### ...with Arbitrary Objects
 
@@ -409,7 +409,7 @@ With any given object, every interaction happening at the property level is pote
 
 #### Mutations to Object Properties from the Outside Will Be Automatically Reflected
 
-Stateful JS programs will statically reflect changes to any property that they may depend on:
+Quantum JS programs will statically reflect changes to any property that they may depend on:
 
 ```js
 // External value
@@ -452,7 +452,7 @@ Observer.set(foo, 'baz', 1);
 
 #### Interactions with Arbitrary Objects from the Inside Are Observable
 
-Mutations from within a Stateful program may conversely be observed from the outside:
+Mutations from within a Quantum program may conversely be observed from the outside:
 
 ```js
 // External value
@@ -475,7 +475,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept every access to an object's properties ahead of Stateful programs!
+And if you'd go further with the Observer API, you could even intercept every access to an object's properties ahead of Quantum programs!
 
 <details><summary>Example</summary>
 
@@ -501,7 +501,7 @@ This means that:
 
 #### Changes to the Global Scope from the Outside Will Be Automatically Reflected
 
-Stateful JS programs will statically reflect changes to any global variable that they may depend on:
+Quantum JS programs will statically reflect changes to any global variable that they may depend on:
 
 ```js
 // External value
@@ -545,7 +545,7 @@ Observer.set(globalThis, 'baz', 1);
 
 #### Interactions with the Global Scope from the Inside Are Observable
 
-Updates to global variables from within a Stateful program may conversely be observed from the outside:
+Updates to global variables from within a Quantum program may conversely be observed from the outside:
 
 ```js
 // External value
@@ -568,7 +568,7 @@ function** bar() {
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept every access to global variables ahead of Stateful programs!
+And if you'd go further with the Observer API, you could even intercept every access to global variables ahead of Quantum programs!
 
 <details><summary>Example</summary>
 
@@ -586,74 +586,74 @@ Observer.intercept(globalThis, {
 
 </details>
 
-### ...with Stateful Parent Scopes Themselves
+### ...with Quantum Parent Scopes Themselves
 
-While bare variables in a local scope in JavaScript don't map to a physical, observable object like we have of global variables, bare variables in a Stateful scope are potentially reactive like we have of global variables.
+While bare variables in a local scope in JavaScript don't map to a physical, observable object like we have of global variables, bare variables in a Quantum scope are potentially reactive like we have of global variables.
 
-Where a function runs within a Stateful program itself, any updates it makes to those variables are automatically reflected:
+Where a function runs within a Quantum program itself, any updates it makes to those variables are automatically reflected:
 
 ```js
 (function** () {
-  // Stateful scope
+  // Quantum scope
 
   let count = 0;
-  setInterval(() => count++, 500); // Live updates, even from within a non-stateful closure
+  setInterval(() => count++, 500); // Live updates, even from within a non-quantum closure
 
   // "count" is automatically reflected here
-  console.log('From main stateful scope: ', count);
+  console.log('From main quantum scope: ', count);
 
   function** nested() {
     // "count" is automatically reflected here
-    console.log('From inner stateful scope: ', count);
+    console.log('From inner quantum scope: ', count);
   }
   nested();
 
 })();
 ```
 
-## Inside a Stateful Program (How It Works!)
+## Inside a Quantum Program (How It Works!)
 
-In how Stateful programs can already entirely manage themselves, knowledge of how they work is very much optional! But, if you may look, this section covers just that very *awesome* part!
+In how Quantum programs can already entirely manage themselves, knowledge of how they work is very much optional! But, if you may look, this section covers just that very *awesome* part!
 
-Knowing how things work presents a great way to reason about Stateful programs, and a better background for taking full advantage of the "Stateful" magic to never again do manual work!
+Knowing how things work presents a great way to reason about Quantum programs, and a better background for taking full advantage of the "Quantum" magic to never again do manual work!
 
-+ [Reactivity](https://github.com/webqit/stateful-js/wiki#reactivity)
-+ [Sensitivity](https://github.com/webqit/stateful-js/wiki#sensitivity)
-+ [Update Model](https://github.com/webqit/stateful-js/wiki#update-model)
-+ [Flow Control](https://github.com/webqit/stateful-js/wiki#flow-control)
-+ [Experimental Features](https://github.com/webqit/stateful-js/wiki#experimental-features)
++ [Reactivity](https://github.com/webqit/quantum-js/wiki#reactivity)
++ [Sensitivity](https://github.com/webqit/quantum-js/wiki#sensitivity)
++ [Update Model](https://github.com/webqit/quantum-js/wiki#update-model)
++ [Flow Control](https://github.com/webqit/quantum-js/wiki#flow-control)
++ [Experimental Features](https://github.com/webqit/quantum-js/wiki#experimental-features)
 
 ## Polyfill
 
-Stateful JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Stateful JS live in the browser!
+Quantum JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
 
 <details><summary>Load from a CDN<br>
-└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?label=&style=flat&colorB=black"></a></summary>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/stateful-js/dist/main.js"></script>
+<script src="https://unpkg.com/@webqit/quantum-js/dist/main.js"></script>
 ```
 
 └ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
 
 ```js
 // Destructure from the webqit namespace
-const { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, State, Observer } = window.webqit;
+const { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, State, Observer } = window.webqit;
 ```
 
 </details>
 
 <details><summary>Install from NPM<br>
-└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&label=&colorB=black"></a></summary>
+└───────── <a href="https://npmjs.com/package/@webqit/quantum-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&label=&colorB=black"></a></summary>
 
 ```js
 // npm install
-npm i @webqit/stateful-js
+npm i @webqit/quantum-js
 ```
 
 ```js
 // Import API
-import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncScript, StatefulModule, State, Observer } from '@webqit/stateful-js';
+import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js';
 ```
 
 </details>
@@ -662,13 +662,13 @@ import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulAsyncS
 
 | API | Equivalent semantics... |
 | :------- | :----------- |
-| `StatefulFunction` | `function** () {}` |
-| `StatefulAsyncFunction` | `async function** () {}` |
-| `StatefulScript` | `<script>` |
-| `StatefulAsyncScript` | `<script async>` |
-| `StatefulModule` | `<script type="module">` |
+| `QuantumFunction` | `function** () {}` |
+| `QuantumAsyncFunction` | `async function** () {}` |
+| `QuantumScript` | `<script>` |
+| `QuantumAsyncScript` | `<script async>` |
+| `QuantumModule` | `<script type="module">` |
 
-While fully supporting program-level APIs - `StatefulScript`, `StatefulAsyncScript`, `StatefulModule`, the current polyfill only supports the constructor forms - `StatefulFunction`, `StatefulAsyncFunction` - of Stateful Functions - which give you the equivalent of the normal function forms!
+While fully supporting program-level APIs - `QuantumScript`, `QuantumAsyncScript`, `QuantumModule`, the current polyfill only supports the constructor forms - `QuantumFunction`, `QuantumAsyncFunction` - of Quantum Functions - which give you the equivalent of the normal function forms!
 
 <details><summary>Code</summary>
 
@@ -678,8 +678,8 @@ globalThis.externalVar = 10;
 ```
 
 ```js
-// StatefulFunction
-const sum = StatefulFunction(`a`, `b`, `
+// QuantumFunction
+const sum = QuantumFunction(`a`, `b`, `
   return a + b + externalVar;
 `);
 const state = sum(10, 10);
@@ -695,16 +695,16 @@ console.log(state.value); // 40
 
 </details>
 
-But the double star syntax is supported from within a Stateful program itself:
+But the double star syntax is supported from within a Quantum program itself:
 
 <details><summary>Code</summary>
 
 ```js
-const program = StatefulFunction(`
+const program = QuantumFunction(`
   // External dependency
   let externalVar = 10;
 
-  // StatefulFunction
+  // QuantumFunction
   function** sum(a, b) {
     return a + b + externalVar;
   }
@@ -723,38 +723,38 @@ program();
 
 </details>
 
-### Stateful JS Lite
+### Quantum JS Lite
 
-It is possible to use a lighter version of Stateful JS where you want something further feather weight for your initial application load. The Lite version initially comes without the compiler and yet lets you work with Stateful JS ahead of that.
+It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite version initially comes without the compiler and yet lets you work with Quantum JS ahead of that.
 
 <details><summary>
 Load from a CDN<br>
-└───────── <a href="https://bundlephobia.com/result?p=@webqit/stateful-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-black"></a></summary>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-black"></a></summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
+<script src="https://unpkg.com/@webqit/quantum-js/dist/main.async.js"></script>
 ```
 
 └ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
 
 ```js
 // Destructure from the webqit namespace
-const { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Observer } = window.webqit;
+const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } = window.webqit;
 ```
 
 </details>
 
 <details><summary>Install from NPM<br>
-└───────── <a href="https://npmjs.com/package/@webqit/stateful-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&label=&colorB=black"></a></summary>
+└───────── <a href="https://npmjs.com/package/@webqit/quantum-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&label=&colorB=black"></a></summary>
 
 ```js
 // npm install
-npm i @webqit/stateful-js
+npm i @webqit/quantum-js
 ```
 
 ```js
 // Import Lite API
-import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Observer } from '@webqit/stateful-js/async';
+import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/async';
 ```
 
 </details>
@@ -763,9 +763,9 @@ import { StatefulAsyncFunction, StatefulAsyncScript, StatefulModule, State, Obse
 
 | API | Equivalent semantics... |
 | :------- | :----------- |
-| `StatefulAsyncFunction` | `async function** () {}` |
-| `StatefulAsyncScript` | `<script async>` |
-| `StatefulModule` | `<script type="module">` |
+| `QuantumAsyncFunction` | `async function** () {}` |
+| `QuantumAsyncScript` | `<script async>` |
+| `QuantumModule` | `<script type="module">` |
 
 Here, only the "async" program types can possibly be obtained this way!
 
@@ -777,8 +777,8 @@ globalThis.externalVar = 10;
 ```
 
 ```js
-// StatefulFunction
-const sum = StatefulAsyncFunction(`a`, `b`, `
+// QuantumFunction
+const sum = QuantumAsyncFunction(`a`, `b`, `
   return a + b + externalVar;
 `);
 const state = await sum(10, 10);
@@ -796,12 +796,12 @@ console.log(state.value); // 40
 
 Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
 
-> But having been designed as a movable peice, the Stateful JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+> But having been designed as a movable peice, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
 > 
 > ```html
 > <head>
->  <script src="https://unpkg.com/@webqit/stateful-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
->   <script src="https://unpkg.com/@webqit/stateful-js/dist/main.async.js"></script>
+>  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+>   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.async.js"></script>
 > </head>
 > ```
 
@@ -809,16 +809,16 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Examples
 
-Using the Stateful JS and Observer API polyfills, the following examples work today.
+Using the Quantum JS and Observer API polyfills, the following examples work today.
 
 + [Example 1: *Reactive Custom Elements*](#example-1-reactive-custom-elements)
 + [Example 2: *Pure Computations*](#example-2-pure-computations)
 
 ### Example 1: *Reactive Custom Elements*
 
-Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write "Stateful" logic?
+Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write "Quantum" logic?
 
-In this example, we demonstrate a custom element that has a Stateful `render()` method. We invoke the `render()` method only once and let every subsequent *prop* change be statically reflected:
+In this example, we demonstrate a custom element that has a Quantum `render()` method. We invoke the `render()` method only once and let every subsequent *prop* change be statically reflected:
 
 
 <details><summary>Code</summary>
@@ -843,8 +843,8 @@ customElements.define('click-counter', class extends HTMLElement {
     this._state.dispose();
   }
 
-  // Using the StatefulFunction constructor
-  render = StatefulFunction(`
+  // Using the QuantumFunction constructor
+  render = QuantumFunction(`
     let countElement = this.querySelector( '#count' );
     countElement.innerHTML = this.count;
     
@@ -864,7 +864,7 @@ customElements.define('click-counter', class extends HTMLElement {
 
 ### Example 2: *Pure Computations*
 
-Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write "Stateful" logic?
+Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write "Quantum" logic?
 
 In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
 
@@ -880,7 +880,7 @@ class MyURL {
     this.compute();
   }
 
-  compute = StatefulFunction(`
+  compute = QuantumFunction(`
     // These will be re-computed from this.href always
     let [ protocol, hostname, port, pathname, search, hash ] = new URL(this.href);
 
@@ -929,20 +929,20 @@ console.log(url.href); // http://foo.dev/path
 
 All forms of contributions are welcome at this time. For example, syntax and other implementation details are all up for discussion. Also, help is needed with more formal documentation. And here are specific links:
 
-+ [Project](https://github.com/webqit/stateful-js)
-+ [Documentation](https://github.com/webqit/stateful-js/wiki)
-+ [Discusions](https://github.com/webqit/stateful-js/discussions)
-+ [Issues](https://github.com/webqit/stateful-js/issues)
++ [Project](https://github.com/webqit/quantum-js)
++ [Documentation](https://github.com/webqit/quantum-js/wiki)
++ [Discusions](https://github.com/webqit/quantum-js/discussions)
++ [Issues](https://github.com/webqit/quantum-js/issues)
 
 ## License
 
 MIT.
 
-[npm-version-src]: https://img.shields.io/npm/v/@webqit/stateful-js?style=flat&colorA=black&colorB=F0DB4F
-[npm-version-href]: https://npmjs.com/package/@webqit/stateful-js
-[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/stateful-js?style=flat&colorA=black&colorB=F0DB4F
-[npm-downloads-href]: https://npmjs.com/package/@webqit/stateful-js
-[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/stateful-js?style=flat&colorA=black&colorB=F0DB4F
-[bundle-href]: https://bundlephobia.com/result?p=@webqit/stateful-js
-[license-src]: https://img.shields.io/github/license/webqit/stateful-js.svg?style=flat&colorA=black&colorB=F0DB4F
-[license-href]: https://github.com/webqit/stateful-js/blob/master/LICENSE
+[npm-version-src]: https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&colorA=black&colorB=F0DB4F
+[npm-version-href]: https://npmjs.com/package/@webqit/quantum-js
+[npm-downloads-src]: https://img.shields.io/npm/dm/@webqit/quantum-js?style=flat&colorA=black&colorB=F0DB4F
+[npm-downloads-href]: https://npmjs.com/package/@webqit/quantum-js
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?style=flat&colorA=black&colorB=F0DB4F
+[bundle-href]: https://bundlephobia.com/result?p=@webqit/quantum-js
+[license-src]: https://img.shields.io/github/license/webqit/quantum-js.svg?style=flat&colorA=black&colorB=F0DB4F
+[license-href]: https://github.com/webqit/quantum-js/blob/master/LICENSE

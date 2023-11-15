@@ -1,7 +1,7 @@
 /**
  * @imports
  */
-import $fIdentifier from "./$fIdentifier.js";
+import $qIdentifier from "./$qIdentifier.js";
 import Node from './Node.js';
 
 /**
@@ -13,8 +13,8 @@ export default class Scope {
         this.context = context;
         Object.assign( this, { type } );
         this.vars = new Set;
-        this.$fIdentifiers = new Map;
-        this.$fIdentifiersCursors = { ...( this.context?.$fIdentifiersCursors || {} ) };
+        this.$qIdentifiers = new Map;
+        this.$qIdentifiersCursors = { ...( this.context?.$qIdentifiersCursors || {} ) };
         this.locations = [];
     }
 
@@ -32,26 +32,26 @@ export default class Scope {
         return Node.literal( this.locations.length - 1 );
     }
 
-    get$fIdentifier( name, globally = true, random = false ) {
-        let identifer = this.$fIdentifiers.get( name );
+    get$qIdentifier( name, globally = true, random = false ) {
+        let identifer = this.$qIdentifiers.get( name );
         if ( !identifer ) {
-            if ( globally && this.context ) return this.context.get$fIdentifier( name, globally );
+            if ( globally && this.context ) return this.context.get$qIdentifier( name, globally );
             if ( random ) {
-                if ( typeof this.$fIdentifiersCursors[ name ] === 'undefined' ) { this.$fIdentifiersCursors[ name ] = 0; }
-                name += ( this.$fIdentifiersCursors[ name ] ++ );
+                if ( typeof this.$qIdentifiersCursors[ name ] === 'undefined' ) { this.$qIdentifiersCursors[ name ] = 0; }
+                name += ( this.$qIdentifiersCursors[ name ] ++ );
             }
-            this.$fIdentifiers.set( name, identifer = new $fIdentifier( name ) );
+            this.$qIdentifiers.set( name, identifer = new $qIdentifier( name ) );
         }
         return identifer;
     }
 
     getRandomIdentifier( name, globally = true ) {
-        return this.get$fIdentifier( name, globally, true );
+        return this.get$qIdentifier( name, globally, true );
     }
 
-    $fIdentifiersNoConflict( name ) {
-        for ( let [ , identifer ] of this.$fIdentifiers ) { identifer.noConflict( name );  }
-        this.context && this.context.$fIdentifiersNoConflict( name );
+    $qIdentifiersNoConflict( name ) {
+        for ( let [ , identifer ] of this.$qIdentifiers ) { identifer.noConflict( name );  }
+        this.context && this.context.$qIdentifiersNoConflict( name );
     }
 
     push( identifier, type, willUpdate = false ) {
@@ -59,8 +59,8 @@ export default class Scope {
         if ( [ 'var', 'update' ].includes( type ) && ( def = this.find( identifier, false ) ) && def.type !== 'const' ) {
             def.willUpdate = true;
         } else if ( type !== 'update' || !this.context ) {
-            if ( !( identifier instanceof $fIdentifier ) ) {
-                this.$fIdentifiersNoConflict( identifier.name + '' );
+            if ( !( identifier instanceof $qIdentifier ) ) {
+                this.$qIdentifiersNoConflict( identifier.name + '' );
             }
             this.vars.add( { identifier, type, willUpdate: willUpdate || type === 'update' } );
         }

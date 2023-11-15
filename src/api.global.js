@@ -2,8 +2,8 @@
 /**
  * @imports
  */
-import * as StatefulJS from './index.js';
+import * as QuantumJS from './index.js';
 
 // As globals
 if ( !globalThis.webqit ) { globalThis.webqit = {}; }
-Object.assign( globalThis.webqit, StatefulJS );
+Object.assign( globalThis.webqit, QuantumJS );

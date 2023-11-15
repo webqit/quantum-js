@@ -8,7 +8,7 @@ import { $eval, State } from './runtime/index.js';
 /**
  * @Script
  */
-export default class AbstractStatefulScript {
+export default class AbstractQuantumScript {
     constructor( ...args ) {
         const $static = this.constructor;
         const params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};
@@ -20,9 +20,9 @@ export default class AbstractStatefulScript {
 
     bind( thisContext ) { return _await( this.$program, ( { createRuntime } ) => createRuntime( thisContext ) ); }
 
-    toString( $fSource = false ) {
+    toString( $qSource = false ) {
         return _await( this.$program, ( { compiledSource } ) => {
-            if ( $fSource ) return compiledSource + '';
+            if ( $qSource ) return compiledSource + '';
             return compiledSource.originalSource;
         } );
     }

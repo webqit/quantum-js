@@ -1,5 +1,5 @@
 
-export default class $fIdentifier {
+export default class $qIdentifier {
 
     type = 'Identifier';
     whitelist = [];

@@ -59,7 +59,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
             // Or this for module scope. And where "env" was provided, the "env" scope above too
             if ( sourceType === 'module' ) { contextType = 'module'; scope = new Scope( scope, contextType ); }
             if ( typeof thisContext !== 'undefined' ) { scope = new Scope( scope, 'this', { [ 'this' ]: thisContext } ); }
-            return new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compiledSource.originalSource, isStatefulFunction: !isFunction }, scope, $main );
+            return new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compiledSource.originalSource, isQuantumFunction: !isFunction }, scope, $main );
 
         };
         return isFunction

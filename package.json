@@ -1,21 +1,21 @@
 {
-  "name": "@webqit/stateful-js",
-  "title": "Stateful JS",
+  "name": "@webqit/quantum-js",
+  "title": "Quantum JS",
   "description": "Runtime extension to JavaScript that let's us do Imperative Reactive Programming (IRP) in the very language.",
   "keywords": [
     "fine-grained reactivity",
     "js-runner",
     "js-parser"
   ],
-  "homepage": "https://webqit.io/tooling/stateful-js",
+  "homepage": "https://webqit.io/tooling/quantum-js",
   "version": "3.0.27",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webqit/stateful-js.git"
+    "url": "git+https://github.com/webqit/quantum-js.git"
   },
   "bugs": {
-    "url": "https://github.com/webqit/stateful-js/issues"
+    "url": "https://github.com/webqit/quantum-js/issues"
   },
   "type": "module",
   "sideEffects": false,
@@ -62,9 +62,9 @@
     "config": {
       "patreonUsername": "ox_harris",
       "githubUsername": "webqit",
-      "githubRepository": "stateful-js",
-      "githubSlug": "webqit/stateful-js",
-      "npmPackageName": "@webqit/stateful-js"
+      "githubRepository": "quantum-js",
+      "githubSlug": "webqit/quantum-js",
+      "npmPackageName": "@webqit/quantum-js"
     }
   }
 }

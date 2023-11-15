@@ -6,34 +6,34 @@ import Observer from '@webqit/observer';
 import { _$functionArgs } from './util.js';
 import { parse, compile } from './compiler/index.js';
 import { $eval } from './runtime/index.js';
-import AbstractStatefulScript from './AbstractStatefulScript.js';
+import AbstractQuantumScript from './AbstractQuantumScript.js';
 import State from './runtime/State.js';
 
 /** -------------- APIs */
 
 export { Observer, State }
 
-export function StatefulFunction( ...args ) {
+export function QuantumFunction( ...args ) {
     const { source, params } = _$functionArgs( args );
     return $eval( 'function', parseCompileCallback, source, params );
 }
 
-export function StatefulAsyncFunction( ...args ) {
+export function QuantumAsyncFunction( ...args ) {
     const { source, params } = _$functionArgs( args );
     return $eval( 'async-function', parseCompileCallback, source, params );
 }
 
-export class StatefulScript extends AbstractStatefulScript {
+export class QuantumScript extends AbstractQuantumScript {
     static sourceType = 'script';
     static parseCompileCallback = parseCompileCallback;
 }
 
-export class StatefulAsyncScript extends AbstractStatefulScript {
+export class QuantumAsyncScript extends AbstractQuantumScript {
     static sourceType = 'async-script';
     static parseCompileCallback = parseCompileCallback;
 }
 
-export class StatefulModule extends AbstractStatefulScript {
+export class QuantumModule extends AbstractQuantumScript {
     static sourceType = 'module';
     static parseCompileCallback = parseCompileCallback;
 }

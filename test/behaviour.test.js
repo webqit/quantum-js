@@ -3,7 +3,7 @@
  * @imports
  */
 import { expect } from 'chai';
-import { StatefulFunction, StatefulAsyncFunction, StatefulScript, StatefulModule, Observer } from '../src/index.js';
+import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, Observer } from '../src/index.js';
 
 import { setMaxListeners } from 'events';
 import { other as otherUtil1 } from '../src/util.js';
@@ -16,7 +16,7 @@ const promise = ( timeout, value ) => new Promise( res => setTimeout(() => res( 
 const env = { log: [], iteratee: [ '0', '1', '2', '3' ], breakpoint: '2', br: 10 };
 
 /*
-const script = new StatefulModule(`
+const script = new QuantumModule(`
     let kk, rest;
     console.log('In operator', 'length' in log);
     [ kk, , ...rest ] = iteratee;
@@ -33,7 +33,7 @@ console.log( '----------------', env.log );
 
 
 
-const t = StatefulAsyncFunction(`
+const t = QuantumAsyncFunction(`
     for (let i in await iteratee) {
         console.log(await i);
         if (i === '3') iteratee.push( iteratee.length + '' );
@@ -61,7 +61,7 @@ await promise( 400 );
 
 
 
-const t = StatefulFunction(`
+const t = QuantumFunction(`
     for (let i = 0; i < iteratee.length; i++) {
         console.log( i);
         if (i + '' === breakpoint) {
@@ -80,7 +80,7 @@ await promise( 400 );
 
 
 
-const t = StatefulFunction(`
+const t = QuantumFunction(`
     let i = 0
     while(i++ < 100) {
         if (i===br) break;
@@ -97,8 +97,8 @@ await promise( 400 );
 describe( 'Basic', function() {
 
     it( 'Should take simple parameters and return the sum.', async function() {
-        // StatefulFunction
-        const exec = StatefulAsyncFunction(`a`, `b`, `
+        // QuantumFunction
+        const exec = QuantumAsyncFunction(`a`, `b`, `
             return a + b;
         `);
 
@@ -112,8 +112,8 @@ describe( 'Basic', function() {
         // Environment
         const env = { log: [], vars: { c: 'c', d: 'd' } };
 
-        // StatefulFunction
-        const exec = StatefulFunction(`
+        // QuantumFunction
+        const exec = QuantumFunction(`
             let { c, d } = vars;
             log.push( 'Value of "c": ' + c );
             log.push( 'Value of "d": ' + d );
@@ -142,8 +142,8 @@ describe( 'Internal autoruns and nesting', function() {
         // Environment
         const env = { log: [], state: 'initial value' };
 
-        // StatefulFunction
-        const exec = StatefulFunction(`
+        // QuantumFunction
+        const exec = QuantumFunction(`
             if ( state ) /* Outer; depends on state */ {
                 log.unshift( state ); // Inner; depends on state
             }
@@ -165,8 +165,8 @@ describe( 'Internal autoruns and nesting', function() {
         // Environment
         const env = { log: [], state: 'initial value' };
 
-        // StatefulFunction
-        const exec = StatefulFunction(`
+        // QuantumFunction
+        const exec = QuantumFunction(`
             function ** nested() {
                 log.unshift( state ); // Inner; depends on state
             }
@@ -194,8 +194,8 @@ describe( 'Classes', function() {
         // Environment
         const env = { log: [], globalVar: 'some value' };
 
-        // StatefulFunction
-        const script = new StatefulScript(`
+        // QuantumFunction
+        const script = new QuantumScript(`
             let a = class {};
             class b extends a {
                 prop = 10;
@@ -247,7 +247,7 @@ describe( 'Examples', function() {
               this.state = this.render();
             }
           
-            render = StatefulFunction(`
+            render = QuantumFunction(`
                 // Properties from direct parsing...
                 let { protocol, hostname, port, pathname, search, hash } = new URL(this.href);
                 
@@ -297,8 +297,8 @@ describe( 'Early returns', function() {
         // Environment
         const env = { log: [], condition: true };
 
-        // StatefulFunction
-        const exec = StatefulFunction(`
+        // QuantumFunction
+        const exec = QuantumFunction(`
             let counter = 0;
             if ( condition ) {
                 log.unshift( 'inner code' );
@@ -339,8 +339,8 @@ describe( 'Loop flow control', function() {
         // Environment
         const env = { log: [], breakpoint: 'two', loops: { inner: [ 'one', 'two', ( 3000, 'three' ), 'four' ] } };
 
-        // StatefulFunction
-        const exec = StatefulFunction(`
+        // QuantumFunction
+        const exec = QuantumFunction(`
         for ( let value of loops.inner ) {
             if ( typeof value === 'undefined' ) {
                 log.push( 'deleted: ' + value );
@@ -473,8 +473,8 @@ describe( 'Loop flow control', function() {
         // Environment
         const env = { log: [], breakpoint: 'two', loops: { inner: [ 'one', 'two', ( 3000, 'three' ), 'four' ] } };
 
-        // StatefulFunction
-        const exec = StatefulFunction(`
+        // QuantumFunction
+        const exec = QuantumFunction(`
         for ( let i = 0; i < loops.inner.length; i ++ ) {
             log.push( 'current value: ' + i + '--' + loops.inner[ i ] );
             continue;
@@ -493,8 +493,8 @@ describe( 'Early returns and Loop flow control', function() {
         // Environment
         const env = { log: [], condition1: true, condition2: true, factor: 4, loops: { outer: { one: 1, two: 2, three: 3 }, inner: [ 'one', 'two', 'three' ] } };
 
-        // StatefulFunction
-        const exec = StatefulFunction('a', 'b', `
+        // QuantumFunction
+        const exec = QuantumFunction('a', 'b', `
             if ( !condition1 ) {
                 log.push( '"condition1" isnt true anymore. exiting.' );
                 return 'First return';
@@ -620,8 +620,8 @@ describe( 'Module imports/exports', function() {
         // Environment
         const env = { log: [] };
 
-        // StatefulFunction
-        const script = new StatefulModule(`
+        // QuantumFunction
+        const script = new QuantumModule(`
             export const { p__p, oo_oo, ll: { t_ } = {} } = { p__p: 'p__p value', oo_oo: 'oo_oo value', ll: { t_: 't_ value' } };
             export let { dd, www } = 3;
             let wwwww;
@@ -656,8 +656,8 @@ describe( 'Module imports/exports', function() {
         // Environment
         const env = { log: [] };
 
-        // StatefulFunction
-        const script1 = new StatefulModule(`
+        // QuantumFunction
+        const script1 = new QuantumModule(`
             let counter1 = 0;
             export default counter1;
             export let counter2 = 0;
@@ -675,8 +675,8 @@ describe( 'Module imports/exports', function() {
             counter2: 0
         } );
 
-        // StatefulFunction
-        const script2 = new StatefulModule(`
+        // QuantumFunction
+        const script2 = new QuantumModule(`
             import counter1, { counter2 } from '#counter';
             export { counter2, default as counter1 } from '#counter';
             export * as counter from '#counter';
@@ -712,8 +712,8 @@ describe( 'Module imports/exports', function() {
         // Environment
         const env = { log: [] };
 
-        // StatefulFunction
-        const script = new StatefulModule(`
+        // QuantumFunction
+        const script = new QuantumModule(`
             import Observer from '@webqit/observer';
             log.push( Observer );
         `, { env } );
