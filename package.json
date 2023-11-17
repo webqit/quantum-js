@@ -21,13 +21,13 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.js",
-    "./async": "./src/index.async.js",
+    "./lite": "./src/index.lite.js",
     "./params": "./src/params.js"
   },
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
-    "build": "esbuild main=src/api.global.js main.async=src/api.global.async.js compiler=src/api.compiler.global.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
+    "build": "esbuild main=src/api.global.js main.lite=src/api.global.lite.js compiler=src/api.compiler.global.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
     "preversion": "npm run test && npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
