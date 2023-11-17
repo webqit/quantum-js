@@ -1,7 +1,7 @@
 /**
  * @imports
  */
-import { other } from "../util.js";
+import { env } from "../util.js";
 
 export default class _EventTarget extends EventTarget {
 
@@ -10,7 +10,7 @@ export default class _EventTarget extends EventTarget {
 
     constructor() {
         super();
-        other.setMaxListeners?.( 0, this );
+        env.setMaxListeners?.( 0, this );
     }
 
     fire( evenName ) { return this.dispatchEvent( new Event( evenName, { cancelable: true } ) ); }

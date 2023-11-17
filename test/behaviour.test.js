@@ -6,10 +6,10 @@ import { expect } from 'chai';
 import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, Observer } from '../src/index.js';
 
 import { setMaxListeners } from 'events';
-import { other as otherUtil1 } from '../src/util.js';
-import { other as otherUtil2 } from '@webqit/observer/src/util.js';
-otherUtil1.setMaxListeners = setMaxListeners;
-otherUtil2.setMaxListeners = setMaxListeners;
+import { env as env1 } from '../src/util.js';
+import { env as env2 } from '@webqit/observer/src/util.js';
+env1.setMaxListeners = setMaxListeners;
+env2.setMaxListeners = setMaxListeners;
 
 const promise = ( timeout, value ) => new Promise( res => setTimeout(() => res( value ), timeout ) );
 
