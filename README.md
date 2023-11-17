@@ -732,7 +732,7 @@ npm i @webqit/quantum-js
 
 ```js
 // Import Lite API
-import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/async';
+import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/lite';
 ```
 
 </details>
@@ -779,7 +779,7 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 > ```html
 > <head>
 >  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
->   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.async.js"></script>
+>   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
 > </head>
 > ```
 
