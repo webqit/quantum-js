@@ -12,6 +12,8 @@ import State from './runtime/State.js';
 
 export { Observer, State }
 
+export let QuantumFunction;
+
 export function QuantumAsyncFunction( ...args ) {
     const { source, params } = _$functionArgs( args );
     const compiledFunction = $eval( 'async-function', parseCompileCallback, source, params );
@@ -21,6 +23,8 @@ export function QuantumAsyncFunction( ...args ) {
     Object.defineProperty( wrapperFunction, 'toString', { value: async function( ...args ) { return ( await compiledFunction ).toString( ...args ) } } )
     return wrapperFunction;
 }
+
+export let QuantumScript;
 
 export class QuantumAsyncScript extends AbstractQuantumScript {
     static sourceType = 'async-script';
