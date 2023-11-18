@@ -893,10 +893,6 @@ console.log(url.href); // http://foo.dev/path
 
 </details>
 
-## Relationship with Other Concepts
-
-*TODO*
-
 ## Getting Involved
 
 All forms of contributions are welcome at this time. For example, syntax and other implementation details are all up for discussion. Also, help is needed with more formal documentation. And here are specific links:
