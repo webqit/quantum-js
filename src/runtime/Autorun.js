@@ -120,7 +120,7 @@ export default class Autorun extends EventTarget {
                 if ( spec.type === 'array' ) {
                     assignedValue = [];
                 } else { assignedValue = {}; }
-                symbolState.reader = Observer.read( returnValue, assignedValue, { except: spec.restOf, spread: spec.type === 'array' } );
+                symbolState.reader = Observer.map( returnValue, assignedValue, { except: spec.restOf, spread: spec.type === 'array' } );
                 autorun.once( symbolState.reader ); // Lifecycle cleanup
             }
             scope.symbols.set( name, symbolState );
@@ -152,7 +152,7 @@ export default class Autorun extends EventTarget {
                 if ( spec.type === 'array' ) {
                     assignedValue = [];
                 } else { assignedValue = {}; }
-                symbolState.reader = Observer.read( returnValue, assignedValue, { except: spec.restOf, spread: spec.type === 'array' } );
+                symbolState.reader = Observer.map( returnValue, assignedValue, { except: spec.restOf, spread: spec.type === 'array' } );
                 this.once( symbolState.reader ); // Lifecycle cleanup
             }
             // Set now!
