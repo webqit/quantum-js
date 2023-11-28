@@ -49,18 +49,17 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
         };
         const main = $eval( [ compiledSource.identifier + '' ], compiledSource + '' );
         const isFunction = [ 'function', 'async-function' ].includes( sourceType );
-        const createRuntime = thisContext => {
+        const createRuntime = ( thisContext, $env = env ) => {
             let $main = main;
             if ( thisContext ) { $main = $main.bind( thisContext ); }
             // There's always a global scope
             let contextType = 'global', scope = new Scope( undefined, contextType, globalThis );
             // Then this, for script scope, which may also directly reflect/mutate any provided "env"
-            if ( sourceType.endsWith( 'script' ) || env ) { contextType = 'env'; scope = new Scope( scope, contextType, env ); }
+            if ( sourceType.endsWith( 'script' ) || $env ) { contextType = 'env'; scope = new Scope( scope, contextType, $env ); }
             // Or this for module scope. And where "env" was provided, the "env" scope above too
             if ( sourceType === 'module' ) { contextType = 'module'; scope = new Scope( scope, contextType ); }
             if ( typeof thisContext !== 'undefined' ) { scope = new Scope( scope, 'this', { [ 'this' ]: thisContext } ); }
             return new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compiledSource.originalSource, isQuantumFunction: !isFunction }, scope, $main );
-
         };
         return isFunction
             ? createRuntime().execute() // Produces the actual stateful function designed above
