@@ -20,7 +20,9 @@ export function parse( source, params = {} ) {
             const message = `${ e.message || e }`;
             const { pos, loc: { line, column } } = e;
             const expr = source.slice( Math.max( 0, pos - 15 ), pos + 15 );
-            throw new ( globalThis[ e.name ] || Error )( message, { cause: [ { expr, line, column }, { source } ] } );
+            const cause = [ { expr, line, column }, { source } ];
+            if ( params.inBrowser ) console.error( cause );
+            throw new ( globalThis[ e.name ] || Error )( message, { cause } );
         }
         ast.originalSource = source;
         parseCache.set( cacheKey, ast );
