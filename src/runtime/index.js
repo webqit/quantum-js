@@ -49,7 +49,11 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
         const asyncEval = [ 'async-script', 'module' ].includes( sourceType );
         const $eval = ( params, source ) => {
             if ( runtimeParams.compileFunction ) return runtimeParams.compileFunction( source, params );
-            /* @experimental */if ( asyncEval && runtimeParams.inBrowser ) { return import( `data:text/javascript;base64,${ btoa( `export default async function(${ params.join( ', ' ) }) {${ source }}` ) }` ).then( m => m.default ); }
+            if ( asyncEval && runtimeParams.inBrowser ) { /* @experimental */
+                const impt = () => import( `data:text/javascript;base64,${ btoa( `export default async function(${ params.join( ', ' ) }) {${ source }}` ) }` ).then( m => m.default );
+                if ( window.webqit?.realdom?.schedule ) return window.webqit?.realdom?.schedule( 'write', impt, true );
+                return impt();
+            }
             return new ( asyncEval ? ( async function() {} ).constructor : Function )( ...params.concat( source ) );
         };
         return _await( $eval( [ compiledSource.identifier + '' ], compiledSource + '' ), main => {
