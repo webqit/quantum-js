@@ -11,7 +11,7 @@ Quantum JS is a runtime extension to JavaScript that enables us do [Imperative R
 
 ## Overview
  
-Whereas you normally would need a couple primitives to model reactive logic...
+Whereas you would need a couple primitives to express reactive logic...
 
 ```js
 import { createSignal, createMemo, createEffect } from 'solid-js';
