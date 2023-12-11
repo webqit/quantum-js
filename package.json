@@ -8,7 +8,7 @@
     "js-parser"
   ],
   "homepage": "https://webqit.io/tooling/quantum-js",
-  "version": "4.2.9",
+  "version": "4.2.10",
   "license": "MIT",
   "repository": {
     "type": "git",

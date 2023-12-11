@@ -16,7 +16,8 @@ ${h}
                 identifier: compilation.identifier,
                 originalSource: compilation.originalSource,
                 compiledSource: compilation + '',
+                compiledSourceBase64: params.base64 ? btoa( compilation + '' ) : '',
                 topLevelAwait: compilation.topLevelAwait
             } );
-        };`;globalThis.webqit.$qCompilerWorker=new Worker(`data:text/javascript;base64,${btoa(o)}`)}return new Promise(r=>{let i=new MessageChannel;webqit.$qCompilerWorker.postMessage({source:e,params:t},[i.port2]),i.port1.onmessage=o=>{let{compiledSource:s,...u}=o.data;Object.defineProperty(u,"toString",{value:()=>s}),r(u)}})}globalThis.webqit||(self.webqit={});Object.assign(globalThis.webqit,Lt);})();
+        };`;globalThis.webqit.$qCompilerWorker=new Worker(`data:text/javascript;base64,${btoa(o)}`)}return new Promise(r=>{let i=new MessageChannel;webqit.$qCompilerWorker.postMessage({source:e,params:t},[i.port2]),i.port1.onmessage=o=>{let{compiledSource:s,compiledSourceBase64:u,...f}=o.data;Object.defineProperty(f,"toString",{value:a=>a==="base64"?u:s}),r(f)}})}globalThis.webqit||(self.webqit={});Object.assign(globalThis.webqit,Lt);})();
 //# sourceMappingURL=main.lite.js.map
