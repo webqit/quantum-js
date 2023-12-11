@@ -66,7 +66,7 @@ function parseCompileCallback( ...args ) {
                 identifier: compilation.identifier,
                 originalSource: compilation.originalSource,
                 compiledSource: compilation + '',
-                compiledSourceBase64: params.base64 ? btoa( compilation + '' ) : '',
+                compiledSourceBase64: params.base64 ? btoa( params.base64.replace( '%0', compilation.identifier + '' ).replace( '%1', compilation + '' ) ) : '',
                 topLevelAwait: compilation.topLevelAwait
             } );
         };`;

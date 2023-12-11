@@ -15,6 +15,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
     const { env, functionParams = [], exportNamespace, fileName } = params;
     const { parserParams, compilerParams, runtimeParams, } = resolveParams( params );
     const inBrowser = Object.getOwnPropertyDescriptor(globalThis, 'window')?.get?.toString().includes('[native code]') ?? false;
+    const asyncEval = [ 'async-script', 'module' ].includes( sourceType );
 
     // Format source? Mode can be: function, async-function, script, async-script, module
     if ( sourceType === 'module' ) {
@@ -32,7 +33,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
     // Proceed to parse-compile
     compilerParams.sourceType = sourceType;
     parserParams.inBrowser = inBrowser;
-    const compiledSource = parseCompileCallback( source, { parserParams, compilerParams } );
+    const compiledSource = parseCompileCallback( source, { parserParams, compilerParams, base64: asyncEval && inBrowser && `export default async function(%0) {%1}` } );
     if ( compiledSource instanceof Promise && ![ 'async-function', 'async-script', 'module' ].includes( sourceType ) ) {
         throw new Error( `Parse-compile can only return a Promise for sourceTypes: async-function, async-script, module.` );
     }
@@ -46,17 +47,16 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
         const isFunction = [ 'function', 'async-function' ].includes( sourceType );
         // Below, "async-function" would already has async in the returned function
         // And no need to ask compiledSource.topLevelAwait
-        const asyncEval = [ 'async-script', 'module' ].includes( sourceType );
-        const $eval = ( params, source ) => {
-            if ( runtimeParams.compileFunction ) return runtimeParams.compileFunction( source, params );
+        const $eval = ( $qIdentifier, source ) => {
+            if ( runtimeParams.compileFunction ) return runtimeParams.compileFunction( source.toString(), [ $qIdentifier ] );
             if ( asyncEval && runtimeParams.inBrowser ) { /* @experimental */
-                const impt = () => import( `data:text/javascript;base64,${ btoa( `export default async function(${ params.join( ', ' ) }) {${ source }}` ) }` ).then( m => m.default );
+                const impt = () => import( `data:text/javascript;base64,${ source.toString( 'base64' ) }` ).then( m => m.default );
                 if ( window.webqit?.realdom?.schedule ) return window.webqit?.realdom?.schedule( 'write', impt, true );
                 return impt();
             }
-            return new ( asyncEval ? ( async function() {} ).constructor : Function )( ...params.concat( source ) );
+            return new ( asyncEval ? ( async function() {} ).constructor : Function )( $qIdentifier, source.toString() );
         };
-        return _await( $eval( [ compiledSource.identifier + '' ], compiledSource + '' ), main => {
+        return _await( $eval( compiledSource.identifier + '', compiledSource ), main => {
             const createRuntime = ( thisContext, $env = env ) => {
                 let $main = main;
                 if ( thisContext ) { $main = $main.bind( thisContext ); }
