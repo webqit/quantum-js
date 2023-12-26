@@ -66,11 +66,195 @@ This is what we're exploring with Quantum JS!
 
 </details>
 
+## Polyfill
+
+Quantum JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
+
+<details><summary>Load from a CDN<br>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
+
+```html
+<script src="https://unpkg.com/@webqit/quantum-js/dist/main.js"></script>
+```
+
+└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
+
+```js
+// Destructure from the webqit namespace
+const { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, State, Observer } = window.webqit;
+```
+
+</details>
+
+<details><summary>Install from NPM<br>
+└───────── <a href="https://npmjs.com/package/@webqit/quantum-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&label=&colorB=black"></a></summary>
+
+```js
+// npm install
+npm i @webqit/quantum-js
+```
+
+```js
+// Import API
+import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js';
+```
+
+</details>
+
+<details><summary>See details</summary>
+
+| API | Equivalent semantics... |
+| :------- | :----------- |
+| `QuantumFunction` | `function** () {}` |
+| `QuantumAsyncFunction` | `async function** () {}` |
+| `QuantumScript` | `<script>` |
+| `QuantumAsyncScript` | `<script async>` |
+| `QuantumModule` | `<script type="module">` |
+
+While fully supporting program-level APIs - `QuantumScript`, `QuantumAsyncScript`, `QuantumModule`, the current polyfill only supports the constructor forms - `QuantumFunction`, `QuantumAsyncFunction` - of Quantum Functions - which give you the equivalent of the normal function forms!
+
+<details><summary>Code</summary>
+
+```js
+// External dependency
+globalThis.externalVar = 10;
+```
+
+```js
+// QuantumFunction
+const sum = QuantumFunction(`a`, `b`, `
+  return a + b + externalVar;
+`);
+const state = sum(10, 10);
+```
+
+```js
+// Inspect
+console.log(state.value); // 30
+// Reflect and inspect again
+Observer.set(globalThis, 'externalVar', 20);
+console.log(state.value); // 40
+```
+
+</details>
+
+But the double star syntax is supported from within a Quantum program itself:
+
+<details><summary>Code</summary>
+
+```js
+const program = QuantumFunction(`
+  // External dependency
+  let externalVar = 10;
+
+  // QuantumFunction
+  function** sum(a, b) {
+    return a + b + externalVar;
+  }
+  const state = sum(10, 10);
+
+  // Inspect
+  console.log(state.value); // 30
+  // Reflect and inspect again
+  externalVar = 20;
+  console.log(state.value); // 40
+`);
+program();
+```
+
+</details>
+
+</details>
+
+### Quantum JS Lite
+
+It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that.
+
+<details><summary>
+Load from a CDN<br>
+└───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-black"></a></summary>
+
+```html
+<script src="https://unpkg.com/@webqit/quantum-js/dist/main.async.js"></script>
+```
+
+└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
+
+```js
+// Destructure from the webqit namespace
+const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } = window.webqit;
+```
+
+</details>
+
+<details><summary>Install from NPM<br>
+└───────── <a href="https://npmjs.com/package/@webqit/quantum-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&label=&colorB=black"></a></summary>
+
+```js
+// npm install
+npm i @webqit/quantum-js
+```
+
+```js
+// Import Lite API
+import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/lite';
+```
+
+</details>
+
+<details><summary>See details</summary>
+
+| API | Equivalent semantics... |
+| :------- | :----------- |
+| `QuantumAsyncFunction` | `async function** () {}` |
+| `QuantumAsyncScript` | `<script async>` |
+| `QuantumModule` | `<script type="module">` |
+
+Here, only the "async" program types can possibly be obtained this way!
+
+<details><summary>Code</summary>
+  
+```js
+// External dependency
+globalThis.externalVar = 10;
+```
+
+```js
+// QuantumFunction
+const sum = QuantumAsyncFunction(`a`, `b`, `
+  return a + b + externalVar;
+`);
+const state = await sum(10, 10);
+```
+
+```js
+// Inspect
+console.log(state.value); // 30
+// Reflect and inspect again
+Observer.set(globalThis, 'externalVar', 20);
+console.log(state.value); // 40
+```
+
+</details>
+
+Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
+
+> But having been designed as a movable peice, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+> 
+> ```html
+> <head>
+>  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+>   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
+> </head>
+> ```
+
+</details>
+
 ## Creating Quantum Programs
 
 This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Execution Mode" (or "Quantum Mode" for short; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
 
-Given a language-level feature, no setup or build step is required! Polyfill just ahead!
+Given a language-level feature, no setup or build step is required!
 
 ### Quantum Functions
 
@@ -600,190 +784,6 @@ Knowing how things work presents a great way to reason about Quantum programs, a
 + [Update Model](https://github.com/webqit/quantum-js/wiki#update-model)
 + [Flow Control](https://github.com/webqit/quantum-js/wiki#flow-control)
 + [Experimental Features](https://github.com/webqit/quantum-js/wiki#experimental-features)
-
-## Polyfill
-
-Quantum JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
-
-<details><summary>Load from a CDN<br>
-└───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
-
-```html
-<script src="https://unpkg.com/@webqit/quantum-js/dist/main.js"></script>
-```
-
-└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
-
-```js
-// Destructure from the webqit namespace
-const { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, State, Observer } = window.webqit;
-```
-
-</details>
-
-<details><summary>Install from NPM<br>
-└───────── <a href="https://npmjs.com/package/@webqit/quantum-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&label=&colorB=black"></a></summary>
-
-```js
-// npm install
-npm i @webqit/quantum-js
-```
-
-```js
-// Import API
-import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js';
-```
-
-</details>
-
-<details><summary>See details</summary>
-
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumFunction` | `function** () {}` |
-| `QuantumAsyncFunction` | `async function** () {}` |
-| `QuantumScript` | `<script>` |
-| `QuantumAsyncScript` | `<script async>` |
-| `QuantumModule` | `<script type="module">` |
-
-While fully supporting program-level APIs - `QuantumScript`, `QuantumAsyncScript`, `QuantumModule`, the current polyfill only supports the constructor forms - `QuantumFunction`, `QuantumAsyncFunction` - of Quantum Functions - which give you the equivalent of the normal function forms!
-
-<details><summary>Code</summary>
-
-```js
-// External dependency
-globalThis.externalVar = 10;
-```
-
-```js
-// QuantumFunction
-const sum = QuantumFunction(`a`, `b`, `
-  return a + b + externalVar;
-`);
-const state = sum(10, 10);
-```
-
-```js
-// Inspect
-console.log(state.value); // 30
-// Reflect and inspect again
-Observer.set(globalThis, 'externalVar', 20);
-console.log(state.value); // 40
-```
-
-</details>
-
-But the double star syntax is supported from within a Quantum program itself:
-
-<details><summary>Code</summary>
-
-```js
-const program = QuantumFunction(`
-  // External dependency
-  let externalVar = 10;
-
-  // QuantumFunction
-  function** sum(a, b) {
-    return a + b + externalVar;
-  }
-  const state = sum(10, 10);
-
-  // Inspect
-  console.log(state.value); // 30
-  // Reflect and inspect again
-  externalVar = 20;
-  console.log(state.value); // 40
-`);
-program();
-```
-
-</details>
-
-</details>
-
-### Quantum JS Lite
-
-It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that.
-
-<details><summary>
-Load from a CDN<br>
-└───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-black"></a></summary>
-
-```html
-<script src="https://unpkg.com/@webqit/quantum-js/dist/main.async.js"></script>
-```
-
-└ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
-
-```js
-// Destructure from the webqit namespace
-const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } = window.webqit;
-```
-
-</details>
-
-<details><summary>Install from NPM<br>
-└───────── <a href="https://npmjs.com/package/@webqit/quantum-js"><img align="right" src="https://img.shields.io/npm/v/@webqit/quantum-js?style=flat&label=&colorB=black"></a></summary>
-
-```js
-// npm install
-npm i @webqit/quantum-js
-```
-
-```js
-// Import Lite API
-import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/lite';
-```
-
-</details>
-
-<details><summary>See details</summary>
-
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumAsyncFunction` | `async function** () {}` |
-| `QuantumAsyncScript` | `<script async>` |
-| `QuantumModule` | `<script type="module">` |
-
-Here, only the "async" program types can possibly be obtained this way!
-
-<details><summary>Code</summary>
-  
-```js
-// External dependency
-globalThis.externalVar = 10;
-```
-
-```js
-// QuantumFunction
-const sum = QuantumAsyncFunction(`a`, `b`, `
-  return a + b + externalVar;
-`);
-const state = await sum(10, 10);
-```
-
-```js
-// Inspect
-console.log(state.value); // 30
-// Reflect and inspect again
-Observer.set(globalThis, 'externalVar', 20);
-console.log(state.value); // 40
-```
-
-</details>
-
-Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
-
-> But having been designed as a movable peice, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
-> 
-> ```html
-> <head>
->  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
->   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
-> </head>
-> ```
-
-</details>
 
 ## Examples
 
