@@ -539,6 +539,8 @@ class Foo {
 }
 ```
 
+</details>
+
 <details><summary>Show polyfill support</summary>
 
 This is the direct syntax of the Quantum JS APIs:
