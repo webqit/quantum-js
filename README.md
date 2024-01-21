@@ -166,7 +166,7 @@ You can designate a function as *quantum* using either of three methods:
 
 #### Syntax 1: Using The `quantum` Function Flag
 
-> This syntax is available from v4.3.
+> This syntax is only available from v4.3.
 
 Here you prepend your function with the `quantum` flag, just in how you use the `async` keyword:
 
