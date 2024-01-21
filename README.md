@@ -456,8 +456,8 @@ import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
 
 | API | Equivalent semantics... |
 | :------- | :----------- |
-| `QuantumFunction` | `quantum function() {}` |
-| `QuantumAsyncFunction` | `async quantum function() {}` |
+| `QuantumFunction` | `function() {}` |
+| `QuantumAsyncFunction` | `async function() {}` |
 
 ```js
 // External dependency
@@ -473,7 +473,7 @@ const state = sum(10, 10);
 console.log(state.value); // 30
 ```
 
-Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncFunction` API which falls within the premise of off the main thread compilation.
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncFunction` API which falls within the premise of off the main thread compilation.
 
 </details>
 
@@ -535,6 +535,24 @@ const program = new QuantumModule(`
   export let localVar = 0;
 `);
 ```
+
+</details>
+
+<details><summary>Show polyfill support</summary>
+
+This is the direct syntax of the Quantum JS APIs:
+
+```js
+// Import API
+import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
+```
+
+| API | Equivalent semantics... |
+| :------- | :----------- |
+| `QuantumModule` | `<script type="module">` |
+| `QuantumAsyncScript` | `<script async>` |
+
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncScript` and `QuantumModule` APIs which falls within the premise of off the main thread compilation.
 
 </details>
 
