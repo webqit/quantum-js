@@ -122,6 +122,21 @@ Load from a CDN<br>
 const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } = window.webqit;
 ```
 
+<details><summary>Additional details</summary>
+
+These specific APIs are able to do compilation for their program types off the main thread by getting the Quantum JS compiler loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)!
+
+> But if you may, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+> 
+> ```html
+> <head>
+>  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+>   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
+> </head>
+> ```
+
+</details>
+
 </details>
 
 <details><summary>Install from NPM<br>
@@ -136,21 +151,6 @@ npm i @webqit/quantum-js
 // Import Lite API
 import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/lite';
 ```
-
-</details>
-
-<details><summary>Additional details</summary>
-
-These specific APIs are able to do compilation for their program types off the main thread by getting the Quantum JS compiler loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)!
-
-> But if you may, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
-> 
-> ```html
-> <head>
->  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
->   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
-> </head>
-> ```
 
 </details>
 
