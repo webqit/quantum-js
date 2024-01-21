@@ -101,69 +101,6 @@ import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScrip
 
 </details>
 
-<details><summary>See details</summary>
-
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumFunction` | `function** () {}` |
-| `QuantumAsyncFunction` | `async function** () {}` |
-| `QuantumScript` | `<script>` |
-| `QuantumAsyncScript` | `<script async>` |
-| `QuantumModule` | `<script type="module">` |
-
-While fully supporting program-level APIs - `QuantumScript`, `QuantumAsyncScript`, `QuantumModule`, the current polyfill only supports the constructor forms - `QuantumFunction`, `QuantumAsyncFunction` - of Quantum Functions - which give you the equivalent of the normal function forms!
-
-<details><summary>Code</summary>
-
-```js
-// External dependency
-globalThis.externalVar = 10;
-```
-
-```js
-// QuantumFunction
-const sum = QuantumFunction(`a`, `b`, `
-  return a + b + externalVar;
-`);
-const state = sum(10, 10);
-```
-
-```js
-// Inspect
-console.log(state.value); // 30
-// Reflect and inspect again
-Observer.set(globalThis, 'externalVar', 20);
-console.log(state.value); // 40
-```
-
-</details>
-
-But the double star syntax is supported from within a Quantum program itself:
-
-<details><summary>Code</summary>
-
-```js
-const program = QuantumFunction(`
-  // External dependency
-  let externalVar = 10;
-
-  // QuantumFunction
-  function** sum(a, b) {
-    return a + b + externalVar;
-  }
-  const state = sum(10, 10);
-
-  // Inspect
-  console.log(state.value); // 30
-  // Reflect and inspect again
-  externalVar = 20;
-  console.log(state.value); // 40
-`);
-program();
-```
-
-</details>
-
 </details>
 
 ### Quantum JS Lite
@@ -202,44 +139,11 @@ import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observe
 
 </details>
 
-<details><summary>See details</summary>
+<details><summary>Additional details</summary>
 
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumAsyncFunction` | `async function** () {}` |
-| `QuantumAsyncScript` | `<script async>` |
-| `QuantumModule` | `<script type="module">` |
+These specific APIs are able to do compilation for their program types off the main thread by getting the Quantum JS compiler loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)!
 
-Here, only the "async" program types can possibly be obtained this way!
-
-<details><summary>Code</summary>
-  
-```js
-// External dependency
-globalThis.externalVar = 10;
-```
-
-```js
-// QuantumFunction
-const sum = QuantumAsyncFunction(`a`, `b`, `
-  return a + b + externalVar;
-`);
-const state = await sum(10, 10);
-```
-
-```js
-// Inspect
-console.log(state.value); // 30
-// Reflect and inspect again
-Observer.set(globalThis, 'externalVar', 20);
-console.log(state.value); // 40
-```
-
-</details>
-
-Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
-
-> But having been designed as a movable peice, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+> But if you may, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
 > 
 > ```html
 > <head>
@@ -568,6 +472,8 @@ const state = sum(10, 10);
 // Inspect
 console.log(state.value); // 30
 ```
+
+Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncFunction` API which falls within the premise of off the main thread compilation.
 
 </details>
 
