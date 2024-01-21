@@ -164,7 +164,7 @@ Given a language-level feature, no setup or build step is required!
 
 You can designate a function as *quantum* using either of three methods:
 
-#### Syntax 1: Using The `quantum` Function Flag
+#### Syntax 1: Using the `quantum` Function Flag
 
 > This syntax is only available from v4.3.
 
@@ -291,7 +291,7 @@ This syntax is supported from within any piece of code compiled by the Quantum J
 
 </details>
  
-#### Syntax 2: Using The Double Star `**` Notation
+#### Syntax 2: Using the Double Star `**` Notation
 
 Here you append your function with the double star `**` notation, much like how you write [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
