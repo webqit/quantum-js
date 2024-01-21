@@ -252,13 +252,101 @@ Good a thing, these specific APIs take advantage of the fact that they can do co
 
 ## Creating Quantum Programs
 
-This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Execution Mode" (or "Quantum Mode" for short; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)")!
+This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Execution Mode" (or "Quantum Mode" for short<!--; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)"-->)!
 
 Given a language-level feature, no setup or build step is required!
 
 ### Quantum Functions
 
-You can designate a function as *quantum* using a double star notation; similar to [how generator functions look](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
+You can designate a function as *quantum* using either of three method:
+
+#### Method 1: The `quantum` Function Flag
+
+> This option is supported from v4.3.
+
+Here you prepend your function definition with the `quantum` flag, just in how you use the `async` flag:
+
+```js
+// Quantum function declaration
+quantum function bar() {
+  let count = 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+}
+bar();
+```
+
+```js
+// Async quantum function declaration
+async quantum function bar() {
+  let count = await 5;
+  let doubleCount = count * 2;
+  console.log(doubleCount);
+}
+await bar();
+```
+
+<details><summary>Show more syntax examples</summary>
+
+```js
+// Quantum function expression
+const bar = quantum function () {
+}
+const bar = async quantum function () {
+}
+```
+
+```js
+// Quantum object property
+const foo = {
+  bar: quantum function () { ... },
+}
+const foo = {
+  bar: async quantum function () { ... },
+}
+```
+
+```js
+// Quantum object method
+const foo = {
+  quantum bar() { ... },
+}
+const foo = {
+  async quantum bar() { ... },
+}
+```
+
+```js
+// Quantum class method
+class Foo {
+  quantum bar() { ... }
+}
+class Foo {
+  async quantum bar() { ... }
+}
+```
+
+```js
+// Quantum arrow function expression
+const bar = quantum () => {
+}
+const bar = async quantum () => {
+}
+```
+
+```js
+// Quantum arrow function expression
+const bar = quantum arg => {
+}
+const bar = async quantum arg => {
+}
+```
+
+</details>
+
+#### Method 2: The Double Star `**` Notation
+
+Here you append your function definition with the double star `**` notation, just in how you annotate [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
 ```js
 // Quantum function declaration
@@ -280,45 +368,51 @@ async function** bar() {
 await bar();
 ```
 
-<details><summary>...and in just how a function works in JavaScript</summary>
+<details><summary>Show more syntax examples</summary>
 
 ```js
-// Quantum function expression, optionally async
+// Quantum function expression
 const bar = function** () {
-  // Function body
+}
+const bar = async function** () {
 }
 ```
 
 ```js
-// Quantum object property, optionally async
+// Quantum object property
 const foo = {
-  bar: function** () {
-    // Function body
-  },
+  bar: function** () { ... },
+}
+const foo = {
+  bar: async function** () { ... },
 }
 ```
 
 ```js
-// Quantum object method, optionally async
+// Quantum object method
 const foo = {
-  **bar() {
-    // Function body
-  },
+  **bar() { ... },
+}
+const foo = {
+  async **bar() { ... },
 }
 ```
 
 ```js
 // Quantum class method, optionally async
 class Foo {
-  **bar() {
-    // Function body
-  }
+  **bar() { ... }
+}
+class Foo {
+  async **bar() { ... }
 }
 ```
 
 </details>
 
-And you can acheive the same using Quantum Function constructors:
+#### Method 3: Quantum Function Constructors
+
+Here you use function constructors to create a new Quantum function:
 
 ```js
 // Quantum function constructor
@@ -340,7 +434,7 @@ const bar = QuantumAsyncFunction(`
 await bar();
 ```
 
-<details><summary>...and in just how function constructors work in JavaScript</summary>
+<details><summary>Show more syntax examples</summary>
 
 ```js
 // With function parameters
@@ -379,9 +473,7 @@ Learn more about [function constructors](https://developer.mozilla.org/en-US/doc
 
 ### Quantum Execution Mode (Whole Programs)
 
-Think "Strict Mode", but for reactivity!
-
-Here, given the same underlying infrastructure, any piece of code should be able to run in *quantum* mode. Quantum JS exposes two APIs that enable just that:
+Here, whole programs are able to run in *quantum* mode using special scripting APIs:
 
 ```js
 // Quantum regular JS

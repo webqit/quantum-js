@@ -2,11 +2,7 @@
 /**
  * @import
  */
-import { Parser, tokTypes } from 'acorn';
-
-// "quantum" isn't anymore treated as a keyword
-//keywordTypes.quantum = new TokenType( 'quantum', { keyword: 'quantum', prefix: true } );
-//tokTypes._quantum = keywordTypes.quantum;
+import { Parser, TokenType, tokTypes, keywordTypes } from 'acorn';
 
 export default Parser.extend( function( Parser ) {
     return class extends Parser {
@@ -20,17 +16,15 @@ export default Parser.extend( function( Parser ) {
 
         constructor( ...args ) {
             super( ...args );
-            // "quantum" isn't anymore treated as a keyword
-            //this.keywords = new RegExp( this.keywords.source.replace( '|', '|quantum|' ), this.keywords.flags );
-            //this.useQuabtumDirectiveStack = [ this.options.quantumMode !== false ];
+            this.keywords = new RegExp( this.keywords.source.replace( '|', '|quantum|' ), this.keywords.flags );
             this.isQuantumFunction = false;
             this.functionStack = [];
+            this.useQuabtumDirectiveStack = [ this.options.quantumMode !== false ];
         }
 
-        isQuantumToekn() {
-            return this.value === 'quantum';
-            // "quantum" isn't anymore treated as a keyword
-            //return this.type === tokTypes._quantum;
+        checkUnreserved(ref) {
+            if ( ref.name === 'quantum' ) return;
+            super.checkUnreserved( ref );
         }
 
         nextToken() {
@@ -38,6 +32,7 @@ export default Parser.extend( function( Parser ) {
             super.nextToken();
             // Capture "async" followed by "quantum" and make "quantum" invisible
             if ( this.type === tokTypes.name && this.value === 'async' && this.input.slice( this.pos ).trim().startsWith( 'quantum' ) ) {
+                console.log('---------------/////////', );
                 /**
                  * function declaration: "async quantum" function name() { ... }
                  * named function expression; f = "async quantum" function name() { ... }
@@ -62,7 +57,7 @@ export default Parser.extend( function( Parser ) {
                 Object.assign( this, { type, value, start, end, startLoc, endLoc } );
             }
             // Capture "quantum" followed by "function" and make "quantum" invisible
-            else if ( this.isQuantumToekn() && this.input.slice( this.pos ).trim().startsWith( 'function' ) ) {
+            else if ( this.type === tokTypes._quantum && this.input.slice( this.pos ).trim().startsWith( 'function' ) ) {
                 /**
                  * function declaration: "quantum function" name() { ... }
                  * named function expression; f = "quantum function" name() { ... }
@@ -76,7 +71,7 @@ export default Parser.extend( function( Parser ) {
                 this.isQuantumFunction = true;
             }
             // "static quantum" methods
-            else if ( ctx === tokTypes.name && this.functionStack[ 0 ]?.type === 'classElement' && this.isQuantumToekn() ) {
+            else if ( ctx === tokTypes.name && this.functionStack[ 0 ]?.type === 'classElement' && this.type === tokTypes._quantum ) {
                 /**
                  * o = class { "static quantum" name() { ... }; }
                  */
@@ -86,7 +81,7 @@ export default Parser.extend( function( Parser ) {
                 this.functionStack[ 0 ].isQuantumFunction = true;
             }
             // "quantum" arrow function
-            else if ( this.isQuantumToekn() && /^(\(|[\w$]+(\s+)?=>)/.test( this.input.slice( this.pos ).trim() ) ) {
+            else if ( this.type === tokTypes._quantum && /^(\(|[\w$]+(\s+)?=>)/.test( this.input.slice( this.pos ).trim() ) ) {
                 // Advance away from "quantum"
                 super.nextToken();
                 this.isQuantumFunction = true;
@@ -160,7 +155,7 @@ export default Parser.extend( function( Parser ) {
             this.isQuantumFunction = false;
             // Handle
             this.functionStack.unshift( { type: 'property', isQuantumFunction } ); // Push stack
-            if ( this.type === tokTypes.starstar || this.isQuantumToekn() ) {
+            if ( [ tokTypes.starstar, tokTypes._quantum ].includes( this.type ) ) {
                 this.functionStack[ 0 ].isQuantumFunction = true;
                 super.nextToken();
             }
@@ -180,7 +175,7 @@ export default Parser.extend( function( Parser ) {
             this.isQuantumFunction = false;
             // Handle
             this.functionStack.unshift( { type: 'classElement', isQuantumFunction } ); // Push stack
-            if ( this.type === tokTypes.starstar || this.isQuantumToekn() ) {
+            if ( [ tokTypes.starstar, tokTypes._quantum ].includes( this.type ) ) {
                 this.functionStack[ 0 ].isQuantumFunction = true;
                 super.nextToken();
             }

@@ -51,7 +51,7 @@ export default class Compiler {
     transform( ast ) {
         if ( ast.type !== 'Program' ) throw new Error( 'AST must be of type "Program".' );
         return this.pushScope( ast, () => {
-            const body = this.transformNodes( ast.body, { static: this.params.startStatic } );
+            const body = this.transformNodes( ast.body, { static: !ast.isQuantumProgram } );
             const newAst = { ...ast, body };
             // -------------
             // Program body comment
@@ -68,12 +68,16 @@ export default class Compiler {
                 const promiseAll = Node.memberExpr( Node.identifier( 'Promise' ), Node.identifier( 'all' ) );
                 newAst.body.push( Node.exprStmt( Node.awaitExpr( Node.callExpr( promiseAll, [ this.$path( '$promises.exports' ) ] ) ) ) );
             }
+            const identifier = this.currentScope.get$qIdentifier( '$q' ).name;
             const compiledSource = this.serialize( newAst, { startingIndentLevel: this.params.startingIndentLevel } );
+            const compiledSourceBase64 = this.params.base64 ? btoa( this.params.base64.replace( '%0', identifier + '' ).replace( '%1', compiledSource ) ) : '';
             return {
-                toString()  { return compiledSource },
-                identifier: this.currentScope.get$qIdentifier( '$q' ).name,
+                identifier,
+                compiledSource,
+                compiledSourceBase64,
+                originalSource: ast.originalSource,
                 topLevelAwait: this.topLevelAwait,
-                get originalSource() { return ast.originalSource || '' },
+                toString( base64 = undefined )  { return base64 === 'base64' ? this.compiledSourceBase64 : this.compiledSource; },
             };
         } );
     }
@@ -233,9 +237,11 @@ export default class Compiler {
     transformFunctionExpression( node ) { return this.transformFunction( Node.funcExpr, ...arguments ) }
     transformArrowFunctionExpression( node ) { return this.transformFunction( Node.arrowFuncExpr, ...arguments ) }
     transformFunction( transform, node ) {
+        if ( node.generator && node.isQuantumFunction ) {
+            throw new Error( `Generator functions cannot be quantum functions.` );
+        }
         const $serial = this.$serial( node );
         let { id, params, body } = node;
-
         // Note the static/non-static mode switch
         [ id, params, body ] = this.pushScope( node, () => {
             const $body = [];

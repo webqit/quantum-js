@@ -62,13 +62,7 @@ function parseCompileCallback( ...args ) {
             const { source, params } = e.data;
             const ast = parse( source, params.parserParams );
             const compilation = compile( ast, params.compilerParams );
-            e.ports[ 0 ]?.postMessage( {
-                identifier: compilation.identifier,
-                originalSource: compilation.originalSource,
-                compiledSource: compilation + '',
-                compiledSourceBase64: params.base64 ? btoa( params.base64.replace( '%0', compilation.identifier + '' ).replace( '%1', compilation + '' ) ) : '',
-                topLevelAwait: compilation.topLevelAwait
-            } );
+            e.ports[ 0 ]?.postMessage( { ...compilation } );
         };`;
         globalThis.webqit.$qCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
     }
@@ -76,8 +70,10 @@ function parseCompileCallback( ...args ) {
         let messageChannel = new MessageChannel;
         webqit.$qCompilerWorker.postMessage( { source, params }, [ messageChannel.port2 ] );
         messageChannel.port1.onmessage = e => {
-            const { compiledSource, compiledSourceBase64, ...compilation } = e.data;
-            Object.defineProperty( compilation, 'toString', { value: base64 => base64 === 'base64' ? compiledSourceBase64 : compiledSource } );
+            const { ...compilation } = e.data;
+            Object.defineProperty( compilation, 'toString', {
+                value: base64 => base64 === 'base64' ? compilation.compiledSourceBase64 : compilation.compiledSource
+            } );
             res( compilation );
         }
     } );

@@ -21,9 +21,9 @@ export default class AbstractQuantumScript {
     bind( thisContext, env = undefined ) { return _await( this.$program, ( { createRuntime } ) => createRuntime( thisContext, env ) ); }
 
     toString( $qSource = false ) {
-        return _await( this.$program, ( { compiledSource } ) => {
-            if ( $qSource ) return compiledSource + '';
-            return compiledSource.originalSource;
+        return _await( this.$program, ( { compilation } ) => {
+            if ( $qSource ) return compilation + '';
+            return compilation.originalSource;
         } );
     }
 }
