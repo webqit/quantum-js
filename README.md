@@ -346,7 +346,7 @@ const bar = async quantum arg => {
 
 <details><summary>Show polyfill support</summary>
 
-This syntax is supported within any piece of code compiled by the Quantum JS compiler, e.g.:
+This syntax is supported from within any piece of code compiled by the Quantum JS compiler, e.g.:
 
 + code made via Quantum JS APIs (discussed below):
 
@@ -455,7 +455,7 @@ class Foo {
 
 <details><summary>Show polyfill support</summary>
 
-This syntax is supported within any piece of code compiled by the Quantum JS compiler, e.g.:
+This syntax is supported from within any piece of code compiled by the Quantum JS compiler, e.g.:
 
 + code made via Quantum JS APIs (discussed below):
 
@@ -539,7 +539,39 @@ class Foo {
 }
 ```
 
-Note that unlike normal function declarations and expressions, as in syntaxes 1 and 2 above, that can see their surrounding scope, code in [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function) is only able to see the global scope:
+<details><summary>Show polyfill support</summary>
+
+This is the direct syntax of the Quantum JS APIs:
+
+```js
+// Import API
+import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
+```
+
+| API | Equivalent semantics... |
+| :------- | :----------- |
+| `QuantumFunction` | `quantum function() {}` |
+| `QuantumAsyncFunction` | `async quantum function() {}` |
+
+```js
+// External dependency
+globalThis.externalVar = 10;
+
+// QuantumFunction
+const sum = QuantumFunction(`a`, `b`, `
+  return a + b + externalVar;
+`);
+const state = sum(10, 10);
+
+// Inspect
+console.log(state.value); // 30
+```
+
+</details>
+
+<details><summary>Additional details</summary>
+ 
+Note that unlike normal function declarations and expressions that can see their surrounding scope, as in syntaxes 1 and 2 above, code in [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function) is only able to see the global scope:
 
 ```js
 let a;
