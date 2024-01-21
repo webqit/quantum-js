@@ -258,13 +258,13 @@ Given a language-level feature, no setup or build step is required!
 
 ### Quantum Functions
 
-You can designate a function as *quantum* using either of three method:
+You can designate a function as *quantum* using either of three methods:
 
 #### Method 1: The `quantum` Function Flag
 
-> This option is supported from v4.3.
+> This option is available from v4.3.
 
-Here you prepend your function definition with the `quantum` flag, just in how you use the `async` flag:
+Here you prepend your function with the `quantum` flag, just in how you use the `async` keyword:
 
 ```js
 // Quantum function declaration
@@ -346,7 +346,7 @@ const bar = async quantum arg => {
 
 #### Method 2: The Double Star `**` Notation
 
-Here you append your function definition with the double star `**` notation, just in how you annotate [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
+Here you append your function with the double star `**` notation, much like how you write [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
 ```js
 // Quantum function declaration
@@ -412,7 +412,7 @@ class Foo {
 
 #### Method 3: Quantum Function Constructors
 
-Here you use function constructors to create a new Quantum function:
+Here you use special function constructors to create a new Quantum function:
 
 ```js
 // Quantum function constructor
