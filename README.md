@@ -544,7 +544,7 @@ This is the direct syntax of the Quantum JS APIs:
 
 ```js
 // Import API
-import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
+import { QuantumModule, QuantumAsyncScript } from '@webqit/quantum-js';
 ```
 
 | API | Equivalent semantics... |
