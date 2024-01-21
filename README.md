@@ -260,9 +260,9 @@ Given a language-level feature, no setup or build step is required!
 
 You can designate a function as *quantum* using either of three methods:
 
-#### Method 1: The `quantum` Function Flag
+#### Syntax 1: Using The `quantum` Function Flag
 
-> This option is available from v4.3.
+> This syntax is available from v4.3.
 
 Here you prepend your function with the `quantum` flag, just in how you use the `async` keyword:
 
@@ -290,19 +290,19 @@ await bar();
 
 ```js
 // Quantum function expression
-const bar = quantum function () {
+const bar = quantum function() {
 }
-const bar = async quantum function () {
+const bar = async quantum function() {
 }
 ```
 
 ```js
 // Quantum object property
 const foo = {
-  bar: quantum function () { ... },
+  bar: quantum function() { ... },
 }
 const foo = {
-  bar: async quantum function () { ... },
+  bar: async quantum function() { ... },
 }
 ```
 
@@ -344,7 +344,50 @@ const bar = async quantum arg => {
 
 </details>
 
-#### Method 2: The Double Star `**` Notation
+<details><summary>Show polyfill support</summary>
+
+This syntax is supported within any piece of code compiled by the Quantum JS compiler, e.g.:
+
++ code made via Quantum JS APIs (discussed below):
+
+    ```js
+    const program = new QuantumFunction(`
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      quantum function sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    `);
+    program();
+    ```
+    
++ code within inline `<script>` tags when using the [OOHTML Polyfill](https://github.com/webqit/oohtml) (discussed below):
+
+    ```html
+    <script>
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      quantum function sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    </script>
+    ```
+
+</details>
+ 
+#### Syntax 2: Using The Double Star `**` Notation
 
 Here you append your function with the double star `**` notation, much like how you write [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
@@ -410,7 +453,50 @@ class Foo {
 
 </details>
 
-#### Method 3: Quantum Function Constructors
+<details><summary>Show polyfill support</summary>
+
+This syntax is supported within any piece of code compiled by the Quantum JS compiler, e.g.:
+
++ code made via Quantum JS APIs (discussed below):
+
+    ```js
+    const program = new QuantumFunction(`
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      function** sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    `);
+    program();
+    ```
+    
++ code within inline `<script>` tags when using the [OOHTML Polyfill](https://github.com/webqit/oohtml) (discussed below):
+
+    ```html
+    <script>
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      function** sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    </script>
+    ```
+
+</details>
+
+#### Syntax 3: Using Quantum Function Constructors
 
 Here you use special function constructors to create a new Quantum function:
 
@@ -453,7 +539,7 @@ class Foo {
 }
 ```
 
-Well, this also includes the fact that, unlike normal function declarations and expressions that can see their surrounding scope, code in function constructors can see only the global scope:
+Note that unlike normal function declarations and expressions, as in syntaxes 1 and 2 above, that can see their surrounding scope, code in [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function) is only able to see the global scope:
 
 ```js
 let a;
@@ -466,8 +552,6 @@ const bar = QuantumFunction(`
 `);
 bar();
 ```
-
-Learn more about [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function).
 
 </details>
 
