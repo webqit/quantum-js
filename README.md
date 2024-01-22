@@ -162,7 +162,7 @@ Given a language-level feature, no setup or build step is required!
 
 ### Quantum Functions
 
-You can designate a function as *quantum* using either of three methods:
+You can make a Quantum function via either of three ways:
 
 #### Syntax 1: Using the `quantum` Function Flag
 
