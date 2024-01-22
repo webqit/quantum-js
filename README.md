@@ -576,9 +576,18 @@ Now, this brings us to having real Quantum scripts in HTML:
 </script>
 ```
 
-But this as a HTML-level feature is made possible via a related project: [OOHTML](https://github.com/webqit/oohtml#quantum-scripts)! You'll use the OOHTML polyfill, instead of the Quantum JS polyfill, to have Quantum code right within HTML Scripts.
+But this as a HTML-level feature is made possible via a related project: [OOHTML](https://github.com/webqit/oohtml#quantum-scripts)! You'll, this time, need to use the OOHTML polyfill, instead of the Quantum JS polyfill, to have Quantum HTML Scripts.
 
-Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
+You're in fact able to also use the `quantum` or double star `**` function notation right within an ordinary imline script:
+
+```html
+<script>
+quantum function bar() {
+}
+</script>
+```
+
+That said, other tooling may choose to use the same API infrastructure in other ways; e.g. as compile target.
 
 ## Consuming Quantum Programs
 
