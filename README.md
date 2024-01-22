@@ -44,7 +44,7 @@ console.log(doubleCount);
 setTimeout(() => count = 10, 500);
 ```
 
-Here, the code you write is able to *statically* reflect changes to state in *micro* details, such that the state of that piece of program is always in sync with the rest of the program at any given point!
+Here, the code you write is able to *statically* reflect changes to state in <del>fine-grained</del> *micro* details, without needing you to manually model your dependency graphs or worry about how values propagate through your code!
 
 ## Idea
 
@@ -593,17 +593,19 @@ That said, other tooling may choose to use the same API infrastructure in other 
 
 Each call to a Quantum function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
+For the Quantum functions above:
+
 ```js
-// For the quantum functions above
 const state = bar();
 ```
 
+For the Quantum Script APIs above:
+
 ```js
-// For the Quantum Script APIs above
 const state = program.execute();
 ```
 
-For Quantum HTML Scripts - `<script quantum>`, the `state` object is available as a direct property of the script element:
+For Quantum HTML scripts - `<script quantum>`, the `state` object is available as a direct property of the script element:
 
 ```js
 console.log(script.state);
@@ -708,7 +710,7 @@ Quantum programs may maintain many live relationships and should be disposed whe
 state.dispose();
 ```
 
-<!-- TODO: Talk about auto-disposals -->
+For Quantum HTML Scripts - `<script quantum>`,  state disposal is automatic as script element leaves the DOM!
 
 ## Interaction with the Outside World
 
