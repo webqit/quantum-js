@@ -68,7 +68,7 @@ This is what we're exploring with Quantum JS!
 
 ## Polyfill
 
-Quantum JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
+Quantum JS may be used today via a polyfill. While this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
@@ -105,7 +105,7 @@ import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScrip
 
 ### Quantum JS Lite
 
-It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that.
+It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load.
 
 <details><summary>
 Load from a CDN<br>
@@ -124,7 +124,7 @@ const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer
 
 <details><summary>Additional details</summary>
 
-These specific APIs are able to do compilation for their program types off the main thread by getting the Quantum JS compiler loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)!
+The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that. Additionally, these APIs are able to do their compilation off the main thread by getting the Quantum JS compiler loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)!
 
 > But if you may, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
 > 
@@ -156,7 +156,7 @@ import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observe
 
 ## Creating Quantum Programs
 
-This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Execution Mode" (or "Quantum Mode" for short<!--; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)"-->)!
+This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Scripts"!
 
 Given a language-level feature, no setup or build step is required!
 
@@ -495,9 +495,9 @@ bar();
 
 </details>
 
-### Quantum Execution Mode (Whole Programs)
+### Quantum Scripts (Whole Programs)
 
-Here, whole programs are able to run in *quantum* mode using special scripting APIs:
+Here, whole programs are able to run in *quantum* execution mode using special scripting APIs:
 
 ```js
 // Quantum regular JS
