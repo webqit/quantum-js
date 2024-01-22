@@ -593,6 +593,12 @@ That said, other tooling may choose to use the same API infrastructure in other 
 
 Each call to a Quantum function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
+For Quantum HTML Scripts - `<script quantum>`, the `state` object is available as a direct property of the script element:
+
+```js
+console.log(script.state);
+```
+
 ### Return Value
 
 The `State` object features a `value` property that carries the program's actual return value:
