@@ -556,7 +556,7 @@ import { QuantumModule, QuantumAsyncScript } from '@webqit/quantum-js';
 
 </details>
 
-Now, this goes a step further to let us have "Quantum Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml#quantum-scripts):
+Now, this brings us to having real Quantum scripts in HTML:
 
 ```html
 <!-- Quantum classic script -->
@@ -576,7 +576,7 @@ Now, this goes a step further to let us have "Quantum Scripts" - which ships in 
 </script>
 ```
 
-And the ideas there are coming to simplify how we build single page applications!
+But this as a HTML-level feature is made possible via a related project: [OOHTML](https://github.com/webqit/oohtml#quantum-scripts)! You'll use the OOHTML polyfill, instead of the Quantum JS polyfill, to have Quantum code right within HTML Scripts.
 
 Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
 
