@@ -454,6 +454,10 @@ This is the direct syntax of the Quantum JS APIs:
 import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
 ```
 
+```js
+const { QuantumFunction, QuantumAsyncFunction } = window.webqit;
+```
+
 | API | Equivalent semantics... |
 | :------- | :----------- |
 | `QuantumFunction` | `function() {}` |
@@ -544,11 +548,16 @@ This is the direct syntax of the Quantum JS APIs:
 
 ```js
 // Import API
-import { QuantumModule, QuantumAsyncScript } from '@webqit/quantum-js';
+import { QuantumScript, QuantumModule, QuantumAsyncScript } from '@webqit/quantum-js';
+```
+
+```js
+const { QuantumScript, QuantumModule, QuantumAsyncScript } = window.webqit;
 ```
 
 | API | Equivalent semantics... |
 | :------- | :----------- |
+| `QuantumScript` | `<script>` |
 | `QuantumModule` | `<script type="module">` |
 | `QuantumAsyncScript` | `<script async>` |
 
