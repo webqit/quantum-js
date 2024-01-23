@@ -104,9 +104,15 @@ export default class Autorun extends EventTarget {
             catch( e ) { throw new Error( `Cannot declare ${ name }; ${ e.message }` ); }
         };
         const complete = ( returnValue, autorun ) => {
-            let scope = spec.kind === 'var' ? this.runtime.scope : autorun.scope;
-            // For scripts, hoist all the way to the global scope... or somewhere before where its been defined
-            while ( spec.kind === 'var' && ![ 'module', 'function' ].includes( scope.type ) && !Observer.has( scope.state, name ) && scope.context ) {
+            let scope = autorun.scope;
+            if ( spec.kind === 'var' ) {
+                //let scope = this.runtime.scope;
+                // For plain scripts, hoist all the way to the global scope... or somewhere before where its been defined
+                while ( ![ 'module', 'function' ].includes( scope.type ) && !Observer.has( scope.state, name ) && scope.context ) {
+                    scope = scope.context;
+                }
+            } else if ( scope.type === 'this' && scope.context ) {
+                // We're in a script or module program. scope.context is either going to be 'env' or 'module'
                 scope = scope.context;
             }
             let symbolState = scope.symbols.get( name );
@@ -155,7 +161,6 @@ export default class Autorun extends EventTarget {
                 symbolState.reader = Observer.map( returnValue, assignedValue, { except: spec.restOf, spread: spec.type === 'array' } );
                 this.once( symbolState.reader ); // Lifecycle cleanup
             }
-            // Set now!
             Observer.set( lexicalScope.state, name, assignedValue );
             return [ 'postinc', 'postdec' ].includes( spec.kind ) ? valueBefore : assignedValue;
         } );
@@ -196,14 +201,14 @@ export default class Autorun extends EventTarget {
     }
 
     autobind( baseSignal, depth, hint ) {
-        const isQuantumFunction = this.runtime.$params.isQuantumFunction;
+        const quantumMode = this.runtime.$params.quantumMode;
         const isConst = baseSignal.type  === 'const';
         const isRuntime = this === this.runtime;
         const isAborted = this.state === 'aborted';
         const nowRunning = this;
         return ( function proxy( signal, depth ) {
             // Do bindings first
-            if ( isQuantumFunction && !isConst && !isRuntime && !isAborted ) {
+            if ( quantumMode && !isConst && !isRuntime && !isAborted ) {
                 signal.subscribe( nowRunning );
             }
             // Return bare value here?

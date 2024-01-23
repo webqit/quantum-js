@@ -18,20 +18,23 @@ export function QuantumFunction( ...args ) {
     return $eval( 'function', parseCompileCallback, source, params );
 }
 
-export function QuantumAsyncFunction( ...args ) {
+export function AsyncQuantumFunction( ...args ) {
     const { source, params } = _$functionArgs( args );
     return $eval( 'async-function', parseCompileCallback, source, params );
 }
+export const QuantumAsyncFunction = AsyncQuantumFunction; // For backwards compat
 
 export class QuantumScript extends AbstractQuantumScript {
     static sourceType = 'script';
     static parseCompileCallback = parseCompileCallback;
 }
 
-export class QuantumAsyncScript extends AbstractQuantumScript {
+export class AsyncQuantumScript extends AbstractQuantumScript {
     static sourceType = 'async-script';
     static parseCompileCallback = parseCompileCallback;
 }
+
+export const QuantumAsyncScript = AsyncQuantumScript; // For backwards compat
 
 export class QuantumModule extends AbstractQuantumScript {
     static sourceType = 'module';

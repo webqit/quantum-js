@@ -66,6 +66,13 @@ This is what we're exploring with Quantum JS!
 
 </details>
 
+## Status
+
++ Working implementation via a polyfill
++ Integral to the [OOHTML project](https://github.com/webqit/oohtml)
++ Actively developed
++ Open to contributions
+
 ## Polyfill
 
 Quantum JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!

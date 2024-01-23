@@ -14,7 +14,7 @@ export { Observer, State }
 
 export let QuantumFunction;
 
-export function QuantumAsyncFunction( ...args ) {
+export function AsyncQuantumFunction( ...args ) {
     const { source, params } = _$functionArgs( args );
     const compiledFunction = $eval( 'async-function', parseCompileCallback, source, params );
     if ( !( compiledFunction instanceof Promise ) ) return compiledFunction;
@@ -23,13 +23,16 @@ export function QuantumAsyncFunction( ...args ) {
     Object.defineProperty( wrapperFunction, 'toString', { value: async function( ...args ) { return ( await compiledFunction ).toString( ...args ) } } )
     return wrapperFunction;
 }
+export const QuantumAsyncFunction = AsyncQuantumFunction; // For backwards compat
 
 export let QuantumScript;
 
-export class QuantumAsyncScript extends AbstractQuantumScript {
+export class AsyncQuantumScript extends AbstractQuantumScript {
     static sourceType = 'async-script';
     static parseCompileCallback = parseCompileCallback;
 }
+export const QuantumAsyncScript = AsyncQuantumScript; // For backwards compat
+
 
 export class QuantumModule extends AbstractQuantumScript {
     static sourceType = 'module';
@@ -61,8 +64,8 @@ function parseCompileCallback( ...args ) {
         globalThis.onmessage = e => {
             const { source, params } = e.data;
             const ast = parse( source, params.parserParams );
-            const compilation = compile( ast, params.compilerParams );
-            e.ports[ 0 ]?.postMessage( { ...compilation } );
+            const { toString, ...compilation } = compile( ast, params.compilerParams );
+            e.ports[ 0 ]?.postMessage( compilation );
         };`;
         globalThis.webqit.$qCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
     }

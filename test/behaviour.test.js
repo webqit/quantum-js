@@ -5,7 +5,7 @@
 import { expect } from 'chai';
 import Parser from '../src/compiler/Parser.js';
 import { parserParams } from '../src/params.js';
-import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, Observer } from '../src/index.js';
+import { QuantumFunction, AsyncQuantumFunction, QuantumScript, QuantumModule, Observer } from '../src/index.js';
 
 import { setMaxListeners } from 'events';
 import { env as env1 } from '../src/util.js';
@@ -49,7 +49,7 @@ console.log( '----------------', env.log );
 
 
 
-const t = QuantumAsyncFunction(`
+const t = AsyncQuantumFunction(`
     for (let i in await iteratee) {
         console.log(await i);
         if (i === '3') iteratee.push( iteratee.length + '' );
@@ -480,7 +480,7 @@ describe( 'Basic execution', function() {
 
     it( 'Should take simple parameters and return the sum.', async function() {
         // QuantumFunction
-        const exec = QuantumAsyncFunction(`a`, `b`, `
+        const exec = AsyncQuantumFunction(`a`, `b`, `
             return a + b;
         `);
 

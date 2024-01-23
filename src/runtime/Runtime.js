@@ -102,7 +102,7 @@ export default class Runtime extends Autorun {
 
     execute( callback = null ) {
         return super.execute( returnValue => {
-            const actualReturnValue = this.$params.isQuantumFunction
+            const actualReturnValue = this.$params.quantumMode
                 ? new State( this )
                 : returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
@@ -111,7 +111,7 @@ export default class Runtime extends Autorun {
 
     spawn( isQuantumFunction, thisContext, closure ) {
         const context = this.nowRunning || this;
-        const params = {  ...this.$params, $serial: this.$serial + 1, isQuantumFunction };
+        const params = {  ...this.$params, $serial: this.$serial + 1, quantumMode: isQuantumFunction };
         const scope = new Scope( context.scope, 'function', { [ 'this' ]: thisContext } );
         const subRuntime = new this.constructor( context, 'function', params, scope, closure );
         return subRuntime.execute();
@@ -152,14 +152,14 @@ export default class Runtime extends Autorun {
         const observeList = [];
         for ( const [ local, serial, alias ] of specifiers ) {
             if ( local === '*' && alias ) {
-                Observer.set( target, alias, source );
+                ( this.$params.quantumMode ? Observer : Reflect ).set( target, alias, source );
                 continue;
             }
             if ( !Observer.has( source, local ) ) { this.throw( `The requested module does not provide an export named "${ local }".`, [ serial, sourceSerial ] ); }
-            Observer.set( target, alias || local, Observer.get( source, local ) );
+            ( this.$params.quantumMode ? Observer : Reflect ).set( target, alias || local, Observer.get( source, local ) );
             observeList.push( [ local, serial, alias ] );
         }
-        if ( !observeList.length ) return;
+        if ( !observeList.length || !this.$params.quantumMode ) return;
         this.once( Observer.observe( source, mutations => {
             for ( const [ local, /* serial */, alias ] of observeList ) {
                 for ( const mutation of mutations ) {

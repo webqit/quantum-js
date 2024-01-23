@@ -33,7 +33,7 @@
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
-    "@webqit/observer": "^3.0.0",
+    "@webqit/observer": "^3.0.2",
     "acorn": "^8.8.1",
     "astring": "^1.8.3"
   },

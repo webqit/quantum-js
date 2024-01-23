@@ -76,6 +76,7 @@ export default class Compiler {
                 compiledSource,
                 compiledSourceBase64,
                 originalSource: ast.originalSource,
+                isQuantumProgram: ast.isQuantumProgram,
                 topLevelAwait: this.topLevelAwait,
                 toString( base64 = undefined )  { return base64 === 'base64' ? this.compiledSourceBase64 : this.compiledSource; },
             };
@@ -640,7 +641,7 @@ export default class Compiler {
             const kind = ( node.prefix ? 'pre' : 'post' ) + ( node.operator === '--' ? 'dec' : 'inc' );
             return this.$call( 'update', Node.literal( node.argument.name ), this.$closure( [ currentValueLocalIdentifier ], expr ), this.$obj( { kind: Node.literal( kind ) } ) );
         }
-        return transform.call( Node, node.operator, this.transformNode( node.argument ), node.prefix );
+        return Node.updateExpr( node.operator, this.transformNode( node.argument ), node.prefix );
     }
 
     transformUnaryExpression( node ) {
