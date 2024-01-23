@@ -44,7 +44,7 @@ console.log(doubleCount);
 setTimeout(() => count = 10, 500);
 ```
 
-Here, the code you write is able to *statically* reflect changes to state in *micro* details, such that the state of that piece of program is always in sync with the rest of the program at any given point!
+Here, the code you write is able to *statically* reflect changes to state in <del>fine-grained</del> *micro* details, without needing you to manually model your dependency graphs or worry about how values propagate through your code!
 
 ## Idea
 
@@ -75,7 +75,7 @@ This is what we're exploring with Quantum JS!
 
 ## Polyfill
 
-Quantum JS may be used today via a polyfill. And good a thing, while this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
+Quantum JS may be used today via a polyfill. While this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
@@ -108,74 +108,11 @@ import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScrip
 
 </details>
 
-<details><summary>See details</summary>
-
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumFunction` | `function** () {}` |
-| `QuantumAsyncFunction` | `async function** () {}` |
-| `QuantumScript` | `<script>` |
-| `QuantumAsyncScript` | `<script async>` |
-| `QuantumModule` | `<script type="module">` |
-
-While fully supporting program-level APIs - `QuantumScript`, `QuantumAsyncScript`, `QuantumModule`, the current polyfill only supports the constructor forms - `QuantumFunction`, `QuantumAsyncFunction` - of Quantum Functions - which give you the equivalent of the normal function forms!
-
-<details><summary>Code</summary>
-
-```js
-// External dependency
-globalThis.externalVar = 10;
-```
-
-```js
-// QuantumFunction
-const sum = QuantumFunction(`a`, `b`, `
-  return a + b + externalVar;
-`);
-const state = sum(10, 10);
-```
-
-```js
-// Inspect
-console.log(state.value); // 30
-// Reflect and inspect again
-Observer.set(globalThis, 'externalVar', 20);
-console.log(state.value); // 40
-```
-
-</details>
-
-But the double star syntax is supported from within a Quantum program itself:
-
-<details><summary>Code</summary>
-
-```js
-const program = QuantumFunction(`
-  // External dependency
-  let externalVar = 10;
-
-  // QuantumFunction
-  function** sum(a, b) {
-    return a + b + externalVar;
-  }
-  const state = sum(10, 10);
-
-  // Inspect
-  console.log(state.value); // 30
-  // Reflect and inspect again
-  externalVar = 20;
-  console.log(state.value); // 40
-`);
-program();
-```
-
-</details>
-
 </details>
 
 ### Quantum JS Lite
 
-It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load. The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that.
+It is possible to use a lighter version of Quantum JS where you want something further feather weight for your initial application load.
 
 <details><summary>
 Load from a CDN<br>
@@ -191,6 +128,21 @@ Load from a CDN<br>
 // Destructure from the webqit namespace
 const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } = window.webqit;
 ```
+
+<details><summary>Additional details</summary>
+
+The Lite APIs initially come without the compiler and yet lets you work with Quantum JS ahead of that. Additionally, these APIs are able to do their compilation off the main thread by getting the Quantum JS compiler loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers)!
+
+> But if you may, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
+> 
+> ```html
+> <head>
+>  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
+>   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
+> </head>
+> ```
+
+</details>
 
 </details>
 
@@ -209,69 +161,21 @@ import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observe
 
 </details>
 
-<details><summary>See details</summary>
-
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumAsyncFunction` | `async function** () {}` |
-| `QuantumAsyncScript` | `<script async>` |
-| `QuantumModule` | `<script type="module">` |
-
-Here, only the "async" program types can possibly be obtained this way!
-
-<details><summary>Code</summary>
-  
-```js
-// External dependency
-globalThis.externalVar = 10;
-```
-
-```js
-// QuantumFunction
-const sum = QuantumAsyncFunction(`a`, `b`, `
-  return a + b + externalVar;
-`);
-const state = await sum(10, 10);
-```
-
-```js
-// Inspect
-console.log(state.value); // 30
-// Reflect and inspect again
-Observer.set(globalThis, 'externalVar', 20);
-console.log(state.value); // 40
-```
-
-</details>
-
-Good a thing, these specific APIs take advantage of the fact that they can do compilation for their program types off the main thread! Thus, as a perk, the compiler is loaded into a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) and all compilations happen off the main thread!
-
-> But having been designed as a movable peice, the Quantum JS Compiler is all still loadable directly - as if short-circuiting the lazy-loading strategy of the Lite APIs:
-> 
-> ```html
-> <head>
->  <script src="https://unpkg.com/@webqit/quantum-js/dist/compiler.js"></script> <!-- Must come before the polyfil -->
->   <script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
-> </head>
-> ```
-
-</details>
-
 ## Creating Quantum Programs
 
-This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Execution Mode" (or "Quantum Mode" for short<!--; just in how we have "[Strict Mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)"-->)!
+This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Scripts"!
 
 Given a language-level feature, no setup or build step is required!
 
 ### Quantum Functions
 
-You can designate a function as *quantum* using either of three method:
+You can make a Quantum function via either of three ways:
 
-#### Method 1: The `quantum` Function Flag
+#### Syntax 1: Using the `quantum` Function Flag
 
-> This option is supported from v4.3.
+> This syntax is only available from v4.3.
 
-Here you prepend your function definition with the `quantum` flag, just in how you use the `async` flag:
+Here you prepend your function with the `quantum` flag, just in how you use the `async` keyword:
 
 ```js
 // Quantum function declaration
@@ -297,19 +201,19 @@ await bar();
 
 ```js
 // Quantum function expression
-const bar = quantum function () {
+const bar = quantum function() {
 }
-const bar = async quantum function () {
+const bar = async quantum function() {
 }
 ```
 
 ```js
 // Quantum object property
 const foo = {
-  bar: quantum function () { ... },
+  bar: quantum function() { ... },
 }
 const foo = {
-  bar: async quantum function () { ... },
+  bar: async quantum function() { ... },
 }
 ```
 
@@ -351,9 +255,52 @@ const bar = async quantum arg => {
 
 </details>
 
-#### Method 2: The Double Star `**` Notation
+<details><summary>Show polyfill support</summary>
 
-Here you append your function definition with the double star `**` notation, just in how you annotate [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
+This syntax is supported from within any piece of code compiled by the Quantum JS compiler, e.g.:
+
++ code made via Quantum JS APIs (discussed below):
+
+    ```js
+    const program = new QuantumFunction(`
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      quantum function sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    `);
+    program();
+    ```
+    
++ code within inline `<script>` tags when using the [OOHTML Polyfill](https://github.com/webqit/oohtml) (discussed below):
+
+    ```html
+    <script>
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      quantum function sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    </script>
+    ```
+
+</details>
+ 
+#### Syntax 2: Using the Double Star `**` Notation
+
+Here you append your function with the double star `**` notation, much like how you write [generator functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator):
 
 ```js
 // Quantum function declaration
@@ -417,9 +364,52 @@ class Foo {
 
 </details>
 
-#### Method 3: Quantum Function Constructors
+<details><summary>Show polyfill support</summary>
 
-Here you use function constructors to create a new Quantum function:
+This syntax is supported from within any piece of code compiled by the Quantum JS compiler, e.g.:
+
++ code made via Quantum JS APIs (discussed below):
+
+    ```js
+    const program = new QuantumFunction(`
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      function** sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    `);
+    program();
+    ```
+    
++ code within inline `<script>` tags when using the [OOHTML Polyfill](https://github.com/webqit/oohtml) (discussed below):
+
+    ```html
+    <script>
+      // External dependency
+      let externalVar = 10;
+
+      // QuantumFunction
+      function** sum(a, b) {
+        return a + b + externalVar;
+      }
+      const state = sum(10, 10);
+
+      // Inspect
+      console.log(state.value); // 30
+    </script>
+    ```
+
+</details>
+
+#### Syntax 3: Using Quantum Function Constructors
+
+Here you use special function constructors to create a new Quantum function:
 
 ```js
 // Quantum function constructor
@@ -460,7 +450,47 @@ class Foo {
 }
 ```
 
-Well, this also includes the fact that, unlike normal function declarations and expressions that can see their surrounding scope, code in function constructors can see only the global scope:
+</details>
+
+<details><summary>Show polyfill support</summary>
+
+This is the direct syntax of the Quantum JS APIs:
+
+```js
+// Import API
+import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
+```
+
+```js
+const { QuantumFunction, QuantumAsyncFunction } = window.webqit;
+```
+
+| API | Equivalent semantics... |
+| :------- | :----------- |
+| `QuantumFunction` | `function() {}` |
+| `QuantumAsyncFunction` | `async function() {}` |
+
+```js
+// External dependency
+globalThis.externalVar = 10;
+
+// QuantumFunction
+const sum = QuantumFunction(`a`, `b`, `
+  return a + b + externalVar;
+`);
+const state = sum(10, 10);
+
+// Inspect
+console.log(state.value); // 30
+```
+
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncFunction` API which falls within the premise of off the main thread compilation.
+
+</details>
+
+<details><summary>Additional details</summary>
+ 
+Note that unlike normal function declarations and expressions that can see their surrounding scope, as in syntaxes 1 and 2 above, code in [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function) is only able to see the global scope:
 
 ```js
 let a;
@@ -474,13 +504,11 @@ const bar = QuantumFunction(`
 bar();
 ```
 
-Learn more about [function constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function).
-
 </details>
 
-### Quantum Execution Mode (Whole Programs)
+### Quantum Scripts (Whole Programs)
 
-Here, whole programs are able to run in *quantum* mode using special scripting APIs:
+Here, whole programs are able to run in *quantum* execution mode using special scripting APIs:
 
 ```js
 // Quantum regular JS
@@ -521,7 +549,30 @@ const program = new QuantumModule(`
 
 </details>
 
-Now, this goes a step further to let us have "Quantum Scripts" - which ships in a related work [OOHTML](https://github.com/webqit/oohtml#quantum-scripts):
+<details><summary>Show polyfill support</summary>
+
+This is the direct syntax of the Quantum JS APIs:
+
+```js
+// Import API
+import { QuantumScript, QuantumModule, QuantumAsyncScript } from '@webqit/quantum-js';
+```
+
+```js
+const { QuantumScript, QuantumModule, QuantumAsyncScript } = window.webqit;
+```
+
+| API | Equivalent semantics... |
+| :------- | :----------- |
+| `QuantumScript` | `<script>` |
+| `QuantumModule` | `<script type="module">` |
+| `QuantumAsyncScript` | `<script async>` |
+
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncScript` and `QuantumModule` APIs which falls within the premise of off the main thread compilation.
+
+</details>
+
+Now, this brings us to having real Quantum scripts in HTML:
 
 ```html
 <!-- Quantum classic script -->
@@ -541,13 +592,40 @@ Now, this goes a step further to let us have "Quantum Scripts" - which ships in 
 </script>
 ```
 
-And the ideas there are coming to simplify how we build single page applications!
+But this as a HTML-level feature is made possible via a related project: [OOHTML](https://github.com/webqit/oohtml#quantum-scripts)! You'll, this time, need to use the OOHTML polyfill, instead of the Quantum JS polyfill, to have Quantum HTML Scripts.
 
-Now, other tooling may choose to use the same infrastructure in other ways; e.g. as compile target.
+You're in fact able to also use the `quantum` or double star `**` function notation right within an ordinary imline script:
+
+```html
+<script>
+quantum function bar() {
+}
+</script>
+```
+
+That said, other tooling may choose to use the same API infrastructure in other ways; e.g. as compile target.
 
 ## Consuming Quantum Programs
 
 Each call to a Quantum function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
+
+For the Quantum functions above:
+
+```js
+const state = bar();
+```
+
+For the Quantum Script APIs above:
+
+```js
+const state = program.execute();
+```
+
+For Quantum HTML scripts - `<script quantum>`, the `state` object is available as a direct property of the script element:
+
+```js
+console.log(script.state);
+```
 
 ### Return Value
 
@@ -648,7 +726,7 @@ Quantum programs may maintain many live relationships and should be disposed whe
 state.dispose();
 ```
 
-<!-- TODO: Talk about auto-disposals -->
+For Quantum HTML Scripts - `<script quantum>`,  state disposal is automatic as script element leaves the DOM!
 
 ## Interaction with the Outside World
 
