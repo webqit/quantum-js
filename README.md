@@ -64,13 +64,15 @@ If we could get the JS runtime to add "reactivity" to how it already works - i.e
 
 This is what we're exploring with Quantum JS!
 
+└ You may want to learn more in the introductory article: [Re-Exploring Reactivity and Introducing the Observer API and Reflex Functions](https://dev.to/oxharris/re-exploring-reactivity-and-introducing-the-observer-api-and-reflex-functions-4h70)
+
 </details>
 
 ## Status
 
++ Actively developed
 + Working implementation via a polyfill
 + Integral to the [OOHTML project](https://github.com/webqit/oohtml)
-+ Actively developed
 + Open to contributions
 
 ## Polyfill
