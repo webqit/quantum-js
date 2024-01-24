@@ -56,7 +56,6 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
                 //if ( window.webqit?.realdom?.schedule ) return window.webqit?.realdom?.schedule( 'write', impt, true );
                 return impt();
             }
-            console.log('----------', source.toString());
             return new ( asyncEval ? ( async function() {} ).constructor : Function )( $qIdentifier, source.toString() );
         };
         return _await( $eval( compilation.identifier + '', compilation ), main => {
