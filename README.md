@@ -90,7 +90,7 @@ Quantum JS may be used today via a polyfill. While this is a full-fledged compil
 
 ```js
 // Destructure from the webqit namespace
-const { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumModule, State, Observer } = window.webqit;
+const { QuantumFunction, AsyncQuantumFunction, QuantumScript, QuantumModule, State, Observer } = window.webqit;
 ```
 
 </details>
@@ -105,7 +105,7 @@ npm i @webqit/quantum-js
 
 ```js
 // Import API
-import { QuantumFunction, QuantumAsyncFunction, QuantumScript, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js';
+import { QuantumFunction, AsyncQuantumFunction, QuantumScript, AsyncQuantumScript, QuantumModule, State, Observer } from '@webqit/quantum-js';
 ```
 
 </details>
@@ -121,14 +121,14 @@ Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/badge/10.8%20kB-black"></a></summary>
 
 ```html
-<script src="https://unpkg.com/@webqit/quantum-js/dist/main.async.js"></script>
+<script src="https://unpkg.com/@webqit/quantum-js/dist/main.lite.js"></script>
 ```
 
 └ This is to be placed early on in the document and should be a classic script without any `defer` or `async` directives!
 
 ```js
 // Destructure from the webqit namespace
-const { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } = window.webqit;
+const { AsyncQuantumFunction, AsyncQuantumScript, QuantumModule, State, Observer } = window.webqit;
 ```
 
 <details><summary>Additional details</summary>
@@ -158,7 +158,7 @@ npm i @webqit/quantum-js
 
 ```js
 // Import Lite API
-import { QuantumAsyncFunction, QuantumAsyncScript, QuantumModule, State, Observer } from '@webqit/quantum-js/lite';
+import { AsyncQuantumFunction, AsyncQuantumScript, QuantumModule, State, Observer } from '@webqit/quantum-js/lite';
 ```
 
 </details>
@@ -425,7 +425,7 @@ bar();
 
 ```js
 // Quantum async function constructor
-const bar = QuantumAsyncFunction(`
+const bar = AsyncQuantumFunction(`
   let count = await 5;
   let doubleCount = count * 2;
   console.log(doubleCount);
@@ -460,17 +460,17 @@ This is the direct syntax of the Quantum JS APIs:
 
 ```js
 // Import API
-import { QuantumFunction, QuantumAsyncFunction } from '@webqit/quantum-js';
+import { QuantumFunction, AsyncQuantumFunction } from '@webqit/quantum-js';
 ```
 
 ```js
-const { QuantumFunction, QuantumAsyncFunction } = window.webqit;
+const { QuantumFunction, AsyncQuantumFunction } = window.webqit;
 ```
 
 | API | Equivalent semantics... |
 | :------- | :----------- |
 | `QuantumFunction` | `function() {}` |
-| `QuantumAsyncFunction` | `async function() {}` |
+| `AsyncQuantumFunction` | `async function() {}` |
 
 ```js
 // External dependency
@@ -486,7 +486,7 @@ const state = sum(10, 10);
 console.log(state.value); // 30
 ```
 
-> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncFunction` API which falls within the premise of off the main thread compilation.
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumFunction` API which falls within the premise of off the main thread compilation.
 
 </details>
 
@@ -557,20 +557,20 @@ This is the direct syntax of the Quantum JS APIs:
 
 ```js
 // Import API
-import { QuantumScript, QuantumModule, QuantumAsyncScript } from '@webqit/quantum-js';
+import { QuantumScript, QuantumModule, AsyncQuantumScript } from '@webqit/quantum-js';
 ```
 
 ```js
-const { QuantumScript, QuantumModule, QuantumAsyncScript } = window.webqit;
+const { QuantumScript, QuantumModule, AsyncQuantumScript } = window.webqit;
 ```
 
 | API | Equivalent semantics... |
 | :------- | :----------- |
 | `QuantumScript` | `<script>` |
 | `QuantumModule` | `<script type="module">` |
-| `QuantumAsyncScript` | `<script async>` |
+| `AsyncQuantumScript` | `<script async>` |
 
-> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `QuantumAsyncScript` and `QuantumModule` APIs which falls within the premise of off the main thread compilation.
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumScript` and `QuantumModule` APIs which falls within the premise of off the main thread compilation.
 
 </details>
 
