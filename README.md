@@ -315,7 +315,7 @@ bar();
 ```
 
 ```js
-// Quantum async function declaration
+// Async quantum function declaration
 async function** bar() {
   let count = await 5;
   let doubleCount = count * 2;
@@ -424,7 +424,7 @@ bar();
 ```
 
 ```js
-// Quantum async function constructor
+// Async quantum function constructor
 const bar = AsyncQuantumFunction(`
   let count = await 5;
   let doubleCount = count * 2;
