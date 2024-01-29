@@ -177,9 +177,9 @@ You can make a Quantum function via either of three ways:
 
 #### Syntax 1: Using the `quantum` Function Flag
 
-> Available only from v4.3.
+> Available from v4.3.
 
-Here you prepend your function with the `quantum` flag, just in how you use the `async` keyword:
+Here you prepend your function with the `quantum` flag, just in how you use the `async` function flag:
 
 ```js
 // Quantum function declaration
