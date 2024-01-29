@@ -13,7 +13,7 @@ Quantum JS occupies [a new category](https://en.wikipedia.org/wiki/Reactive_prog
 
 ## Overview
  
-Whereas you would need a couple primitives to express reactive logic...
+Whereas you currently need a couple primitives to express reactive logic...
 
 ```js
 import { createSignal, createMemo, createEffect } from 'solid-js';
