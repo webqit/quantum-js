@@ -7,7 +7,9 @@
 
 [Overview](#overview) • [Creating Quantum Programs](#creating-quantum-programs) • [Implementation](#implementation) • [Examples](#examples) • [License](#license)
 
-Quantum JS is a runtime extension to JavaScript that enables us do [Imperative Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
+Quantum JS is a runtime extension to JavaScript that enables us do Imperative Reactive Programming (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
+
+This occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity landscape!
 
 ## Overview
  
@@ -70,14 +72,14 @@ This is what we're exploring with Quantum JS!
 
 ## Status
 
-+ Actively developed
-+ Working implementation via a polyfill
++ Actively maintained
++ A working implementation
 + Integral to the [OOHTML project](https://github.com/webqit/oohtml)
 + Open to contributions
 
 ## Implementation
 
-Quantum JS may be used today via a polyfill. While this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
+Quantum JS may be used today. While this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
