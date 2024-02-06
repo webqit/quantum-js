@@ -19,6 +19,7 @@
   },
   "type": "module",
   "sideEffects": false,
+  "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
     "./lite": "./src/index.lite.js",
@@ -33,7 +34,7 @@
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
-    "@webqit/observer": "^3.0.2",
+    "@webqit/observer": "^3.2.0",
     "acorn": "^8.8.1",
     "astring": "^1.8.3"
   },
