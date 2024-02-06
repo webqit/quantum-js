@@ -45,7 +45,7 @@ console.log(doubleCount);
 setTimeout(() => count = 10, 500);
 ```
 
-Here, the code you write is able to *statically* reflect changes to state in <del>fine-grained</del> *micro* details, without needing you to manually model your dependency graphs or worry about how values propagate through your code!
+This time, the code you write is able to *statically* reflect changes to state in <del>fine-grained</del> *micro* details, without needing you to manually model your dependency graphs or worry about how values propagate through your code!
 
 ## Idea
 
