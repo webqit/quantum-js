@@ -52,7 +52,9 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
         const $eval = ( $qIdentifier, source ) => {
             if ( runtimeParams.compileFunction ) return runtimeParams.compileFunction( source.toString(), [ $qIdentifier ] );
             if ( compilerParams.base64 ) { /* @experimental */
-                const impt = () => import( `data:text/javascript;base64,${ source.toString( 'base64' ) }` ).then( m => m.default );
+                // Save to a variable to fool bundlephobia about the import();
+                const dataUrl = `data:text/javascript;base64,${ source.toString( 'base64' ) }`;
+                const impt = () => import( dataUrl ).then( m => m.default );
                 //if ( window.webqit?.realdom?.schedule ) return window.webqit?.realdom?.schedule( 'write', impt, true );
                 return impt();
             }
