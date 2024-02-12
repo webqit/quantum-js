@@ -743,214 +743,92 @@ function** bar() {
 bar();
 ```
 
-But unlike regular JavaScript, Quantum programs maintain a live relationship with the outside world:
+But as an extension to regular JavaScript, Quantum programs maintain a live relationship with the outside world! This means that:
 
-### ...with Arbitrary Objects
+#### ...Updates Happening from the Outside Are Automatically Reflected
 
-With any given object, every interaction happening at the property level is potentially reactive! This means that:
-
-#### Mutations to Object Properties from the Outside Will Be Automatically Reflected
-
-Quantum JS programs will statically reflect changes to any property that they may depend on:
-
-```js
-// External value
-const foo = { baz: 0 };
-```
-
-```js
-function** bar() {
-  let localVar = foo.baz;
-  console.log(localVar);
-}
-bar();
-```
-
-whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
-
-```js
-function** bar(localVar = foo.baz) {
-  console.log(localVar);
-}
-bar();
-```
-
-This will now be reflected above:
+Given the code above, the following will now be reflected:
 
 ```js
 // Update external dependency
-foo.baz = 1;
+a = 4;
 ```
 
-<details><summary>In practice...</summary>
-
-...since the Observer API isn't yet native, the above `foo.baz = 1` assignment would need to happen via the `Observer.set()` method:
+The above holds the same if we had `a` in the place of a parameter's *default value*:
 
 ```js
-Observer.set(foo, 'baz', 1);
-```
-
-</details>
-
-#### Interactions with Arbitrary Objects from the Inside Are Observable
-
-Mutations from within a Quantum program may conversely be observed from the outside:
-
-```js
-// External value
-const foo = { baz: 0 };
-```
-
-```js
-// Observe specific property
-Observer.observe(foo, 'baz', mutation => {
-  console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
-});
-```
-
-The following operation will now be reported above:
-
-```js
-function** bar() {
-  foo.baz++;
+let a = 2, b = 0;
+function** bar(param = a) {
+  b = param * 2;
 }
 bar();
 ```
 
-And if you'd go further with the Observer API, you could even intercept every access to an object's properties ahead of Quantum programs!
-
-<details><summary>Example</summary>
-
-```js
-// Intercept specific property
-Observer.intercept(foo, {
-    get:(e, recieved, next) => {
-        if (e.key === 'props') {
-          return next(['prop1', 'prop2']);
-        }
-        return next();
-    },
-});
-```
-
-</details>
-
-### ...with the Global Scope
-
-For global variables, interactions happening directly at the variable level, not just at the property level this time, are potentially reactive! (Here we take advantage of the fact that global variables are actually *properties* of a real *object* - the `globalThis` - which serves as JavaScript's global scope!)
-
-This means that:
-
-#### Changes to the Global Scope from the Outside Will Be Automatically Reflected
-
-Quantum JS programs will statically reflect changes to any global variable that they may depend on:
+And we get the same automatic dependency tracking with objects:
 
 ```js
 // External value
-var baz = 0;
-// Or: globalThis.baz = 0;
+const obj = { a: 2, b: 0 };
 ```
 
 ```js
 function** bar() {
-  let localVar = baz;
-  console.log(localVar);
+  obj.b = obj.a * 2;
 }
 bar();
 ```
-
-whether it's a reference made from within program body itself as above, or from the place of a parameter's *default value*:
-
-```js
-function** bar(localVar = baz) {
-  console.log(localVar);
-}
-bar();
-```
-
-This will now be reflected above:
 
 ```js
 // Update external dependency
-baz = 1;
+obj.a = 4;
 ```
 
-<details><summary>In practice...</summary>
+#### ...Updates Happening from the Inside Are Observable
 
-...since the Observer API isn't yet native, the above `baz = 1` assignment would need to happen via the `Observer.set()` method:
+Given the same idea of automatic data binding, we are able to observe updates the other way around as in the updates made from the inside of our functions above: `b = 4`, `obj.b = 4`!
 
-```js
-Observer.set(globalThis, 'baz', 1);
-```
-
-</details>
-
-#### Interactions with the Global Scope from the Inside Are Observable
-
-Updates to global variables from within a Quantum program may conversely be observed from the outside:
+For updates to object properties, we're able to use the Observer API directly:
 
 ```js
-// External value
-var baz = 0;
-```
-
-```js
-// Observe specific variable
-Observer.observe(globalThis, 'baz', mutation => {
-  console.log(mutation.type, mutation.key, mutation.value, mutation.oldValue);
+// Observe changes to object properties
+const obj = { a: 2, b: 0 };
+Observer.observe(obj, 'b', mutation => {
+  console.log('New value:', mutation.value);
 });
 ```
 
-The following operation will now be reported above:
+The above holds the same for global variables:
 
 ```js
-function** bar() {
-  baz++;
-}
-bar();
-```
-
-And if you'd go further with the Observer API, you could even intercept every access to global variables ahead of Quantum programs!
-
-<details><summary>Example</summary>
-
-```js
-// Intercept specific property
-Observer.intercept(globalThis, {
-    get:(e, recieved, next) => {
-        if (e.key === 'props') {
-          return next(['prop1', 'prop2']);
-        }
-        return next();
-    },
+// Observe changes to global variables
+b = 0; // globalThis.b = 0;
+Observer.observe(globalThis, 'b', mutation => {
+  console.log('New value:', mutation.value);
 });
 ```
 
-</details>
+And for updates to local variables, while we can't use the Observer API directly as these aren't associated with a physical object as we have of global variables...
 
-### ...with Quantum Parent Scopes Themselves
+```js
+let b = 0;
+Observer.observe(?, 'b', () => { ... });
+```
 
-While bare variables in a local scope in JavaScript don't map to a physical, observable object like we have of global variables, bare variables in a Quantum scope are potentially reactive like we have of global variables.
-
-Where a function runs within a Quantum program itself, any updates it makes to those variables are automatically reflected:
+...we're able to use a Quantion function to achieve the exact:
 
 ```js
 (function** () {
-  // Quantum scope
-
-  let count = 0;
-  setInterval(() => count++, 500); // Live updates, even from within a non-quantum closure
-
-  // "count" is automatically reflected here
-  console.log('From main quantum scope: ', count);
-
-  function** nested() {
-    // "count" is automatically reflected here
-    console.log('From inner quantum scope: ', count);
-  }
-  nested();
-
+  console.log('New value:', b);
 })();
+```
+
+...or we could map those changes to an object to use the Observer API there:
+
+```js
+(function** () {
+  obj.b = b;
+})();
+Observer.observe(obj, 'b', () => { ... });
 ```
 
 ## Inside a Quantum Program (How It Works!)
