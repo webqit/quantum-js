@@ -745,7 +745,7 @@ bar();
 
 But as an extension to regular JavaScript, Quantum programs maintain a live relationship with the outside world! This means that:
 
-#### ...Updates Happening from the Outside Are Automatically Reflected
+### ...Updates Happening from the Outside Are Automatically Reflected
 
 Given the code above, the following will now be reflected:
 
@@ -783,7 +783,7 @@ bar();
 obj.a = 4;
 ```
 
-#### ...Updates Happening from the Inside Are Observable
+### ...Updates Happening from the Inside Are Observable
 
 Given the same idea of automatic data binding, we are able to observe updates the other way around as in the updates made from the inside of our functions above: `b = 4`, `obj.b = 4`!
 
