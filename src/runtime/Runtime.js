@@ -53,7 +53,6 @@ export default class Runtime extends Autorun {
         const fileName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
         if ( fileName ) { error.fileName = fileName; }
         if ( errorCode ) { error.code = errorCode; }
-        //if ( this.$params.inBrowser ) console.error( cause );
         throw error;
     }
 
