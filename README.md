@@ -761,7 +761,7 @@ The above holds the same even if we had `a` in the place of a parameter's *defau
 let a = 2, b = 0;
 function** bar(param = a) {
   b = param * 2;
-  console.log('Total:', a);
+  console.log('Total:', b);
 }
 bar();
 ```
