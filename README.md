@@ -739,6 +739,7 @@ Quantum programs can read and write to the given scope in which they run; just i
 let a = 2, b;
 function** bar() {
   b = a * 2;
+  console.log('Total:', b);
 }
 bar();
 ```
@@ -754,7 +755,7 @@ Given the code above, the following will now be reflected:
 a = 4;
 ```
 
-The above holds the same if we had `a` in the place of a parameter's *default value*:
+The above holds the same even if we had `a` in the place of a parameter's *default value*:
 
 ```js
 let a = 2, b = 0;
@@ -774,6 +775,7 @@ const obj = { a: 2, b: 0 };
 ```js
 function** bar() {
   obj.b = obj.a * 2;
+  console.log('Total:', obj.b);
 }
 bar();
 ```
@@ -797,7 +799,7 @@ Observer.observe(obj, 'b', mutation => {
 });
 ```
 
-The above holds the same for global variables:
+The above holds the same also for global variables:
 
 ```js
 // Observe changes to global variables
@@ -831,7 +833,7 @@ Observer.observe(?, 'b', () => { ... });
 Observer.observe(obj, 'b', () => { ... });
 ```
 
-## Inside a Quantum Program (How It Works!)
+## Detailed Documentation
 
 In how Quantum programs can already entirely manage themselves, knowledge of how they work is very much optional! But, if you may look, this section covers just that very *awesome* part!
 
