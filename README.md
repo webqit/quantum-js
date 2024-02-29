@@ -746,7 +746,7 @@ bar();
 
 But as an extension to regular JavaScript, Quantum programs maintain a live relationship with the outside world! This means that:
 
-### ...Updates Happening from the Outside Are Automatically Reflected
+### ...Updates Happening On the Outside Are Automatically Reflected
 
 Given the code above, the following will now be reflected:
 
@@ -761,11 +761,12 @@ The above holds the same even if we had `a` in the place of a parameter's *defau
 let a = 2, b = 0;
 function** bar(param = a) {
   b = param * 2;
+  console.log('Total:', a);
 }
 bar();
 ```
 
-And we get the same automatic dependency tracking with objects:
+And we get the same automatic dependency tracking with object properties:
 
 ```js
 // External value
@@ -785,9 +786,9 @@ bar();
 obj.a = 4;
 ```
 
-### ...Updates Happening from the Inside Are Observable
+### ...Updates Happening On the Inside Are Observable
 
-Given the same idea of automatic data binding, we are able to observe updates the other way around as in the updates made from the inside of our functions above: `b = 4`, `obj.b = 4`!
+Given the same data binding principles, we are able to observe updates the other way around as in the updates made from the inside of our functions above: `b = 4`, `obj.b = 4`!
 
 For updates to object properties, we're able to use the Observer API directly:
 
@@ -816,7 +817,7 @@ let b = 0;
 Observer.observe(?, 'b', () => { ... });
 ```
 
-...we're able to use a Quantion function to achieve the exact:
+...we're able to use a Quantion function itself to achieve the exact:
 
 ```js
 (function** () {
