@@ -6,9 +6,9 @@
 
 [Overview](#overview) • [Creating Quantum Programs](#creating-quantum-programs) • [Implementation](#implementation) • [Examples](#examples) • [License](#license)
 
-Quantum JS is a runtime extension to JavaScript that enables us do Imperative Reactive Programming (IRP) in the very language! This project pursues a futuristic, more efficient way to build reactive applocations *today*!
+Quantum JS is a runtime extension to JavaScript that lets you do Imperative Reactive Programming (IRP) in the plain JavaScript! This project pursues a futuristic, more efficient way to write reactive applocations *today*!
 
-Quantum JS occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity landscape!
+Quantum JS occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
 ## Overview
  
@@ -178,7 +178,7 @@ You can make a Quantum function via either of three ways:
 
 > Available from v4.3.
 
-Here you prepend your function with the `quantum` flag, just in how you use the `async` function flag:
+Here you prepend your function with the `quantum` keyword, just in how you use the `async` keyword:
 
 ```js
 // Quantum function declaration
@@ -487,7 +487,7 @@ const state = sum(10, 10);
 console.log(state.value); // 30
 ```
 
-> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumFunction` API which falls within the premise of off the main thread compilation.
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumFunction` API which matches the asynchronous nature of off the main thread compilation.
 
 </details>
 
@@ -571,7 +571,7 @@ const { QuantumScript, QuantumModule, AsyncQuantumScript } = window.webqit;
 | `QuantumModule` | `<script type="module">` |
 | `AsyncQuantumScript` | `<script async>` |
 
-> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumScript` and `QuantumModule` APIs which falls within the premise of off the main thread compilation.
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumScript` and `QuantumModule` APIs which match the asynchronous nature of off the main thread compilation.
 
 </details>
 
@@ -660,7 +660,7 @@ const state = counter();
 console.log(state.value); // 0
 ```
 
-Now, the general-purpose, object-observability API: [Observer API](https://github.com/webqit/observer) puts those changes right in our hands:
+Now, the general-purpose, object-observability API: [Observer API](https://github.com/webqit/observer) puts those changes right in your hands:
 
 ```js
 Observer.observe(state, 'value', mutation => {
@@ -705,7 +705,7 @@ const state = await program.execute();
 console.log(state.exports); // { localVar }
 ```
 
-Now, again, the Observer API puts those changes right in our hands:
+Now, again, the Observer API puts those changes right in your hands:
 
 ```js
 Observer.observe(state.exports, 'localVar', mutation => {
@@ -755,7 +755,7 @@ Given the code above, the following will now be reflected:
 a = 4;
 ```
 
-The above holds the same even if we had `a` in the place of a parameter's *default value*:
+The above dependency and reactivity hold the same even if we had `a` in the place of a parameter's *default value*:
 
 ```js
 let a = 2, b = 0;
@@ -788,7 +788,7 @@ obj.a = 4;
 
 ### ...Updates Happening On the Inside Are Observable
 
-Given the same data binding principles, we are able to observe updates the other way around as in the updates made from the inside of our functions above: `b = 4`, `obj.b = 4`!
+Given the same data binding principles, we are able to observe updates the other way round as to the updates made from the inside of the function: `b = 4`, `obj.b = 4`!
 
 For updates to object properties, we're able to use the Observer API directly:
 
@@ -810,7 +810,7 @@ Observer.observe(globalThis, 'b', mutation => {
 });
 ```
 
-And for updates to local variables, while we can't use the Observer API directly as these aren't associated with a physical object as we have of global variables...
+And for updates to local variables, while we can't use the Observer API directly (as local variables aren't associated with a physical object as we have of global variables)...
 
 ```js
 let b = 0;
@@ -825,7 +825,7 @@ Observer.observe(?, 'b', () => { ... });
 })();
 ```
 
-...or we could map those changes to an object to use the Observer API there:
+...and, where necessary, we could next map those changes to an object to use the Observer API there:
 
 ```js
 (function** () {
@@ -836,9 +836,7 @@ Observer.observe(obj, 'b', () => { ... });
 
 ## Detailed Documentation
 
-In how Quantum programs can already entirely manage themselves, knowledge of how they work is very much optional! But, if you may look, this section covers just that very *awesome* part!
-
-Knowing how things work presents a great way to reason about Quantum programs, and a better background for taking full advantage of the "Quantum" magic to never again do manual work!
+In how Quantum programs are based on literal JavaScript, no special syntaxes exist around here! And the information covered here is entirely optional. (But you may find it interesting to deep dive.)
 
 + [Reactivity](https://github.com/webqit/quantum-js/wiki#reactivity)
 + [Sensitivity](https://github.com/webqit/quantum-js/wiki#sensitivity)
@@ -848,12 +846,12 @@ Knowing how things work presents a great way to reason about Quantum programs, a
 
 ## Examples
 
-Using the Quantum JS and Observer API polyfills, the following examples work today. While we'll demonstrate the most basic forms of these scenarios, it takes roughly the same principles to build more intricate equivalents.
+Using the Quantum JS and Observer API polyfills, the following examples work today. While we demonstrate the most basic forms of these scenarios, it takes roughly the same principles to build more intricate equivalents.
 
 <details><summary>Example 1: <i>Reactive Custom Elements</i><br>
 └───────── </summary>
 
-Manual reactivity accounts for a large part of the UI code we write today. But, what if we could simply write "Quantum" logic?
+Manual reactivity accounts for a large part of the UI code we write today. This time, though, we're able to simply write "Quantum" logic!
 
 In this example, we demonstrate a custom element that has a Quantum `render()` method. We invoke the `render()` method only once and let every subsequent *prop* change be statically reflected:
 
@@ -899,7 +897,7 @@ customElements.define('click-counter', class extends HTMLElement {
 <details><summary>Example 2: <i>Pure Computations</i><br>
 └───────── </summary>
 
-Even outside of UI code, we often still need to write reactive logic! Now, what if we could simply write "Quantum" logic?
+Even outside of UI code, we often still need to write reactive logic! This time, though, we're able to simply write "Quantum" logic!
 
 In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
 
