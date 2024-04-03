@@ -610,7 +610,7 @@ That said, other tooling may choose to use the same API infrastructure in other 
 
 ## Consuming Quantum Programs
 
-Each call to a Quantum function or script returns back a `State` object that lets us consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
+Each call to a Quantum function or script returns back a `State` object that lets you consume the program from the outside. (This is similar to [what generator functions do](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).)
 
 For the Quantum functions above:
 
