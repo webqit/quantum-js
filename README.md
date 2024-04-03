@@ -6,7 +6,7 @@
 
 [Overview](#overview) • [Creating Quantum Programs](#creating-quantum-programs) • [Implementation](#implementation) • [Examples](#examples) • [License](#license)
 
-Quantum JS is a runtime extension to JavaScript that lets you do Imperative Reactive Programming (IRP) in the plain JavaScript! This project pursues a futuristic, more efficient way to write reactive applocations *today*!
+Quantum JS is a runtime extension to JavaScript that lets you do reactive programming in plain JavaScript! This project pursues a futuristic, more efficient way to write reactive applocations *today*!
 
 Quantum JS occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
