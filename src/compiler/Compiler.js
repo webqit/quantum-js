@@ -84,11 +84,11 @@ export default class Compiler {
     }
 
     transformNodes( nodes, state = {} ) {
-        const total = nodes.length;
+        const total = ( nodes = nodes.filter( s => s ) ).length;
         // Hoist FunctionDeclarations and ImportDeclaration
         const [ imports, functions, other ] = nodes.reduce( ( [ imports, functions, other ], node ) => {
-            return node.type === 'ImportDeclaration' ? [ imports.concat( node ), functions, other ] : (
-                node.type === 'FunctionDeclaration' ? [ imports, functions.concat( node ), other ] : [ imports, functions, other.concat( node ) ]
+            return node?.type === 'ImportDeclaration' ? [ imports.concat( node ), functions, other ] : (
+                node?.type === 'FunctionDeclaration' ? [ imports, functions.concat( node ), other ] : [ imports, functions, other.concat( node ) ]
             );
         }, [ [], [], [] ] );
         // Back together...
@@ -165,7 +165,8 @@ export default class Compiler {
     }
 
     $closure( ...args ) {
-        const body = args.pop(), params = args.pop() || [];
+        let body = args.pop(), params = args.pop() || [];
+        if ( body.type === 'EmptyStatement' ) body = Node.blockStmt( [] );
         return Node.arrowFuncExpr( null, params, body, this.currentEntry.hoistedAwaitKeyword );
     }
 
@@ -697,7 +698,7 @@ export default class Compiler {
             // Static mode?
             if ( this.currentEntry.static ) return construct;
 
-            return this.$autorun( 'block', $loc, Node.blockStmt( [ construct ] ) );
+            return this.$autorun( 'block', $serial, Node.blockStmt( [ construct ] ) );
         } );
     }
 
