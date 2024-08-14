@@ -194,7 +194,7 @@ export default class Compiler {
 
     $iteration( kind, $serial, body ) {
         const $kind = Node.literal( kind );
-        const label = this.currentEntry.parentNode.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' );
+        const label = this.currentEntry.parentNode?.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' );
         const spec = { kind: $kind, label };
         const $body = Node.blockStmt( body );
         return this.$autorun( 'iteration', spec, $serial, $body );
