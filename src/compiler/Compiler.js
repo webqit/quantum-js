@@ -714,10 +714,10 @@ export default class Compiler {
             let createNodeCallback;
             const spec = {
                 kind: Node.literal( kind ),
-                label: this.currentEntry.parentNode.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
+                label: this.currentEntry.parentNode?.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
             };
             if ( kind === 'for' ) {
-                const init = Node.blockStmt( this.transformNode( node.init ) );
+                const init = Node.blockStmt( [].concat( this.transformNode( node.init ) || [] ) );
                 spec.init = this.$closure( [ $qIdentifier ], init );
                 const test = this.transformNode( node.test );
                 spec.test = this.$closure( [ $qIdentifier ], test );
@@ -731,7 +731,9 @@ export default class Compiler {
             }
             const body = this.transformNode( node.body );
 
+            /*
             if ( this.currentEntry.static ) { return createNodeCallback( body ); }
+            */
             return this.$autorun( 'iteration', spec, $serial, body );
         } );
     }
@@ -743,16 +745,18 @@ export default class Compiler {
         const $serial = this.$serial( node );
         const right = this.transformNode( node.right );
         return this.pushScope( node, () => {
+            /*
             if ( this.currentEntry.static ) {
                 const [ left, body ] = this.transformNodes( [ node.left, node.body ] );
                 return transform.call( Node, left, right, body );
             }
+            */
             // Iteration driver
             const $qIdentifier = this.currentScope.get$qIdentifier( '$q' );
             const production = this.currentScope.get$qIdentifier( kind === 'for-of' ? '$val' : '$key', false );
             const spec = {
                 kind: Node.literal( kind ),
-                label: this.currentEntry.parentNode.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
+                label: this.currentEntry.parentNode?.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
                 parameters: this.$closure( [ $qIdentifier ], Node.arrayExpr( [ Node.literal( production ), right ] ) ),
             };
             // Iteration round...
