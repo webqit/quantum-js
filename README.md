@@ -45,7 +45,7 @@ console.log(doubleCount);
 setInterval(() => count = 10, 1000);
 ```
 
-Wanna try the above?
+And here's how you can try that:
 
 1. Add the following polyfill early on in your page:
 
