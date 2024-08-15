@@ -77,7 +77,7 @@ Wanna see how magical things really are here? Update your step 2 to split the lo
 2. One ordinary script and one quantum script:
 
   ```html
-  <script> <!-- An ordinary script; no probelm -->
+  <script> // An ordinary script; no probelm
     // Declare values
     let count = 5;
     let doubleCount = count * 2;
@@ -87,7 +87,7 @@ Wanna see how magical things really are here? Update your step 2 to split the lo
   ```
 
   ```html
-  <script quantum> <!-- A quantum script; for live mode -->
+  <script quantum> // A quantum script; for live mode
     // Log this value live
     console.log(doubleCount);
   </script>
@@ -95,7 +95,7 @@ Wanna see how magical things really are here? Update your step 2 to split the lo
 
 Watching your console? Reactivity is still intact!
 
-The simple idea is that any part of your code written in quantum mode is able to *statically* reflect changes to state, in <del>fine-grained</del> *micro* details! And there are many different ways this can happen. Examples are [just ahead](#examples).
+The idea here is: having any piece of code stay sensitive to changes without any moving parts! Now, while that is that `<script quantum>` part of the page, there are many different ways to have that play out. Examples are [just ahead](#examples).
 
 This project pursues a futuristic, more efficient way to write reactive applocations *today*! And it occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
