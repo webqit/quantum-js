@@ -47,7 +47,7 @@ console.log(doubleCount);
 setInterval(() => count = 10, 1000);
 ```
 
-And you can go ahead to try that:
+Wanna play?:
 
 1. Add the following script to your page:
 
@@ -72,7 +72,7 @@ And you can go ahead to try that:
 
 3. Watch your console. Have fun.
 
-Wanna see where the magic lies? Update your step 2 to split the logic into two separate scripts:
+Wanna see how magical things really are here? Update your step 2 to split the logic into two separate scripts:
 
 2. One ordinary script and one quantum script:
 
@@ -93,9 +93,9 @@ Wanna see where the magic lies? Update your step 2 to split the logic into two s
   </script>
   ```
 
-Watching your console? That's still same reactivity intact!
+Watching your console? Reactivity is still intact!
 
-The simple idea is that any part of your code written in quantum mode is able to *statically* reflect changes to state, in <del>fine-grained</del> *micro* details!
+The simple idea is that any part of your code written in quantum mode is able to *statically* reflect changes to state, in <del>fine-grained</del> *micro* details! And there are many different ways this can happen. Examples are [just ahead](#examples).
 
 This project pursues a futuristic, more efficient way to write reactive applocations *today*! And it occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
@@ -135,9 +135,9 @@ This is what we're exploring with Quantum JS!
 
 As seen above, you can have all of Quantum JS live in the browser!
 
-Up there, we've used a version of the Quantum JS implementation that supports HTML script elements. That is the OOHTML polyfill ([OOHTML](https://github.com/webqit/oohtml)) and it's the most direct way to use Quantum JS in your web app.
+Up there, we've used a version of the Quantum JS implementation that supports HTML `<script>` elements. That is the OOHTML polyfill ([OOHTML](https://github.com/webqit/oohtml)) and it's the most direct way to use Quantum JS in your web app.
 
-Below are the standard Quantum JS polyfills - for when you aren't writing HTML script elements. The design is such that you can easily use these as part of your tooling or compile process; e.g. to have Quantum JS as compile target.
+Below are the standard Quantum JS polyfills - for when you aren't writing HTML `<script>` elements. The design is such that you can easily use these as part of your tooling or compile process; e.g. to have Quantum JS as compile target.
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
