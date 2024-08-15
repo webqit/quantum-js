@@ -15,13 +15,13 @@ What's that?
 Where you normally would employ certain reactive primitives to express reactive logic...
 
 ```js
+// Import reactive primitives
 import { createSignal, createMemo, createEffect } from 'solid-js';
 
-// count
+// Declare values
 const [ count, setCount ] = createSignal(5);
-// doubleCount
 const doubleCount = createMemo(() => count() * 2);
-// console.log()
+// Log this value live
 createEffect(() => {
   console.log(doubleCount());
 });
@@ -35,8 +35,10 @@ setInterval(() => setCount(10), 1000);
 Quantum JS lets you acheive the same in the ordinary imperative form of the language:
 
 ```js
+// Declare values
 let count = 5;
 let doubleCount = count * 2;
+// Log this value live
 console.log(doubleCount);
 ```
 
@@ -57,11 +59,12 @@ Here's how you can try that:
 
   ```html
   <script quantum>
-    // Declare the values
+    // Declare values
     let count = 5;
     let doubleCount = count * 2;
     // Log this value live
     console.log(doubleCount);
+
     // Setup periodic updates
     setInterval(() => count = 10, 1000);
   </script>
@@ -75,7 +78,7 @@ Wanna see where the magic lies? Update your step 2 to separate the logic into tw
 
   ```html
   <script> <!-- An ordinary script; no probelm -->
-    // Declare the values
+    // Declare values
     let count = 5;
     let doubleCount = count * 2;
     // Setup periodic updates
