@@ -6,13 +6,13 @@
 
 [Overview](#overview) • [Creating Quantum Programs](#creating-quantum-programs) • [Implementation](#implementation) • [Examples](#examples) • [License](#license)
 
-Quantum JS is a runtime extension to JavaScript that lets you do reactive programming in plain JavaScript! This project pursues a futuristic, more efficient way to write reactive applocations *today*!
+Quantum JS is a runtime extension to JavaScript that brings Imperative Reactive Programming to JavaScript!
 
-Quantum JS occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
+What's that?
 
 ## Overview
  
-Whereas you currently need a couple primitives to express reactive logic...
+Where you normally would employ certain reactive primitives to express reactive logic...
 
 ```js
 import { createSignal, createMemo, createEffect } from 'solid-js';
@@ -28,8 +28,8 @@ createEffect(() => {
 ```
 
 ```js
-// An update
-setTimeout(() => setCount(10), 500);
+// Setup periodic updates
+setInterval(() => setCount(10), 1000);
 ```
 
 Quantum JS lets you acheive the same in the ordinary imperative form of the language:
@@ -41,12 +41,62 @@ console.log(doubleCount);
 ```
 
 ```js
-// An update
-setTimeout(() => count = 10, 500);
+// Setup periodic updates
+setInterval(() => count = 10, 1000);
 ```
 
-This time, the code you write is able to *statically* reflect changes to state in <del>fine-grained</del> *micro* details, without needing you to manually model your dependency graphs or worry about how values propagate through your code!
+Wanna try the above?
 
+1. Add the following polyfill early on in your page:
+
+  ```html
+  <script src="https://unpkg.com/@webqit/oohtml/dist/main.js"></script>
+  ```
+
+2. Write your logic within a `quantum` script tag:
+
+  ```html
+  <script quantum>
+    // Declare the values
+    let count = 5;
+    let doubleCount = count * 2;
+    // Log this value live
+    console.log(doubleCount);
+    // Setup periodic updates
+    setInterval(() => count = 10, 1000);
+  </script>
+  ```
+
+3. Watch your console. Have fun.
+
+Wanna see where the magic lies? Update your step 2 to separate the logic into two separate scripts:
+
+2. One ordinary script and one quantum script:
+
+  ```html
+  <script> <!-- An ordinary script; no probelm -->
+    // Declare the values
+    let count = 5;
+    let doubleCount = count * 2;
+    // Setup periodic updates
+    setInterval(() => count = 10, 1000);
+  </script>
+  ```
+
+  ```html
+  <script quantum> <!-- A quantum script; for live mode -->
+    // Log this value live
+    console.log(doubleCount);
+  </script>
+  ```
+
+That's still same reactivity intact!
+
+Here, any part of your code written in quantum mode is able to *statically* reflect changes to state, in <del>fine-grained</del> *micro* details!
+
+This project pursues a futuristic, more efficient way to write reactive applocations *today*! And it occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
+
+<!--
 ## Idea
 
 <details><summary>Show</summary>
@@ -76,9 +126,15 @@ This is what we're exploring with Quantum JS!
 + Integral to the [OOHTML project](https://github.com/webqit/oohtml)
 + Open to contributions
 
+-->
+
 ## Implementation
 
-Quantum JS may be used today. While this is a full-fledged compiler at heart, there is no compile step required, and you can have all of Quantum JS live in the browser!
+As seen above, you can have all of Quantum JS live in the browser!
+
+Up there, we've used a version of the Quantum JS implementation that supports HTML script elements. That is the OOHTML polyfill ([OOHTML](https://github.com/webqit/oohtml)) and it's the most direct way to use Quantum JS in your web app.
+
+Below are the standard Quantum JS polyfills - for when you aren't writing HTML script elements. The design is such that you can easily integrate these into your tooling; e.g. as compile target.
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
@@ -166,17 +222,15 @@ import { AsyncQuantumFunction, AsyncQuantumScript, QuantumModule, State, Observe
 
 ## Creating Quantum Programs
 
-This feature comes both as a new function type: "Quantum Functions" and as a new execution mode for whole programs: "Quantum Scripts"!
-
-Given a language-level feature, no setup or build step is required!
+You can write Quantum programs in either of two ways: as "Quantum Functions" and as "Quantum Scripts"!
 
 ### Quantum Functions
 
-You can make a Quantum function via either of three ways:
+Here, we introduce a new type of function that works like any other JavaScript function but in reactive mode. This function may be wrtten in any of the forms below:
 
-#### Syntax 1: Using the `quantum` Function Flag
+#### Syntax 1: Using the `quantum` Function keyword
 
-> Available from v4.3.
+> Available since v4.3.
 
 Here you prepend your function with the `quantum` keyword, just in how you use the `async` keyword:
 
@@ -260,9 +314,9 @@ const bar = async quantum arg => {
 
 <details><summary>Show polyfill support</summary>
 
-This syntax is supported from within any piece of code compiled by the Quantum JS compiler, e.g.:
+This syntax is universally supported both within:
 
-+ code made via Quantum JS APIs (discussed below):
++ Quantum JS' dynamic APIs:
 
     ```js
     const program = new QuantumFunction(`
@@ -281,7 +335,7 @@ This syntax is supported from within any piece of code compiled by the Quantum J
     program();
     ```
     
-+ code within inline `<script>` tags when using the [OOHTML Polyfill](https://github.com/webqit/oohtml) (discussed below):
++ and inline `<script>` elements (as made possible by the [OOHTML Polyfill](https://github.com/webqit/oohtml)):
 
     ```html
     <script>
@@ -369,9 +423,9 @@ class Foo {
 
 <details><summary>Show polyfill support</summary>
 
-This syntax is supported from within any piece of code compiled by the Quantum JS compiler, e.g.:
+This syntax is universally supported both within:
 
-+ code made via Quantum JS APIs (discussed below):
++ Quantum JS' dynamic APIs:
 
     ```js
     const program = new QuantumFunction(`
@@ -390,7 +444,7 @@ This syntax is supported from within any piece of code compiled by the Quantum J
     program();
     ```
     
-+ code within inline `<script>` tags when using the [OOHTML Polyfill](https://github.com/webqit/oohtml) (discussed below):
++ and inline `<script>` elements (as made possible by the [OOHTML Polyfill](https://github.com/webqit/oohtml)):
 
     ```html
     <script>
@@ -457,7 +511,7 @@ class Foo {
 
 <details><summary>Show polyfill support</summary>
 
-This is the direct syntax of the Quantum JS APIs:
+This is how you obtain the APIs:
 
 ```js
 // Import API
@@ -468,10 +522,7 @@ import { QuantumFunction, AsyncQuantumFunction } from '@webqit/quantum-js';
 const { QuantumFunction, AsyncQuantumFunction } = window.webqit;
 ```
 
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumFunction` | `function() {}` |
-| `AsyncQuantumFunction` | `async function() {}` |
+Here, the difference between `QuantumFunction` and `AsyncQuantumFunction` is same as the difference between a regular synchronous JS function (`function() {}`) and its *async* equivalent (`async function() {}`).
 
 ```js
 // External dependency
@@ -487,7 +538,7 @@ const state = sum(10, 10);
 console.log(state.value); // 30
 ```
 
-> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumFunction` API which matches the asynchronous nature of off the main thread compilation.
+> Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumFunction` API which falls within the asynchronous operation of the Lite edition.
 
 </details>
 
@@ -554,7 +605,7 @@ const program = new QuantumModule(`
 
 <details><summary>Show polyfill support</summary>
 
-This is the direct syntax of the Quantum JS APIs:
+This is how you obtain the APIs:
 
 ```js
 // Import API
@@ -565,48 +616,11 @@ import { QuantumScript, QuantumModule, AsyncQuantumScript } from '@webqit/quantu
 const { QuantumScript, QuantumModule, AsyncQuantumScript } = window.webqit;
 ```
 
-| API | Equivalent semantics... |
-| :------- | :----------- |
-| `QuantumScript` | `<script>` |
-| `QuantumModule` | `<script type="module">` |
-| `AsyncQuantumScript` | `<script async>` |
+Here, the difference between `QuantumScript`, `AsyncQuantumScript`, and `QuantumModule` is same as the difference between a regular synchronous script element (`<script>`), its *async* equivalent (`<script async>`), and a module script (`<script type="module">`).
 
 > Note that, unlike the main Quantum JS build, the Quantum JS Lite edition only implements the `AsyncQuantumScript` and `QuantumModule` APIs which match the asynchronous nature of off the main thread compilation.
 
 </details>
-
-Now, this brings us to having real Quantum scripts in HTML:
-
-```html
-<!-- Quantum classic script -->
-<script quantum>
-  let count = 5;
-  let doubleCount = count * 2;
-  console.log(doubleCount);
-</script>
-```
-
-```html
-<!-- Quantum module script -->
-<script type="module" quantum>
-  let count = await 5;
-  let doubleCount = count * 2;
-  console.log(doubleCount);
-</script>
-```
-
-But this as a HTML-level feature is made possible via a related project: [OOHTML](https://github.com/webqit/oohtml#quantum-scripts)! You'll, this time, need to use the OOHTML polyfill, instead of the Quantum JS polyfill, to have Quantum HTML Scripts.
-
-You're in fact able to also use the `quantum` or double star `**` function notation right within an ordinary imline script:
-
-```html
-<script>
-quantum function bar() {
-}
-</script>
-```
-
-That said, other tooling may choose to use the same API infrastructure in other ways; e.g. as compile target.
 
 ## Consuming Quantum Programs
 
