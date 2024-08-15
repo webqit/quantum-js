@@ -45,7 +45,7 @@ console.log(doubleCount);
 setInterval(() => count = 10, 1000);
 ```
 
-And here's how you can try that:
+Here's how you can try that:
 
 1. Add the following script to your page:
 
