@@ -93,9 +93,9 @@ Wanna see where the magic lies? Update your step 2 to split the logic into two s
   </script>
   ```
 
-That's still same reactivity intact!
+Watching your console? That's still same reactivity intact!
 
-Here, any part of your code written in quantum mode is able to *statically* reflect changes to state, in <del>fine-grained</del> *micro* details!
+The simple idea is that any part of your code written in quantum mode is able to *statically* reflect changes to state, in <del>fine-grained</del> *micro* details!
 
 This project pursues a futuristic, more efficient way to write reactive applocations *today*! And it occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
