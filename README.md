@@ -72,7 +72,7 @@ And you can go ahead to try that:
 
 3. Watch your console. Have fun.
 
-Wanna see where the magic lies? Update your step 2 to separate the logic into two separate scripts:
+Wanna see where the magic lies? Update your step 2 to split the logic into two separate scripts:
 
 2. One ordinary script and one quantum script:
 
