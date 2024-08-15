@@ -47,7 +47,7 @@ setInterval(() => count = 10, 1000);
 
 And here's how you can try that:
 
-1. Add the following polyfill early on in your page:
+1. Add the following script to your page:
 
   ```html
   <script src="https://unpkg.com/@webqit/oohtml/dist/main.js"></script>
