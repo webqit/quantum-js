@@ -137,7 +137,7 @@ As seen above, you can have all of Quantum JS live in the browser!
 
 Up there, we've used a version of the Quantum JS implementation that supports HTML script elements. That is the OOHTML polyfill ([OOHTML](https://github.com/webqit/oohtml)) and it's the most direct way to use Quantum JS in your web app.
 
-Below are the standard Quantum JS polyfills - for when you aren't writing HTML script elements. The design is such that you can easily integrate these into your tooling; e.g. as compile target.
+Below are the standard Quantum JS polyfills - for when you aren't writing HTML script elements. The design is such that you can easily use these as part of your tooling or compile process; e.g. to have Quantum JS as compile target.
 
 <details><summary>Load from a CDN<br>
 └───────── <a href="https://bundlephobia.com/result?p=@webqit/quantum-js"><img align="right" src="https://img.shields.io/bundlephobia/minzip/@webqit/quantum-js?label=&style=flat&colorB=black"></a></summary>
