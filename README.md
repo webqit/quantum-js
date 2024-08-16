@@ -95,7 +95,7 @@ Wanna see how magical things really are here? Update your step 2 to split the lo
 
 Watching your console? Reactivity is still intact!
 
-The idea here is: having any piece of code stay sensitive to changes without any moving parts! Now, while that is that `<script quantum>` part of the page, there are many different ways to have that play out. Examples are [just ahead](#examples).
+The idea here is: having any piece of code stay sensitive to changes without all the usual moving parts! Now, while that is the `<script quantum></script>` part of the page above, there are many different ways to have this form of reactivity play out. Examples are [just ahead](#examples).
 
 This project pursues a futuristic, more efficient way to write reactive applocations *today*! And it occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
