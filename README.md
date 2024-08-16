@@ -12,7 +12,7 @@ What's that?
 
 ## Overview
  
-Where you normally would employ certain reactive primitives to express reactive logic...
+Where you normally would require certain reactive primitives to express reactive logic...
 
 ```js
 // Import reactive primitives
@@ -95,7 +95,11 @@ Wanna see how magical things really are here? Update your step 2 to split the lo
 
 Watching your console? Reactivity is still intact!
 
-The idea here is: having any piece of code stay sensitive to changes without all the usual moving parts! Now, while that is the `<script quantum></script>` part of the page above, there are many different ways to have this form of reactivity play out. Examples are [just ahead](#examples).
+That reactivity is really happening within the Quantum script! It's a regular script in every way except that any peice of code thrown in is able to statically reflect changes to state in granular details!
+
+To define, Quantum programs are an extension to JavaScript that has any piece of code stay sensitive to changes in the most fine-grained details - and entirely with no moving parts!
+
+Now, while that is the `<script quantum></script>` part of the HTML page above, there are many different ways to have this form of reactivity play out. Examples are [just ahead](#examples).
 
 This project pursues a futuristic, more efficient way to write reactive applocations *today*! And it occupies [a new category](https://en.wikipedia.org/wiki/Reactive_programming#Imperative) in the reactivity spectrum!
 
