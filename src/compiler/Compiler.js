@@ -716,6 +716,7 @@ export default class Compiler {
             const spec = {
                 kind: Node.literal( kind ),
                 label: this.currentEntry.parentNode?.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
+                static: Node.identifier( this.currentEntry.static ),
             };
             if ( kind === 'for' ) {
                 const init = Node.blockStmt( [].concat( this.transformNode( node.init ) || [] ) );
@@ -759,6 +760,7 @@ export default class Compiler {
                 kind: Node.literal( kind ),
                 label: this.currentEntry.parentNode?.label ? Node.literal( this.currentEntry.parentNode.label.name ) : Node.identifier( 'null' ),
                 parameters: this.$closure( [ $qIdentifier ], Node.arrayExpr( [ Node.literal( production ), right ] ) ),
+                static: Node.identifier( this.currentEntry.static ),
             };
             // Iteration round...
             let originalLeft;

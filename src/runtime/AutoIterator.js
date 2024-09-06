@@ -81,6 +81,7 @@ export default class AutoIterator extends Autorun {
     }
 
     watchMode() {
+        if ( this.spec.static ) return;
         const handleMutations = ( mutations, currentCursor ) => {
             const deletions = new Set, extension = new Set;
             for ( const mutation of mutations ) {

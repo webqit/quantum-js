@@ -4,6 +4,11 @@ import { parse, compile } from '../src/compiler/index.js';
 const expr = `
 let t = 0;
 for (t of g);
+
+let r = 10;
+for (i = 0; i <= r; i ++) {
+    console.log(i);
+}
 switch (3) {
     case 4:;
 }
