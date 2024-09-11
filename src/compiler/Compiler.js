@@ -770,6 +770,7 @@ export default class Compiler {
         const cmd = Node.literal( keyword );
         const label = node.label ? Node.literal( node.label.name ) : Node.identifier( 'null' );
         // Hoisting...
+        this.hoistExitStatement( cmd, label );
         if ( this.currentEntry.parentNode?.type === 'SwitchStatement' ) {
             return transform.call( Node );
         }
@@ -796,7 +797,7 @@ export default class Compiler {
     transformBlockStatement( node ) {
         const $serial = this.$serial( node );
         if ( node instanceof $qDownstream ) {
-            const body = this.transformNodes( node.body );
+            const body = this.transformNodes( node.body, { static: false } );
             return this.$autorun( 'downstream', $serial, Node.blockStmt( body ) );
         }
         return this.pushScope( node, () => {
