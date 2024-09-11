@@ -278,11 +278,11 @@ export default class Compiler {
         const $qIdentifier = this.currentScope.get$qIdentifier( '$q' );
         const closure = this.$closure( [ $qIdentifier ], body );
 
-        const isQuantumFunctionFlag = Node.identifier( node.isQuantumFunction || false );
-        const isDeclaration = Node.identifier( node.type === 'FunctionDeclaration' );
-        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', isQuantumFunctionFlag, Node.thisExpr(), closure ) ) ] );
+        const executionMode = Node.literal( node.isQuantumFunction ? 'QuantumFunction' : (node.isHandler ? 'HandlerFunction' : (node.isFinalizer ? 'FinalizerFunction' : 'RegularFunction')) );
+        const functionKind = Node.literal( node.type === 'FunctionDeclaration' ? 'Declaration' : 'Expression' );
+        const $body = Node.blockStmt( [ Node.returnStmt( this.$call( 'runtime.spawn', executionMode, Node.thisExpr(), closure, $qIdentifier/*Lexical context*/ ) ) ] );
 
-        const metarisation = reference => this.$call( 'function', isDeclaration, isQuantumFunctionFlag, $serial, reference/* reference to the declaration */ );
+        const metarisation = reference => this.$call( 'function', executionMode, functionKind, $serial, reference/* reference to the declaration */ );
         let resultNode = transform.call( Node, id, params, $body, node.async, node.expresion, node.generator );
         if ( node.type === 'FunctionDeclaration' ) {
             this.currentScope.push( id, 'static' ); // On outer scope
@@ -313,10 +313,10 @@ export default class Compiler {
             if ( id ) { this.currentScope.push( id, 'self' ); } // Before anything
             return this.transformNode( body, { methods } );
         } );
-        const isDeclaration = Node.identifier( node.type === 'ClassDeclaration' );
+        const classKind = Node.literal( node.type === 'ClassDeclaration' ? 'Declaration' : 'Expression' );
         const metarisation = reference => {
             const methodsSpec = Node.arrayExpr( [ ...methods ].map( m => this.$obj( m ) ) );
-            return this.$call( 'class', isDeclaration, reference/* reference to the declaration */, methodsSpec );
+            return this.$call( 'class', classKind, reference/* reference to the declaration */, methodsSpec );
         };
         let resultNode = transform.call( Node, id, body, superClass );
         if ( node.type === 'ClassDeclaration' ) {
@@ -808,16 +808,38 @@ export default class Compiler {
         return this.$autorun( 'return', $serial, hoisting );
     }
 
+    transformTryStatement( node ) {
+        return this.pushScope( node, () => {
+            const $serial = this.$serial( node );
+            const { block, handler, finalizer } = node;
+            const body = this.transformNodes( block.body );
+            const spec = {};
+            if ( handler ) {
+                const { start, end } = handler;
+                const $handler = Node.arrowFuncExpr( null, [ handler.param ], handler.body, );
+                spec.handler = this.transformNode( { ...$handler, isHandler: true, start, end }, { static: true } );
+            }
+            if ( finalizer ) {
+                const { start, end } = finalizer;
+                const $finalizer = Node.arrowFuncExpr( null, [], finalizer.body, );
+                spec.finalizer = this.transformNode( { ...$finalizer, isFinalizer: true, start, end }, { static: true } );
+            }
+            return this.$autorun( 'block', spec, $serial, Node.blockStmt( body ) );
+        });
+    }
+
     /* GENERAL */
 
     transformBlockStatement( node ) {
+        const $serial = this.$serial( node );
         if ( node instanceof $qDownstream ) {
-            const $serial = this.$serial( node );
             const body = this.transformNodes( node.body );
             return this.$autorun( 'downstream', $serial, Node.blockStmt( body ) );
         }
-        const body = this.pushScope( node, () => this.transformNodes( node.body ) );
-        return Node.blockStmt( body );
+        return this.pushScope( node, () => {
+            const body = this.transformNodes( node.body );
+            return this.$autorun( 'block', $serial, Node.blockStmt( body ) );
+        } );
     }
 
     transformLabeledStatement( node ) {

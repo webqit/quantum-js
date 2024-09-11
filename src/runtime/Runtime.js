@@ -22,8 +22,8 @@ export default class Runtime extends Autorun {
     iThread = [];
 
     constructor( context, type, params, scope, closure ) {
-        super( context, type, {}/* spec */, -1, scope, closure );
-        const { $serial = 0, ...$params } = params;
+        const { $serial = 0, spec, ...$params } = params;
+        super( context, type, spec, -1, scope, closure );
         this.$serial = $serial;
         this.$params = $params;
         // Random object
@@ -43,17 +43,6 @@ export default class Runtime extends Autorun {
         const [ [ locStart, line, column ], [ locEnd ] ] = this.locations[ serial ];
         const expr = this.$params.originalSource.slice( locStart, locEnd );
         return full ? { expr, line, column } : expr;
-    }
-
-    throw( message, serials, ErrorClass = null, errorCode = null ) {
-        let error, $message = errorCode !== null ? `[${ errorCode }]: ${ message }` : message;
-        const cause = serials.map( serial => serial !== -1 && this.extractSource( serial, true ) ).filter( x => x );
-        cause.push( { source: this.$params.originalSource } );
-        error = new ( ErrorClass || Error )( $message, { cause } );
-        const fileName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
-        if ( fileName ) { error.fileName = fileName; }
-        if ( errorCode ) { error.code = errorCode; }
-        throw error;
     }
 
     get runtime() { return this; }
@@ -101,16 +90,17 @@ export default class Runtime extends Autorun {
 
     execute( callback = null ) {
         return super.execute( returnValue => {
-            const actualReturnValue = this.$params.quantumMode
+            const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.$params.executionMode );
+            const actualReturnValue = quantumMode
                 ? new State( this )
                 : returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
         } );
     }
 
-    spawn( isQuantumFunction, thisContext, closure ) {
-        const context = this.nowRunning || this;
-        const params = {  ...this.$params, $serial: this.$serial + 1, quantumMode: isQuantumFunction };
+    spawn( executionMode, thisContext, closure, lexicalContext = null ) {
+        const context = this.nowRunning || lexicalContext || this;
+        const params = { ...this.$params, $serial: this.$serial + 1, executionMode, lexicalContext };
         const scope = new Scope( context.scope, 'function', { [ 'this' ]: thisContext } );
         const subRuntime = new this.constructor( context, 'function', params, scope, closure );
         return subRuntime.execute();
@@ -129,8 +119,8 @@ export default class Runtime extends Autorun {
         const promise = ( async () => {
             const moduleName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
             try { return onload( await import( $source.source ) ); } catch( e ) {
-                if ( e.code === 'ERR_MODULE_NOT_FOUND' ) { this.throw( `Cannot find package "${ $source.source }"${ moduleName ? ` imported at "${ moduleName }"` : '' }.`, [ $source.serial ], null, e.code ); }
-                throw e;
+                if ( e.code === 'ERR_MODULE_NOT_FOUND' ) { this.throw( new Error( `Cannot find module "${ $source.source }"${ moduleName ? ` imported at "${ moduleName }"` : '' }.` ), [ $source.serial ], e.code ); }
+                else this.throw( e, [ $source.serial ], e.code );
             }
         } )();
         if ( !$source.isDynamic ) {
@@ -149,16 +139,17 @@ export default class Runtime extends Autorun {
 
     assignModules( specifiers, target, source, sourceSerial = null ) {
         const observeList = [];
+        const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.$params.executionMode );
         for ( const [ local, serial, alias ] of specifiers ) {
             if ( local === '*' && alias ) {
-                ( this.$params.quantumMode ? Observer : Reflect ).set( target, alias, source );
+                ( quantumMode ? Observer : Reflect ).set( target, alias, source );
                 continue;
             }
-            if ( !Observer.has( source, local ) ) { this.throw( `The requested module does not provide an export named "${ local }".`, [ serial, sourceSerial ] ); }
-            ( this.$params.quantumMode ? Observer : Reflect ).set( target, alias || local, Observer.get( source, local ) );
+            if ( !Observer.has( source, local ) ) { this.throw( new Error( `The requested module does not provide an export named "${ local }".` ), [ serial, sourceSerial ] ); }
+            ( quantumMode ? Observer : Reflect ).set( target, alias || local, Observer.get( source, local ) );
             observeList.push( [ local, serial, alias ] );
         }
-        if ( !observeList.length || !this.$params.quantumMode ) return;
+        if ( !observeList.length || !quantumMode ) return;
         this.once( Observer.observe( source, mutations => {
             for ( const [ local, /* serial */, alias ] of observeList ) {
                 for ( const mutation of mutations ) {

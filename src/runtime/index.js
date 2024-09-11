@@ -26,7 +26,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
         const body = `  ` + source.split( `\n` ).join( `\n  ` );
         source = `return ${ sourceType === 'async-function' ? 'async ' : '' }function**(${ functionParams.join( ', ' ) }) {\n${ body }\n}`;
         // The top-level program is a simple return statement as above. This return shouldn't be treated as reactive nor return a state object, but the plain value
-        parserParams.quantumMode = false;
+        parserParams.executionMode = 'RegularProgram';
     } else if ( ![ 'script', 'async-script' ].includes( sourceType ) ) {
         throw new Error( `Unrecognized sourceType specified: "${ sourceType }".` );
     }
@@ -71,7 +71,7 @@ export function $eval( sourceType, parseCompileCallback, source, params ) {
                 // Or this for module scope. And where "env" was provided, the "env" scope above too
                 if ( sourceType === 'module' ) { contextType = 'module'; scope = new Scope( scope, contextType ); }
                 if ( typeof thisContext !== 'undefined' ) { scope = new Scope( scope, 'this', { [ 'this' ]: thisContext } ); }
-                return new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compilation.originalSource, quantumMode: compilation.isQuantumProgram }, scope, $main );
+                return new Runtime( undefined, contextType, { ...runtimeParams, originalSource: compilation.originalSource, executionMode: compilation.isQuantumProgram && 'QuantumProgram' || 'RegularProgram' }, scope, $main );
             };
             return isFunction
                 ? createRuntime().execute() // Produces the actual stateful function designed above

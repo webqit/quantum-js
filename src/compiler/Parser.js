@@ -13,7 +13,7 @@ export default Parser.extend( function( Parser ) {
 
         static parse( input, options ) {
             const ast = super.parse( input, options );
-            ast.isQuantumProgram = options.quantumMode !== false;
+            ast.isQuantumProgram = options.executionMode !== 'RegularProgram';
             ast.originalSource = input;
             return ast;
         }
@@ -22,7 +22,7 @@ export default Parser.extend( function( Parser ) {
             super( ...args );
             // "quantum" isn't anymore treated as a keyword
             //this.keywords = new RegExp( this.keywords.source.replace( '|', '|quantum|' ), this.keywords.flags );
-            //this.useQuabtumDirectiveStack = [ this.options.quantumMode !== false ];
+            //this.useQuabtumDirectiveStack = [ this.options.executionMode !== 'RegularProgram' ];
             this.isQuantumFunction = false;
             this.functionStack = [];
         }

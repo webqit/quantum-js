@@ -2,21 +2,20 @@
 import { parse, compile } from '../src/compiler/index.js';
 
 const expr = `
-let t = 0;
-for (t of g);
-
-let r = 10;
-for (i = 0; i <= r; i ++) {
-    console.log(i);
-}
-switch (3) {
-    case 4:;
-}
+function ** m() {
+            let items = [1, 2, 4];
+            label: for (let i of items) {
+                if (i === 4)
+                continue label;
+                console.log(':::', i, items);
+            }
+            (() => console.log(items, '>>>>>>>>>>>>'))();
+        }
+        console.log(m+':::');
+        m();
 `;
 
-switch (3) {
-    case 4:;
-}
+
 const ast = parse(expr, { quantumMode: true });
 const compiled = compile(ast);
 console.log(ast);

@@ -17,7 +17,7 @@ export default class Autorun extends EventTarget {
         context?.once( this );
         this.context = context;
         this.type = type;
-        this.spec = spec;
+        this.spec = spec || {};
         this.scope = scope;
         if ( context?.scope !== scope ) {
             // It's own scope, so we manage it
@@ -64,16 +64,38 @@ export default class Autorun extends EventTarget {
             } );
         } catch( e ) {
             // Show a nice error
-            if ( e.cause ) throw e;
-            const message = `${ e.message || e }`;
-            this.runtime.throw( message, [ this.serial, this.context?.serial ], globalThis[ e.name ] );
+            this.throw( e, [ this.serial, this.context?.serial ], e.code );
         }
+    }
+
+    throw( e, serials, errorCode ) {
+        if ( this.type === 'function' && [ 'HandlerFunction', 'FinalizerFunction' ].includes( this.$params.executionMode ) ) {
+            // Hoist control further above the context that handed it to us
+            return this.$params.lexicalContext.throw( e, serials, errorCode );
+        } else if ( this.spec.handler ) return this.spec.handler( e );
+        else if ( this.context ) return this.context.throw( e, serials, errorCode );
+        if ( e.cause ) throw e;
+        // Message
+        const message = `${ e.message || e }`;
+        const $message = errorCode !== null ? `[${ errorCode }]: ${ message }` : message;
+        // Cause
+        const cause = serials.map( serial => serial !== -1 && this.extractSource( serial, true ) ).filter( x => x );
+        cause.push( { source: this.runtime.$params.originalSource } );
+        // Type
+        const ErrorClass = globalThis[ e.name ];
+        const error = new ( ErrorClass || Error )( $message, { cause } );
+        // File
+        const fileName = this.runtime.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
+        if ( fileName ) { error.fileName = fileName; }
+        if ( errorCode ) { error.code = errorCode; }
+        throw error;
     }
 
     afterExecute( flowControlBefore ) {
         this.state = 'complete';
         // Compare records... and hoist differences
         const flowControlAfter = this.flowControl;
+        if ( this.spec.finalizer ) this.spec.finalizer();
         // Handle downstream
         this.handleDownstream( flowControlAfter.size, flowControlBefore.size );
         this.handleRightstream( flowControlAfter.size, flowControlBefore.size );
@@ -201,7 +223,7 @@ export default class Autorun extends EventTarget {
     }
 
     autobind( baseSignal, depth, hint ) {
-        const quantumMode = this.runtime.$params.quantumMode;
+        const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.runtime.$params.executionMode );
         const isConst = baseSignal.type  === 'const';
         const isRuntime = this === this.runtime;
         const isAborted = this.state === 'aborted';
@@ -257,25 +279,26 @@ export default class Autorun extends EventTarget {
         return autorun.execute();
     }
 
-    function( isDeclaration, isQuantumFunction, serial, $qFunction ) {
+    function( executionMode, functionKind, serial, $qFunction ) {
         // Declare in current scope
-        if ( isDeclaration ) { Observer.set( this.scope.state, $qFunction.name, $qFunction ); }
+        if ( functionKind === 'Declaration' ) { Observer.set( this.scope.state, $qFunction.name, $qFunction ); }
         // Metarise function
         const _this = this;
         Object.defineProperty( $qFunction, 'toString', { value: function( $qSource = false ) {
-            if ( $qSource && isQuantumFunction ) return Function.prototype.toString.call( $qFunction );
+            if ( $qSource && executionMode === 'QuantumFunction' ) return Function.prototype.toString.call( $qFunction );
             const originalSource = _this.runtime.extractSource( serial );
             return originalSource.startsWith( 'static ' ) ? originalSource.replace( 'static ', '' ) : originalSource;
         } } );
         return $qFunction;
     }
 
-    class( isDeclaration, $class, methodsSpec ) {
+    class( classKind, $class, methodsSpec ) {
+        const isDeclaration = classKind === 'Declaration';
         // Declare in current scope
         if ( isDeclaration ) { Observer.set( this.scope.state, $class.name, $class ); }
         // Metarise methods
-        methodsSpec.forEach( ( { name, static: isStatic, isQuantumFunction, serial } ) => {
-            this.function( false, isQuantumFunction, serial, isStatic ? $class[ name ] : $class.prototype[ name ] )
+        methodsSpec.forEach( ( { name, isQuantumFunction, static: isStatic, serial } ) => {
+            this.function( isQuantumFunction && 'QuantumFunction' || 'RegularFunction', 'Expression', serial, isStatic ? $class[ name ] : $class.prototype[ name ] )
         } );
         return $class;
     }
