@@ -52,20 +52,16 @@ export default class Autorun extends EventTarget {
     }
 
     execute( callback = null ) {
-        try {
-            this.runtime.thread.unshift( this );
-            return _await( this.beforeExecute(), stateBefore => {
-                return _call( this.closure, this, this, returnValue => {
-                    if ( this.spec.complete ) { returnValue = this.spec.complete( returnValue, this ); }
-                    this.afterExecute( stateBefore );
-                    this.runtime.thread.shift();
-                    return callback ? callback( returnValue, this ) : returnValue;
-                } );
+        this.runtime.thread.unshift( this );
+        return _await( this.beforeExecute(), stateBefore => {
+            return _call( this.closure, this, this, ( returnValue, exception ) => {
+                if ( exception ) return this.throw( exception, [ this.serial, this.context?.serial ], exception.code );
+                if ( this.spec.complete ) { returnValue = this.spec.complete( returnValue, this ); }
+                this.afterExecute( stateBefore );
+                this.runtime.thread.shift();
+                return callback ? callback( returnValue, this ) : returnValue;
             } );
-        } catch( e ) {
-            // Show a nice error
-            this.throw( e, [ this.serial, this.context?.serial ], e.code );
-        }
+        } );
     }
 
     throw( e, serials, errorCode ) {
@@ -73,7 +69,7 @@ export default class Autorun extends EventTarget {
             // Hoist control further above the context that handed it to us
             return this.$params.lexicalContext.throw( e, serials, errorCode );
         } else if ( this.spec.handler ) return this.spec.handler( e );
-        else if ( this.context ) return this.context.throw( e, serials, errorCode );
+        else if ( this.type !== 'function' && this.context ) return this.context.throw( e, serials, errorCode );
         if ( e.cause ) throw e;
         // Message
         const message = `${ e.message || e }`;
@@ -171,7 +167,8 @@ export default class Autorun extends EventTarget {
             try { return closure( ...args ); }
             catch( e ) { throw new Error( `Cannot update ${ name }; ${ e.message }` ); }
         };
-        return _call( $closure, undefined, valueBefore, returnValue => {
+        return _call( $closure, undefined, valueBefore, ( returnValue, exception ) => {
+            if ( exception ) return this.throw( exception, [ this.serial ] );
             // Operation
             symbolState?.reader?.abort(); // Any previous reader?
             let assignedValue = returnValue;
@@ -227,10 +224,11 @@ export default class Autorun extends EventTarget {
         const isConst = baseSignal.type  === 'const';
         const isRuntime = this === this.runtime;
         const isAborted = this.state === 'aborted';
+        const isStatic = this.spec.static;
         const nowRunning = this;
         return ( function proxy( signal, depth ) {
             // Do bindings first
-            if ( quantumMode && !isConst && !isRuntime && !isAborted ) {
+            if ( quantumMode && !isStatic && !isConst && !isRuntime && !isAborted ) {
                 signal.subscribe( nowRunning );
             }
             // Return bare value here?
@@ -266,7 +264,7 @@ export default class Autorun extends EventTarget {
             const staticDefs = this.runtime.constructor;
             AutorunClass = closure.constructor.name === 'AsyncFunction' ? staticDefs.AutoAsyncIterator : staticDefs.AutoIterator;
         }
-        if ( [ 'block', 'iteration' ].includes( type ) ) { scope = new Scope( scope, type ); }
+        if ( [ 'block', 'switch', 'iteration' ].includes( type ) ) { scope = new Scope( scope, type ); }
         // Instantiate
         const autorun = new AutorunClass( this, type, spec, serial, scope, closure );
         if ( type === 'downstream' ) {
@@ -274,6 +272,8 @@ export default class Autorun extends EventTarget {
             this.downstream = autorun;
             // For now
             if ( this.flowControlApplied() ) return;
+        } else if ( this.type === 'switch' && this.breakpoint ) {
+            return;
         }
         // Push stack and execute
         return autorun.execute();
@@ -323,6 +323,11 @@ export default class Autorun extends EventTarget {
             if ( this.state !== 'running' ) { this.handleRightstream( this.flowControl.size, sizeBefore ); }
             return;
         }
+        if ( this.context?.type === 'switch' && cmd === 'break' && !arg ) {
+            if ( !unset ) { this.flowControl.get( cmd ).endpoint = true; }
+            this.context.breakpoint = this;
+            return;
+        }
         // Notice that no hoisting and no "downstream" handling if in active scope
         // as that would be done at after() hook!
         if ( this.state !== 'running' ) {
@@ -341,7 +346,7 @@ export default class Autorun extends EventTarget {
 
     handleDownstream( sizeAfter, sizeBefore ) {
         let downstream;
-        if ( this.type !== 'block' // If this is "downstream", the "downstream" you see from parent scope will be self
+        if ( ![ 'block' ].includes( this.type ) // If this is "downstream", the "downstream" you see from parent scope will be self
         || !( downstream = this.context?.downstream ) ) return;
         if ( sizeAfter ) { downstream.abort(); }
         else if ( sizeBefore ) {

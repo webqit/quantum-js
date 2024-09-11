@@ -261,8 +261,8 @@ export default class Compiler {
                 return this.transformSignal( param, 'param' );
             } );
             // Body
-            const $$body = this.transformNode( body, { static: !node.isQuantumFunction } );
-            $body.push( ...( $$body.type === 'BlockStatement' ? $$body.body : [ Node.returnStmt( $$body ) ] ) );
+            const $$body = this.transformNodes( body.type === 'BlockStatement' ? body.body : [ Node.returnStmt( body ) ], { static: !node.isQuantumFunction } );
+            $body.push( ...$$body );
             // -------------
             // Function body comment
             if ( $body.length ) { $body[ 0 ].comments = Node.comments( 'Function body' ); }
@@ -657,31 +657,13 @@ export default class Compiler {
     transformIfStatement( node ) {
         const $serial = this.$serial( node );
         let { test, consequent, alternate } = node;
-
-        // test and consequent
+        // test
         test = this.transformNode( node.test );
-        consequent = this.pushScope( node, () => this.transformNodes( [ node.consequent ] ) );
-        if ( consequent[ 0 ].type !== 'BlockStatement' && consequent.length > 1 ) {
-            consequent = Node.blockStmt( consequent );
-        } else { consequent = consequent[ 0 ]; }
-
-        // alternate
-        if ( alternate ) {
-            alternate = this.pushScope( node, () => this.transformNodes( [ node.alternate ] ) );
-            // An update expression like ({ a, b } = {});, for example, will come expanded
-            if ( alternate[ 0 ] && alternate[ 0 ].type !== 'BlockStatement' && alternate.length > 1 ) {
-                alternate = Node.blockStmt( alternate );
-            } else { alternate = alternate[ 0 ]; }
-            if ( alternate.type === 'BlockStatement' ) {
-                alternate = this.$autorun( 'block', this.$serial( node.alternate ), alternate );
-            }
-        }
-
-        const construct = Node.ifStmt( test, consequent, alternate );
-        // Static mode?
-        if ( this.currentEntry.static ) return construct;
-
-        return this.$autorun( 'block', $serial, Node.blockStmt( [ construct ] ) );
+        // consequent and alternate
+        consequent = this.pushScope( node, () => this.transformNodes( consequent.type === 'BlockStatement' ? consequent.body : [ consequent ] ) );
+        if ( alternate ) alternate = [].concat( this.transformNode( alternate ) )[ 0 ];
+        const construct = Node.ifStmt( test, Node.blockStmt( consequent ), alternate );
+        return this.$autorun( 'block', { static: Node.identifier( this.currentEntry.static ) }, $serial, Node.blockStmt( [ construct ] ) );
     }
 
     transformSwitchStatement( node ) {
@@ -693,13 +675,29 @@ export default class Compiler {
                 const consequent = this.transformNodes( caseNode.consequent );
                 return Node.switchCase( test, consequent );
             } );
-
             const construct = Node.switchStmt( discriminant, cases );
-            // Static mode?
-            if ( this.currentEntry.static ) return construct;
-
-            return this.$autorun( 'block', $serial, Node.blockStmt( [ construct ] ) );
+             return this.$autorun( 'switch', { static: Node.identifier( this.currentEntry.static ) }, $serial, Node.blockStmt( [ construct ] ) );
         } );
+    }
+
+    transformTryStatement( node ) {
+        return this.pushScope( node, () => {
+            const $serial = this.$serial( node );
+            const { block, handler, finalizer } = node;
+            const body = this.transformNodes( block.body );
+            const spec = {};
+            if ( handler ) {
+                const { start, end } = handler;
+                const $handler = Node.arrowFuncExpr( null, [ handler.param ], handler.body, );
+                spec.handler = this.transformNode( { ...$handler, isHandler: true, start, end }, { static: true } );
+            }
+            if ( finalizer ) {
+                const { start, end } = finalizer;
+                const $finalizer = Node.arrowFuncExpr( null, [], finalizer.body, );
+                spec.finalizer = this.transformNode( { ...$finalizer, isFinalizer: true, start, end }, { static: true } );
+            }
+            return this.$autorun( 'block', spec, $serial, Node.blockStmt( body ) );
+        });
     }
 
     /* LOOPS */
@@ -731,12 +729,8 @@ export default class Compiler {
                 spec.test = this.$closure( [ $qIdentifier ], test );
                 createNodeCallback = $body => transform.call( Node, test, $body );
             }
-            const body = this.transformNode( node.body );
-
-            /*
-            if ( this.currentEntry.static ) { return createNodeCallback( body ); }
-            */
-            return this.$autorun( 'iteration', spec, $serial, body );
+            const $body = Node.blockStmt( this.transformNodes( node.body.type === 'BlockStatement' ? node.body.body : [ node.body ] ) );
+            return this.$autorun( 'iteration', spec, $serial, $body );
         } );
     }
 
@@ -747,12 +741,6 @@ export default class Compiler {
         const $serial = this.$serial( node );
         const right = this.transformNode( node.right );
         return this.pushScope( node, () => {
-            /*
-            if ( this.currentEntry.static ) {
-                const [ left, body ] = this.transformNodes( [ node.left, node.body ] );
-                return transform.call( Node, left, right, body );
-            }
-            */
             // Iteration driver
             const $qIdentifier = this.currentScope.get$qIdentifier( '$q' );
             const production = this.currentScope.get$qIdentifier( kind === 'for-of' ? '$val' : '$key', false );
@@ -770,8 +758,7 @@ export default class Compiler {
             } else {
                 originalLeft = Node.withLoc( Node.assignmentExpr( node.left, production ), node.left );
             }
-            const $body = Node.blockStmt( this.transformNodes( [ originalLeft ].concat( node.body.body ) ) );
-
+            const $body = Node.blockStmt( this.transformNodes( [ originalLeft ].concat( node.body.type === 'BlockStatement' ? node.body.body : node.body ) ) );
             return this.$autorun( 'iteration', spec, $serial, $body );
         } );
     }
@@ -783,8 +770,7 @@ export default class Compiler {
         const cmd = Node.literal( keyword );
         const label = node.label ? Node.literal( node.label.name ) : Node.identifier( 'null' );
         // Hoisting...
-        const exitTarget = this.hoistExitStatement( cmd, label );
-        if ( exitTarget?.type === 'SwitchStatement' ) {
+        if ( this.currentEntry.parentNode?.type === 'SwitchStatement' ) {
             return transform.call( Node );
         }
         return Node.exprStmt( this.$call( keyword, label ), );
@@ -793,9 +779,6 @@ export default class Compiler {
     transformReturnStatement( node ) {
         const refs = new Set;
         const argument = this.transformNode( node.argument, { refs } );
-        // Static mode
-        if ( this.currentEntry.static ) { return Node.returnStmt( argument ); }
-
         const cmd = Node.literal( 'return' );
         const args = argument ? [ cmd, argument ] : [ cmd ];
         this.hoistExitStatement( ...args );
@@ -808,26 +791,6 @@ export default class Compiler {
         return this.$autorun( 'return', $serial, hoisting );
     }
 
-    transformTryStatement( node ) {
-        return this.pushScope( node, () => {
-            const $serial = this.$serial( node );
-            const { block, handler, finalizer } = node;
-            const body = this.transformNodes( block.body );
-            const spec = {};
-            if ( handler ) {
-                const { start, end } = handler;
-                const $handler = Node.arrowFuncExpr( null, [ handler.param ], handler.body, );
-                spec.handler = this.transformNode( { ...$handler, isHandler: true, start, end }, { static: true } );
-            }
-            if ( finalizer ) {
-                const { start, end } = finalizer;
-                const $finalizer = Node.arrowFuncExpr( null, [], finalizer.body, );
-                spec.finalizer = this.transformNode( { ...$finalizer, isFinalizer: true, start, end }, { static: true } );
-            }
-            return this.$autorun( 'block', spec, $serial, Node.blockStmt( body ) );
-        });
-    }
-
     /* GENERAL */
 
     transformBlockStatement( node ) {
@@ -837,8 +800,8 @@ export default class Compiler {
             return this.$autorun( 'downstream', $serial, Node.blockStmt( body ) );
         }
         return this.pushScope( node, () => {
-            const body = this.transformNodes( node.body );
-            return this.$autorun( 'block', $serial, Node.blockStmt( body ) );
+            const body = Node.blockStmt( this.transformNodes( node.body ) );
+            return this.$autorun( 'block', { static: Node.identifier( this.currentEntry.static ) }, $serial, body );
         } );
     }
 
@@ -850,14 +813,13 @@ export default class Compiler {
 
     transformExpressionStatement( node ) {
         const $serial = this.$serial( node );
-        const expression_s = [].concat( this.transformNode( node.expression ) || [] );
+        const expression = this.transformNode( node.expression );
+        const expression_s = [].concat( expression || [] );
         return expression_s.reduce( ( stmts, expression ) => {
             if ( expression.type === 'VariableDeclaration' || expression.type.endsWith( 'Statement' ) ) {
                 return stmts.concat( expression );
             }
-            // Static mode?
-            if ( this.currentEntry.static ) { return Node.exprStmt( expression ); }
-            return stmts.concat( this.$autorun( 'stmt', $serial, expression ) );
+            return stmts.concat( this.$autorun( 'stmt', { static: Node.identifier( this.currentEntry.static ) }, $serial, expression ) );
         }, [] );
     }
 

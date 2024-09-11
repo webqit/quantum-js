@@ -2,11 +2,13 @@
 export const _call = ( _function, ...args ) => {
     const callback = args.pop();
     if ( _function.constructor.name === 'AsyncFunction' ) return _await( _function.call( ...args ), callback );
-    return callback( _function.call( ...args ) );
+    try {
+        return callback( _function.call( ...args ) );
+    } catch( e ) { return callback( undefined, e ); }
 };
 
 export const _await = ( maybePromise, callback ) => {
-    return maybePromise instanceof Promise ? maybePromise.then( callback ) : callback( maybePromise )
+    return maybePromise instanceof Promise ? maybePromise.then( callback ).catch( e => callback( undefined, e ) ) : callback( maybePromise )
 };
 
 export const _isTypeObject = val => {

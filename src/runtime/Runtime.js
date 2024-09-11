@@ -1,7 +1,3 @@
-
-/**
- * @import
- */
 import Observer from '@webqit/observer';
 import { _await } from '../util.js';
 import { registry } from './hot-module-registry.js';
@@ -93,7 +89,7 @@ export default class Runtime extends Autorun {
             const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.$params.executionMode );
             const actualReturnValue = quantumMode
                 ? new State( this )
-                : returnValue;
+                : this.flowControl.get( 'return' )?.arg;//returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
         } );
     }
