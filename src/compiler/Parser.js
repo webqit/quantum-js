@@ -12,6 +12,9 @@ export default Parser.extend( function( Parser ) {
     return class extends Parser {
 
         static parse( input, options ) {
+            if (!options.ecmaVersion) {
+                options = { ...options, ecmaVersion: 'latest' };
+            }
             const ast = super.parse( input, options );
             ast.isQuantumProgram = options.executionMode !== 'RegularProgram';
             ast.originalSource = input;

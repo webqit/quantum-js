@@ -42,7 +42,7 @@ export class QuantumModule extends AbstractQuantumScript {
 /** -------------- parse-compile */
 
 function parseCompileCallback( ...args ) {
-    const params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};
+    const params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};    
     const source = args.pop() || '';
     // $qCompiler has been loaded sync?
     if ( globalThis.webqit?.$qCompiler ) {
