@@ -869,12 +869,11 @@ In how Quantum programs are based on literal JavaScript, no special syntaxes exi
 
 Using the Quantum JS and Observer API polyfills, the following examples work today. While we demonstrate the most basic forms of these scenarios, it takes roughly the same principles to build more intricate equivalents.
 
-<details><summary>Example 1: <i>Reactive Custom Elements</i><br>
+
+<details><summary>Example 1: <i>A Custom Element-Based Counter</i><br>
 └───────── </summary>
 
-Manual reactivity accounts for a large part of the UI code we write today. This time, though, we're able to simply write "Quantum" logic!
-
-In this example, we demonstrate a custom element that has a Quantum `render()` method. We invoke the `render()` method only once and let every subsequent *prop* change be statically reflected:
+In this example, we demonstrate a custom element that works as a counter. Notice that the magic is in its Quantum `render()` method. Reactivity starts at *connected* time (on calling the `render()` method), and stops at *disconnected* time (on calling dispose)!
 
 ```js
 customElements.define('click-counter', class extends HTMLElement {
@@ -884,10 +883,9 @@ customElements.define('click-counter', class extends HTMLElement {
   connectedCallback() {
     // Initial rendering
     this._state = this.render();
-    // Static reflect at click time
+    // Static reflection at click time
     this.addEventListener('click', () => {
       this.count++;
-      //Observer.set(this, 'count', this.count + 1);
     });
   }
 
@@ -898,33 +896,39 @@ customElements.define('click-counter', class extends HTMLElement {
 
   // Using the QuantumFunction constructor
   render = QuantumFunction(`
-    let countElement = this.querySelector( '#count' );
+    let countElement = this.querySelector('#count');
     countElement.innerHTML = this.count;
     
     let doubleCount = this.count * 2;
-    let doubleCountElement = this.querySelector( '#double-count' );
+    let doubleCountElement = this.querySelector('#double-count');
     doubleCountElement.innerHTML = doubleCount;
     
     let quadCount = doubleCount * 2;
-    let quadCountElement = this.querySelector( '#quad-count' );
+    let quadCountElement = this.querySelector('#quad-count');
     quadCountElement.innerHTML = quadCount;
   `);
 
 });
 ```
 
+```html
+<click-counter style="display: block; padding: 1rem;">
+  Click me<br>
+  <span id="count"></span><br>
+  <span id="double-count"></span><br>
+  <span id="quad-count"></span>
+</click-counter>
+```
+
 </details>
 
-<details><summary>Example 2: <i>Pure Computations</i><br>
+<details><summary>Example 2: <i>A Custom <code>URL</code> API</i><br>
 └───────── </summary>
 
-Even outside of UI code, we often still need to write reactive logic! This time, though, we're able to simply write "Quantum" logic!
-
-In this example, we demonstrate a simple way to implement something like the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties!
+In this example, we demonstrate a simple replication of the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties! Notice that the magic is in its Quantum `compute()` method which is called from the constructor.
 
 ```js
 class MyURL {
-
   constructor(href) {
     // The raw url
     this.href = href;
@@ -934,7 +938,7 @@ class MyURL {
 
   compute = QuantumFunction(`
     // These will be re-computed from this.href always
-    let [ protocol, hostname, port, pathname, search, hash ] = new URL(this.href);
+    let { protocol, hostname, port, pathname, search, hash } = new URL(this.href);
 
     this.protocol = protocol;
     this.hostname = hostname;
@@ -951,22 +955,18 @@ class MyURL {
       this.href = href;
     }
   `);
-
 }
 ```
 
-└ Instantiate `MyURL`:
-
 ```js
+// Instantiate
 const url = new MyURL('https://www.example.com/path');
-```
 
-└ Change a property and have it's dependents auto-update:
-
-```js
+// Change a property
 url.protocol = 'http:'; //Observer.set(url, 'protocol', 'http:');
 console.log(url.href); // http://www.example.com/path
 
+// Change another
 url.hostname = 'foo.dev'; //Observer.set(url, 'hostname', 'foo.dev');
 console.log(url.href); // http://foo.dev/path
 ```
