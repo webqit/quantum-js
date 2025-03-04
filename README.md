@@ -928,7 +928,7 @@ customElements.define('click-counter', class extends HTMLElement {
 In this example, we demonstrate a simple replication of the [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) API - where you have many interdependent properties! Notice that the magic is in its Quantum `compute()` method which is called from the constructor.
 
 ```js
-class MyURL {
+const MyURL = class {
   constructor(href) {
     // The raw url
     this.href = href;
