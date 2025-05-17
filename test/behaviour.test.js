@@ -1079,7 +1079,7 @@ describe( 'Module imports/exports', function() {
         } );
 
         // Show countings
-        await promise( 1000 );
+        await promise( 1010 );
         expect( env.log ).to.eql( [
             'Counter1: 0',
             'Counter2: 0',
