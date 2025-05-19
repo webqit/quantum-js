@@ -195,7 +195,9 @@ export default class Autorun extends EventTarget {
         }
         // Find lexical scope
         let lexicalScope = this.scope;
-        while( lexicalScope && !Observer.has( lexicalScope.state, name ) ) { lexicalScope = lexicalScope.context; }
+        while( lexicalScope && !Observer.has( lexicalScope.state, name ) ) {
+            lexicalScope = lexicalScope.context;
+        }
         // Not found?
         if ( !lexicalScope ) {
             if ( hint.isTypeCheck ) return;
@@ -234,7 +236,7 @@ export default class Autorun extends EventTarget {
             // Return bare value here?
             if ( !depth || !signal.state || typeof signal.state !== 'object' ) {
                 let returnValue = signal.state;
-                if ( typeof signal.state === 'function' ) {
+                if ( typeof signal.state === 'function' && !/^class\s?/.test(Function.prototype.toString.call(signal.state)) ) {
                     // We're returning a proxy for functions instead of: signal.context.state[ signal.name ].bind( signal.context.state );
                     returnValue = Observer.proxy( signal.state, { membrane: signal } );
                 }
@@ -281,7 +283,9 @@ export default class Autorun extends EventTarget {
 
     function( executionMode, functionKind, serial, $qFunction ) {
         // Declare in current scope
-        if ( functionKind === 'Declaration' ) { Observer.set( this.scope.state, $qFunction.name, $qFunction ); }
+        if ( functionKind === 'Declaration' ) {
+            Observer.set( this.scope.state, $qFunction.name, $qFunction );
+        }
         // Metarise function
         const _this = this;
         Object.defineProperty( $qFunction, 'toString', { value: function( $qSource = false ) {
@@ -293,9 +297,10 @@ export default class Autorun extends EventTarget {
     }
 
     class( classKind, $class, methodsSpec ) {
-        const isDeclaration = classKind === 'Declaration';
         // Declare in current scope
-        if ( isDeclaration ) { Observer.set( this.scope.state, $class.name, $class ); }
+        if ( classKind === 'Declaration' ) {
+            Observer.set( this.scope.state, $class.name, $class );
+        }
         // Metarise methods
         methodsSpec.forEach( ( { name, isQuantumFunction, static: isStatic, serial } ) => {
             this.function( isQuantumFunction && 'QuantumFunction' || 'RegularFunction', 'Expression', serial, isStatic ? $class[ name ] : $class.prototype[ name ] )

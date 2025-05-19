@@ -114,7 +114,7 @@ export default class Runtime extends Autorun {
         }
         const promise = ( async () => {
             const moduleName = this.$params.sourceType === 'module' && this.$params.experimentalFeatures !== false && this.$params.exportNamespace || this.$params.fileName;
-            try { return onload( await import( $source.source ) ); } catch( e ) {
+            try { return onload( { ...await import( $source.source ) } ); } catch( e ) {
                 if ( e.code === 'ERR_MODULE_NOT_FOUND' ) { this.throw( new Error( `Cannot find module "${ $source.source }"${ moduleName ? ` imported at "${ moduleName }"` : '' }.` ), [ $source.serial ], e.code ); }
                 else this.throw( e, [ $source.serial ], e.code );
             }
