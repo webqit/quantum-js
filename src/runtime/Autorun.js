@@ -228,7 +228,7 @@ export default class Autorun extends EventTarget {
         const isAborted = this.state === 'aborted';
         const isStatic = this.spec.static;
         const nowRunning = this;
-        return ( function proxy( signal, depth ) {
+        return ( function proxy( signal, params = {}, depth ) {
             // Do bindings first
             if ( quantumMode && !isStatic && !isConst && !isRuntime && !isAborted ) {
                 signal.subscribe( nowRunning );
@@ -238,22 +238,26 @@ export default class Autorun extends EventTarget {
                 let returnValue = signal.state;
                 if ( typeof signal.state === 'function' && !/^class\s?/.test( Function.prototype.toString.call( signal.state ) ) ) {
                     // We're returning a proxy for functions instead of: signal.context.state[ signal.name ].bind( signal.context.state );
-                    returnValue = Observer.proxy( signal.state, { membrane: signal } );
+                    returnValue = Observer.proxy( signal.state, { ...params, membrane: signal } );
                 }
                 return returnValue;
             }
             // Return dynamic value
             let propertyAlreadyBound;
-            return Observer.proxy( signal.state, {}, traps => ( {
+            return Observer.proxy( signal.state, params, traps => ( {
                 ...traps,
                 get( target, name, receiver = null ) {
                     // Constructs are always going to for one property access: ref('a').b, and we need to prevent .c from creating a binding
                     if ( propertyAlreadyBound ) { return traps.get( target, name, receiver ); }
                     propertyAlreadyBound = true;
-                    return proxy( signal.signal( name ), depth - 1 );
+                    let $params = { ...params };
+                    if ( Array.isArray( target ) ) {
+                        $params.arrayMethodName = name;
+                    }
+                    return proxy( signal.signal( name ), $params, depth - 1 );
                 },
             } ) );
-        } )( baseSignal, depth );
+        } )( baseSignal, {}, depth );
     }
 
     autorun( type, ...rest ) {
