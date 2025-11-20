@@ -23,3 +23,68 @@ export function _$functionArgs( args ) {
 }
 
 export const env = {};
+
+
+export function matchPrologDirective(str, strictStart = false) {
+    if (strictStart) return /^(["'])use live\1\s*(;|$)/.test(str);
+    return /(["'])use live\1\s*(;|$)/.test(str);
+}
+
+export function nextKeyword(input, start = 0, mode = null) {
+    let i = start;
+    const l = input.length;
+
+    // Helper: skip whitespace
+    const skipWS = () => {
+        while (i < l && /\s/.test(input[i])) i++;
+    };
+
+    // Helper: skip line comment
+    const skipLineComment = () => {
+        i += 2;
+        while (i < l && input[i] !== "\n" && input[i] !== "\r") i++;
+    };
+
+    // Helper: skip block comment
+    const skipBlockComment = () => {
+        i += 2;
+        while (i < l && !(input[i] === "*" && input[i + 1] === "/")) i++;
+        if (i < l) i += 2;
+    };
+
+    // Skip leading whitespace and comments
+    while (i < l) {
+        skipWS();
+
+        if (input[i] === "/" && input[i + 1] === "/") {
+            skipLineComment();
+            continue;
+        }
+        if (input[i] === "/" && input[i + 1] === "*") {
+            skipBlockComment();
+            continue;
+        }
+
+        break;
+    }
+
+    // MODE 0: only skip, return new index
+    if (mode === 0) return input.slice(i);
+
+    // Extract identifier/keyword
+    const startIdent = i;
+
+    // Identifier must start with A-Za-z$_
+    if (i < l && /[A-Za-z$_]/.test(input[i])) {
+        i++;
+        while (i < l && /[A-Za-z0-9$_]/.test(input[i])) i++;
+        return input.slice(startIdent, i);
+    }
+
+    // If we reached here and mode = 1: return single next char OR null at EOF
+    if (mode === 1 && i < l) {
+        return input[i]; // return next non-skipped character
+    }
+
+    return null; // EOF
+}

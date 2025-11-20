@@ -1,83 +1,111 @@
-
-/**
- * @imports
- */
 import Observer from '@webqit/observer';
+import LiveMode from './runtime/LiveMode.js';
 import { _$functionArgs } from './util.js';
-import { $eval } from './runtime/index.js';
-import AbstractQuantumScript from './AbstractQuantumScript.js';
-import State from './runtime/State.js';
+import AbstractLiveScript from './AbstractLiveScript.js';
+import { compile as $$compile } from './runtime/index.js';
 
-/** -------------- APIs */
+export { Observer, LiveMode }
+export { nextKeyword, matchPrologDirective } from './util.js';
 
-export { Observer, State }
+export let LiveFunction;
 
-export let QuantumFunction;
+export function AsyncLiveFunction(...args) {
+    const { source, params } = _$functionArgs(args);
 
-export function AsyncQuantumFunction( ...args ) {
-    const { source, params } = _$functionArgs( args );
-    const compiledFunction = $eval( 'async-function', parseCompileCallback, source, params );
-    if ( !( compiledFunction instanceof Promise ) ) return compiledFunction;
+    const transformedFunction = compile('async-function-source', source, params);
+    if (!(transformedFunction instanceof Promise)) return transformedFunction;
     // Introduce a wrapper function that awaits main function
-    const wrapperFunction = async function( ...args ) { return ( await compiledFunction ).call( this, ...args ); }
-    Object.defineProperty( wrapperFunction, 'toString', { value: async function( ...args ) { return ( await compiledFunction ).toString( ...args ) } } )
+    const wrapperFunction = async function (...args) { return (await transformedFunction).call(this, ...args); }
+    Object.defineProperty(wrapperFunction, 'toString', { value: async function (...args) { return (await transformedFunction).toString(...args) } })
+
     return wrapperFunction;
 }
-export const QuantumAsyncFunction = AsyncQuantumFunction; // For backwards compat
 
-export let QuantumScript;
+export let LiveScript;
 
-export class AsyncQuantumScript extends AbstractQuantumScript {
-    static sourceType = 'async-script';
-    static parseCompileCallback = parseCompileCallback;
+export class AsyncLiveScript extends AbstractLiveScript {
+    static sourceType = 'async-script-source';
+    static astTools = { parse, transform, serialize };
 }
-export const QuantumAsyncScript = AsyncQuantumScript; // For backwards compat
 
-
-export class QuantumModule extends AbstractQuantumScript {
+export class LiveModule extends AbstractLiveScript {
     static sourceType = 'module';
-    static parseCompileCallback = parseCompileCallback;
+    static astTools = { parse, transform, serialize };
 }
 
-/** -------------- parse-compile */
+// ------------------
 
-function parseCompileCallback( ...args ) {
-    const params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};    
-    const source = args.pop() || '';
-    // $qCompiler has been loaded sync?
-    if ( globalThis.webqit?.$qCompiler ) {
-        const { parse, compile } = globalThis.webqit.$qCompiler;
-        const ast = parse( source, params.parserParams );
-        return compile( ast, params.compilerParams );
-    }
-    // Load and run $qCompiler async - in the background?
-    globalThis.webqit = globalThis.webqit || {};
-    if ( !globalThis.webqit.$qCompilerWorker ) {
-        const customUrl = document.querySelector( 'meta[name="$q-compiler-url"]' );
-        const compilerUrls = ( customUrl?.content.split( ',' ) || [] ).concat( 'https://unpkg.com/@webqit/quantum-js/dist/compiler.js' );
-        const workerScriptText = `
-        const compilerUrls = [ '${ compilerUrls.join( `','` ) }' ];
-        ( function importScript() {
-            try { importScripts( compilerUrls.shift().trim() ) } catch( e ) { if ( compilerUrls.length ) { importScript(); } }
-        } )();
-        const { parse, compile } = globalThis.webqit.$qCompiler;
-        globalThis.onmessage = e => {
-            const { source, params } = e.data;
-            const ast = parse( source, params.parserParams );
-            const { toString, ...compilation } = compile( ast, params.compilerParams );
-            e.ports[ 0 ]?.postMessage( compilation );
-        };`;
-        globalThis.webqit.$qCompilerWorker = new Worker( `data:text/javascript;base64,${ btoa( workerScriptText ) }` );
-    }
-    return new Promise( res => {
-        let messageChannel = new MessageChannel;
-        webqit.$qCompilerWorker.postMessage( { source, params }, [ messageChannel.port2 ] );
-        messageChannel.port1.onmessage = e => {
-            const { ...compilation } = e.data;
-            Object.defineProperty( compilation, 'toString', {
-                value: base64 => base64 === 'base64' ? compilation.compiledSourceBase64 : compilation.compiledSource
-            } );
-            res( compilation );
+export function compile(sourceType, source, ...params) {
+    return $$compile(sourceType, { parse, transform, serialize }, source, ...params);
+}
+
+export function parse(input, params) {
+    return exec('parse', input, params);
+}
+
+export function transform(input, params) {
+    return exec('transform', input, params);
+}
+
+export function serialize(input, params) {
+    return exec('serialize', input, params);
+}
+
+function exec(action, input, params) {
+    // To string magic
+    const patchToString = (result) => {
+        Object.defineProperty(result, 'toString', {
+            value: base64 => base64 === 'base64' ? result.transformedSourceBase64 : result.transformedSource
+        });
+        return result;
+    };
+
+    // $useLiveT has been loaded sync?
+    if (globalThis.webqit?.$useLiveT) {
+        const { parse, transform, serialize } = globalThis.webqit.$useLiveT;
+        if (action === 'serialize') return serialize(input, params);
+        if (action === 'parse') return parse(input, params);
+        if (action === 'transform') {
+            const result = transform(input, params);
+            return patchToString(result);
         }
-    } );
+    }
+
+    // Load and run $useLiveT async - in the background?
+    globalThis.webqit = globalThis.webqit || {};
+    if (!globalThis.webqit.$useLiveTWorker) {
+        const customUrl = document.querySelector('meta[name="$q-transformer-url"]');
+        const transformerUrls = (customUrl?.content.split(',') || []).concat('https://unpkg.com/@webqit/use-live/dist/transformer.js');
+        const workerScriptText = `
+        const transformerUrls = [ '${transformerUrls.join(`','`)}' ];
+        ( function importScript() {
+            try { importScripts( transformerUrls.shift().trim() ) } catch( e ) { if ( transformerUrls.length ) { importScript(); } }
+        } )();
+        const { parse, transform, serialize } = globalThis.webqit.$useLiveT;
+        globalThis.onmessage = e => {
+            const { action, input, params } = e.data;
+            let result;
+            if (action === 'serialize') {
+                result = serialize(input, params);
+            } else if (action === 'parse') {
+                result = parse(input, params);
+            } else if (action === 'transform') {
+                const { toString, ...compilation } = transform(input, params);
+                result = compilation;
+            }
+            e.ports[0]?.postMessage(result);
+        };`;
+        globalThis.webqit.$useLiveTWorker = new Worker(`data:text/javascript;base64,${btoa(workerScriptText)}`);
+    }
+
+    // Run in background
+    return new Promise(res => {
+        let messageChannel = new MessageChannel;
+        webqit.$useLiveTWorker.postMessage({ action, input, params }, [messageChannel.port2]);
+        messageChannel.port1.onmessage = e => {
+            const result = e.data;
+            if (action === 'transform') patchToString(result);
+            res(result);
+        }
+    });
 }

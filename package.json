@@ -1,14 +1,14 @@
 {
-  "name": "@webqit/quantum-js",
-  "title": "Quantum JS",
-  "description": "Runtime extension to JavaScript that let's us do Imperative Reactive Programming (IRP) in the very language.",
+  "name": "@webqit/use-live",
+  "title": "UseLive",
+  "description": "Runtime extension to JavaScript that enables Imperative Reactive Programming (IRP) in JavaScript.",
   "keywords": [
     "fine-grained reactivity",
     "js-runner",
     "js-parser"
   ],
   "homepage": "https://webqit.io/tooling/quantum-js",
-  "version": "4.6.3",
+  "version": "0.5.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
-    "build": "esbuild main=src/api.global.js main.lite=src/api.global.lite.js compiler=src/api.compiler.global.js --bundle --minify --external:./src/compiler --sourcemap --outdir=dist",
+    "build": "esbuild main=src/api.global.js main.lite=src/api.global.lite.js transformer=src/api.transformer.global.js --bundle --minify --external:./src/transformer --sourcemap --outdir=dist",
     "preversion": "npm run test && npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
@@ -49,23 +49,5 @@
   "maintainers": [
     "Oxford Harrison <oxharris.dev@gmail.com>"
   ],
-  "contributors": [],
-  "funding": {
-    "type": "patreon",
-    "url": "https://patreon.com/ox_harris"
-  },
-  "badges": {
-    "list": [
-      "npmversion",
-      "npmdownloads",
-      "patreon"
-    ],
-    "config": {
-      "patreonUsername": "ox_harris",
-      "githubUsername": "webqit",
-      "githubRepository": "quantum-js",
-      "githubSlug": "webqit/quantum-js",
-      "npmPackageName": "@webqit/quantum-js"
-    }
-  }
+  "contributors": []
 }

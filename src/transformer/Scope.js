@@ -1,12 +1,6 @@
-/**
- * @imports
- */
 import $qIdentifier from "./$qIdentifier.js";
 import Node from './Node.js';
 
-/**
- * @Scope
- */
 export default class Scope {
 
     constructor( context, { type } ) {
@@ -50,7 +44,9 @@ export default class Scope {
     }
 
     $qIdentifiersNoConflict( name ) {
-        for ( let [ , identifer ] of this.$qIdentifiers ) { identifer.noConflict( name );  }
+        for ( let [ , identifer ] of this.$qIdentifiers ) {
+            identifer.noConflict( name );
+        }
         this.context && this.context.$qIdentifiersNoConflict( name );
     }
 

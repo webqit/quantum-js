@@ -5,7 +5,7 @@ import AutoAsyncIterator from './AutoAsyncIterator.js';
 import AutoIterator from './AutoIterator.js';
 import Autorun from './Autorun.js';
 import Scope from './Scope.js';
-import State from './State.js';
+import LiveMode from './LiveMode.js';
 
 export default class Runtime extends Autorun {
 
@@ -86,9 +86,9 @@ export default class Runtime extends Autorun {
 
     execute( callback = null ) {
         return super.execute( returnValue => {
-            const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.$params.executionMode );
-            const actualReturnValue = quantumMode
-                ? new State( this )
+            const liveMode = [ 'LiveProgram', 'LiveFunction' ].includes( this.$params.executionMode );
+            const actualReturnValue = liveMode
+                ? new LiveMode( this )
                 : this.flowControl.get( 'return' )?.arg;//returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
         } );
@@ -135,17 +135,21 @@ export default class Runtime extends Autorun {
 
     assignModules( specifiers, target, source, sourceSerial = null ) {
         const observeList = [];
-        const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.$params.executionMode );
-        for ( const [ local, serial, alias ] of specifiers ) {
+        const liveMode = [ 'LiveProgram', 'LiveFunction' ].includes( this.$params.executionMode );
+        for ( const [ local, serial, alias, literal ] of specifiers ) {
+            if (local === null) {
+                ( liveMode ? Observer : Reflect ).set( target, alias, literal );
+                continue;
+            }
             if ( local === '*' && alias ) {
-                ( quantumMode ? Observer : Reflect ).set( target, alias, source );
+                ( liveMode ? Observer : Reflect ).set( target, alias, source );
                 continue;
             }
             if ( !Observer.has( source, local ) ) { this.throw( new Error( `The requested module does not provide an export named "${ local }".` ), [ serial, sourceSerial ] ); }
-            ( quantumMode ? Observer : Reflect ).set( target, alias || local, Observer.get( source, local ) );
+            ( liveMode ? Observer : Reflect ).set( target, alias || local, Observer.get( source, local ) );
             observeList.push( [ local, serial, alias ] );
         }
-        if ( !observeList.length || !quantumMode ) return;
+        if ( !observeList.length || !liveMode ) return;
         this.once( Observer.observe( source, mutations => {
             for ( const [ local, /* serial */, alias ] of observeList ) {
                 for ( const mutation of mutations ) {

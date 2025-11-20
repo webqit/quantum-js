@@ -1,9 +1,5 @@
-
-/**
- * @imports
- */
-import * as QuantumJS from './index.js';
+import * as UseLive from './index.js';
 
 // As globals
 if ( !globalThis.webqit ) { globalThis.webqit = {}; }
-Object.assign( globalThis.webqit, QuantumJS );
+Object.assign( globalThis.webqit, UseLive );

@@ -1,21 +1,14 @@
-
-/**
- * @imports
- */
 import Parser from './Parser.js';
-import Compiler from './Compiler.js';
-
-/**
- * @parse
- */
+import Transformer from './Transformer.js';
 
 // Parser
 const parseCache = new Map;
 export function parse( source, params = {} ) {
+    if (typeof source !== 'string') return source;
     const cacheKey = `${ source }${ JSON.stringify( params ) }`;
     let ast = parseCache.get( cacheKey );
-    if ( !ast ) {
-        try { ast = Parser.parse( source, params ); }
+    if ( !ast ) { ast = Parser.parse( source, params );
+        try { }
         catch( e ) {
             const message = `${ e.message || e }`;
             const { pos, loc: { line, column } = {} } = e;
@@ -29,14 +22,15 @@ export function parse( source, params = {} ) {
     return ast;
 }
 
-// Compiler
-export function compile( ast, params = {} ) {
-    const compiler = new Compiler( params );
-    return compiler.transform( ast );
+// Transformer
+export function transform( ast, params = {} ) {
+    ast = parse(ast, params);
+    const transformer = new Transformer( params );
+    return transformer.transform( ast );
 }
 
 // Serialize
 export function serialize( ast, params = {} ) {
-    const compiler = new Compiler( params );
-    return compiler.serialize( ast );
+    const transformer = new Transformer( params );
+    return transformer.serialize( ast );
 }

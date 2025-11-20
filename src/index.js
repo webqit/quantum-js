@@ -1,49 +1,46 @@
-
-/**
- * @imports
- */
 import Observer from '@webqit/observer';
+import LiveMode from './runtime/LiveMode.js';
 import { _$functionArgs } from './util.js';
-import { parse, compile } from './compiler/index.js';
-import { $eval } from './runtime/index.js';
-import AbstractQuantumScript from './AbstractQuantumScript.js';
-import State from './runtime/State.js';
+import { parse, transform, serialize } from './transformer/index.js';
+import { compile as $$compile } from './runtime/index.js';
+import AbstractLiveScript from './AbstractLiveScript.js';
 
-/** -------------- APIs */
+export { Observer, LiveMode }
+export { nextKeyword, matchPrologDirective } from './util.js';
 
-export { Observer, State }
-
-export function QuantumFunction( ...args ) {
-    const { source, params } = _$functionArgs( args );
-    return $eval( 'function', parseCompileCallback, source, params );
+export function LiveFunction(...args) {
+    const { source, params } = _$functionArgs(args);
+    return compile('function-source', source, params);
 }
 
-export function AsyncQuantumFunction( ...args ) {
-    const { source, params } = _$functionArgs( args );
-    return $eval( 'async-function', parseCompileCallback, source, params );
+export function AsyncLiveFunction(...args) {
+    const { source, params } = _$functionArgs(args);
+    return compile('async-function-source', source, params);
 }
-export const QuantumAsyncFunction = AsyncQuantumFunction; // For backwards compat
 
-export class QuantumScript extends AbstractQuantumScript {
+export class LiveScript extends AbstractLiveScript {
     static sourceType = 'script';
-    static parseCompileCallback = parseCompileCallback;
+    static astTools = { parse, transform, serialize };
 }
 
-export class AsyncQuantumScript extends AbstractQuantumScript {
+export class AsyncLiveScript extends AbstractLiveScript {
     static sourceType = 'async-script';
-    static parseCompileCallback = parseCompileCallback;
+    static astTools = { parse, transform, serialize };
 }
 
-export const QuantumAsyncScript = AsyncQuantumScript; // For backwards compat
-
-export class QuantumModule extends AbstractQuantumScript {
+export class LiveModule extends AbstractLiveScript {
     static sourceType = 'module';
-    static parseCompileCallback = parseCompileCallback;
+    static astTools = { parse, transform, serialize };
 }
 
-/** -------------- parse-compile */
+// ------------------
 
-function parseCompileCallback( source, params ) {
-    const ast = parse( source, params.parserParams );
-    return compile( ast, params.compilerParams );
+export function compile(sourceType, source, ...params) {
+    return $$compile(sourceType, { parse, transform, serialize }, source, ...params);
+}
+
+export {
+    parse,
+    transform,
+    serialize
 }

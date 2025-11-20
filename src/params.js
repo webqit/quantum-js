@@ -1,18 +1,14 @@
-
-/**
- * @exports
- */
 export function resolveParams( ...extensions ) {
-    let extension, params = { runtimeParams, compilerParams, parserParams };
+    let extension, params = { runtimeParams, transformerParams, parserParams };
     while( extension = extensions.shift() ) {
         const {
             runtimeParams: _runtimeParams = {},
-            compilerParams: { globalsNoObserve: _globalsNoObserve = [], globalsOnlyPathsExcept: _globalsOnlyPathsExcept = [], ..._compilerParams } = {},
+            transformerParams: { globalsNoObserve: _globalsNoObserve = [], globalsOnlyPathsExcept: _globalsOnlyPathsExcept = [], ..._transformerParams } = {},
             parserParams: _parserParams = {},
         } = extension;
         params = {
             runtimeParams: { ...params.runtimeParams, ..._runtimeParams },
-            compilerParams: { ...params.compilerParams, globalsNoObserve: [ ...params.compilerParams.globalsNoObserve, ..._globalsNoObserve ], globalsOnlyPathsExcept: [ ...params.compilerParams.globalsOnlyPathsExcept, ..._globalsOnlyPathsExcept ], ..._compilerParams },
+            transformerParams: { ...params.transformerParams, globalsNoObserve: [ ...params.transformerParams.globalsNoObserve, ..._globalsNoObserve ], globalsOnlyPathsExcept: [ ...params.transformerParams.globalsOnlyPathsExcept, ..._globalsOnlyPathsExcept ], ..._transformerParams },
             parserParams: { ...params.parserParams, ..._parserParams },
         };
         if ( extensions.devMode ) { /* shortcut for devMode configs */ }
@@ -27,7 +23,7 @@ export const parserParams = {
     preserveParens: false,
     locations: true,
 };
-export const compilerParams = {
+export const transformerParams = {
     globalsNoObserve: [ 'arguments', 'debugger', ],
     globalsOnlyPathsExcept: [],
     originalSource: true,

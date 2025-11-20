@@ -222,7 +222,7 @@ export default class Autorun extends EventTarget {
     }
 
     autobind( baseSignal, depth, hint ) {
-        const quantumMode = [ 'QuantumProgram', 'QuantumFunction' ].includes( this.runtime.$params.executionMode );
+        const liveMode = [ 'LiveProgram', 'LiveFunction' ].includes( this.runtime.$params.executionMode );
         const isConst = baseSignal.type  === 'const';
         const isRuntime = this === this.runtime;
         const isAborted = this.state === 'aborted';
@@ -230,7 +230,7 @@ export default class Autorun extends EventTarget {
         const nowRunning = this;
         return ( function proxy( signal, params = {}, depth ) {
             // Do bindings first
-            if ( quantumMode && !isStatic && !isConst && !isRuntime && !isAborted ) {
+            if ( liveMode && !isStatic && !isConst && !isRuntime && !isAborted ) {
                 signal.subscribe( nowRunning );
             }
             // Return bare value here?
@@ -293,7 +293,7 @@ export default class Autorun extends EventTarget {
         // Metarise function
         const _this = this;
         Object.defineProperty( $qFunction, 'toString', { value: function( $qSource = false ) {
-            if ( $qSource && executionMode === 'QuantumFunction' ) return Function.prototype.toString.call( $qFunction );
+            if ( $qSource && executionMode === 'LiveFunction' ) return Function.prototype.toString.call( $qFunction );
             const originalSource = _this.runtime.extractSource( serial );
             return originalSource.startsWith( 'static ' ) ? originalSource.replace( 'static ', '' ) : originalSource;
         } } );
@@ -306,8 +306,8 @@ export default class Autorun extends EventTarget {
             Observer.set( this.scope.state, $class.name, $class );
         }
         // Metarise methods
-        methodsSpec.forEach( ( { name, isQuantumFunction, static: isStatic, serial } ) => {
-            this.function( isQuantumFunction && 'QuantumFunction' || 'RegularFunction', 'Expression', serial, isStatic ? $class[ name ] : $class.prototype[ name ] )
+        methodsSpec.forEach( ( { name, isLiveFunction, static: isStatic, serial } ) => {
+            this.function( isLiveFunction && 'LiveFunction' || 'RegularFunction', 'Expression', serial, isStatic ? $class[ name ] : $class.prototype[ name ] )
         } );
         return $class;
     }

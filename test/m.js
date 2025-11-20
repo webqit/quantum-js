@@ -1,7 +1,8 @@
 
-import { parse, compile } from '../src/compiler/index.js';
+import { parse } from '../src/transformer/index.js';
+import { compile, LiveFunction, LiveScript } from '../src/index.js';
 
-const expr = `
+let expr = `
 try {
         console.log(',,,,,,,,,,,,,,,,', await r3());
     } catch(w) {
@@ -10,7 +11,23 @@ try {
 `;
 
 
-const ast = parse(expr, { sourceType: 'module', allowAwaitOutsideFunction: true, executionMode: 'QuantumProgram' });
-const compiled = compile(ast);
-//console.log(ast);
-console.log(compiled.compiledSource);
+expr = `
+// lll
+"use live";
+let $rand0 = live /*d*/ ($2kk) => {}
+`;
+
+expr = `
+console.log(3 + 4, this);
+`;
+
+
+expr = parse(expr, { allowReturnOutsideFunction: true, allowAwaitOutsideFunction: true });
+
+
+const compiled2 = (compile('function-source', expr, ['a', 'b'], { fileName: 'test.js' }));
+console.log(compiled2.call(33));
+
+console.log(LiveFunction('a', 'b', expr, { fileName: 'test.js' }).call(44));
+
+console.log((new LiveScript(expr, { fileName: 'test.js' })).bind(55).execute());
