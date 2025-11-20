@@ -513,7 +513,7 @@ setInterval(() => {
 }, 1000);
 ```
 
-As in the case of live functions above, these can be compiled as part of your application build process. (In the compilation example above, you'll have `ast.isLiveProgram === true` for these scripts.)
+As in the case of live functions above, these can be compiled as part of your application's build process. (In the compilation example above, you'll get `ast.isLiveProgram === true` for these scripts.)
 
 #### The `LiveScript` and `LiveModule` APIs (Option 2)
 
