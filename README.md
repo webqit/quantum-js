@@ -47,12 +47,12 @@ console.log(doubleCount);
 setInterval(() => count = 10, 1000);
 ```
 
-Wanna play?:
+To try:
 
 1. Add the following script to your page:
 
   ```html
-  <script src="https://unpkg.com/@webqit/oohtml/dist/main.js"></script>
+  <script src="https://unpkg.com/@webqit/oohtml@4.5.10/dist/main.js"></script>
   ```
 
 2. Write your logic within a `quantum` script tag:
