@@ -87,7 +87,8 @@ export default class Runtime extends Autorun {
     execute( callback = null ) {
         return super.execute( returnValue => {
             const liveMode = [ 'LiveProgram', 'LiveFunction' ].includes( this.$params.executionMode );
-            const actualReturnValue = liveMode
+            const isScript = this.$params.sourceType === 'module' || this.$params.sourceType === 'script';
+            const actualReturnValue = liveMode || isScript
                 ? new LiveMode( this )
                 : this.flowControl.get( 'return' )?.arg;//returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
@@ -128,7 +129,8 @@ export default class Runtime extends Autorun {
     async export( ...args ) {
         const source = !Array.isArray( args[ args.length - 1 ] ) ? args.pop() : null;
         // Export from source or from top-level scope!
-        const modules = source ? await this.import( { ...source, forExport: true } ) : this.scope.state;
+        const modules = source ? await this.import( { ...source, forExport: true } ) 
+            : (this.scope.type === 'this' ? this.scope.context.state : this.scope.state);
         // Assign imported modules to exports object
         this.assignModules( args, this.exports, modules, source?.serial );
     }

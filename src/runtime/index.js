@@ -35,6 +35,7 @@ export function compile(sourceType, astTools, source, functionParams = [], param
     const isScript = /script/.test(sourceType);
     const isFunction = /function/.test(sourceType);
     const isAsync = /async/.test(sourceType) || /module/.test(sourceType);
+    const isAsyncScript = isModule || isAsync && !isFunction;
     const isSource = /source/.test(sourceType);
     const isFile = /file/.test(sourceType);
 
@@ -145,7 +146,7 @@ export function compile(sourceType, astTools, source, functionParams = [], param
         }
 
         // 2. ---- main function
-        bootstrapSource.push(`${$q2}.main = ${transformResult.topLevelAwait || isAsync ? 'async ' : ''
+        bootstrapSource.push(`${$q2}.main = ${isModule ? 'async ' : ''
             }function(${transformResult.identifier}) {${sourceIsProgram ? '' : `\n  ${transformResult.transformedSource.replace(/\n/g, '\n  ')}\n`
             }};`);
         // 3.a ---- global scope
@@ -171,7 +172,7 @@ export function compile(sourceType, astTools, source, functionParams = [], param
 
         // 5. ---- The bootstrap source
         if (isModule && isFile) {
-            bootstrapSource.push(`${$q2}.result = ${transformResult.topLevelAwait || isAsync ? 'await ' : ''}${$q2}.runtime.execute();`);
+            bootstrapSource.push(`${$q2}.result = await ${$q2}.runtime.execute();`);
             const [_default, exports] = transformResult.exportIds.reduce(([, acc], id) => {
                 if (id === 'default') return [id, acc];
                 return [, acc.concat(id)];
@@ -181,7 +182,7 @@ export function compile(sourceType, astTools, source, functionParams = [], param
             return finalBootstrapSource(bootstrapSource);
         }
         if (isFile) {
-            bootstrapSource.push(`${$q2}.result = ${transformResult.topLevelAwait || isAsync ? 'await ' : ''}${$q2}.runtime.execute();`);
+            bootstrapSource.push(`${$q2}.result = ${$q2}.runtime.execute();`);
             if (isFunction) {
                 bootstrapSource.push(`return ${$q2}.result;`);
             }
@@ -190,8 +191,7 @@ export function compile(sourceType, astTools, source, functionParams = [], param
         bootstrapSource.push(isFunction ? `return ${$q2}.runtime.execute();` : `return ${$q2}.runtime;`);
         const result = finalBootstrapSource(bootstrapSource, true);
         // 6. ---- Compile
-        const asyncEval = ['async-function', 'async-script', 'module'].includes(sourceType);
-        const fn = compileFunction || (asyncEval ? (async function () { }).constructor : Function);
+        const fn = compileFunction || Function;
         return _await(result, (result) => forDynamicBinding ? [fn($q2, result), $$cx] : fn($q2, result)($$cx));
     });
 }

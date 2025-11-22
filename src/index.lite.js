@@ -9,10 +9,9 @@ export { nextKeyword, matchPrologDirective } from './util.js';
 
 export let LiveFunction;
 
-export function AsyncLiveFunction(...args) {
-    const { source, params } = _$functionArgs(args);
-
-    const transformedFunction = compile('async-function-source', source, params);
+export function AsyncLiveFunction(...$args) {
+    const { source, args, params } = _$functionArgs($args);
+    const transformedFunction = compile('async-function-source', source, args, params);
     if (!(transformedFunction instanceof Promise)) return transformedFunction;
     // Introduce a wrapper function that awaits main function
     const wrapperFunction = async function (...args) { return (await transformedFunction).call(this, ...args); }

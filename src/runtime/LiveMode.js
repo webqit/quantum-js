@@ -2,6 +2,7 @@ import Observer from "@webqit/observer";
 
 export default class LiveMode {
 
+    [Symbol.toStringTag] = 'LiveMode';
     constructor(runtime) {
         Object.defineProperty(this, 'runtime', { value: runtime });
         const events = {

@@ -27,11 +27,10 @@
   },
   "scripts": {
     "test": "mocha --extension .test.js --exit",
-    "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
     "build": "esbuild main=src/api.global.js main.lite=src/api.global.lite.js transformer=src/api.transformer.global.js --bundle --minify --external:./src/transformer --sourcemap --outdir=dist",
     "preversion": "npm run test && npm run build && git add -A dist",
     "postversion": "npm publish",
-    "postpublish": "git push && git push --tags"
+    "version:next": "npm version prerelease --preid=next"
   },
   "dependencies": {
     "@webqit/observer": "^3.8.2",

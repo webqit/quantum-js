@@ -288,7 +288,8 @@ export default class Autorun extends EventTarget {
     function( executionMode, functionKind, serial, $qFunction ) {
         // Declare in current scope
         if ( functionKind === 'Declaration' ) {
-            Observer.set( this.scope.state, $qFunction.name, $qFunction );
+            const declarationScope = this.scope.type === 'this' ? this.scope.context : this.scope;
+            Observer.set( declarationScope.state, $qFunction.name, $qFunction );
         }
         // Metarise function
         const _this = this;
@@ -303,6 +304,7 @@ export default class Autorun extends EventTarget {
     class( classKind, $class, methodsSpec ) {
         // Declare in current scope
         if ( classKind === 'Declaration' ) {
+            const declarationScope = this.scope.type === 'this' ? this.scope.context : this.scope;
             Observer.set( this.scope.state, $class.name, $class );
         }
         // Metarise methods

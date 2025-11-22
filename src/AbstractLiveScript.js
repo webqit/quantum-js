@@ -20,6 +20,6 @@ export default class AbstractLiveScript {
 
     toString($qSource = false) {
         if (!$qSource) return this.source;
-        return _await(this.$program, (program) => program + '');
+        return _await(this.$program, ([precompiled]) => precompiled + '');
     }
 }

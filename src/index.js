@@ -8,14 +8,14 @@ import AbstractLiveScript from './AbstractLiveScript.js';
 export { Observer, LiveMode }
 export { nextKeyword, matchPrologDirective } from './util.js';
 
-export function LiveFunction(...args) {
-    const { source, params } = _$functionArgs(args);
-    return compile('function-source', source, params);
+export function LiveFunction(...$args) {
+    const { source, args, params } = _$functionArgs($args);
+    return compile('function-source', source, args, params);
 }
 
-export function AsyncLiveFunction(...args) {
-    const { source, params } = _$functionArgs(args);
-    return compile('async-function-source', source, params);
+export function AsyncLiveFunction(...$args) {
+    const { source, args, params } = _$functionArgs($args);
+    return compile('async-function-source', source, args, params);
 }
 
 export class LiveScript extends AbstractLiveScript {

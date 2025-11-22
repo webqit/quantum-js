@@ -18,8 +18,7 @@ export const _isTypeObject = val => {
 export function _$functionArgs( args ) {
     const params = typeof args[ args.length - 1 ] === 'object' ? args.pop() : {};
     const source = args.pop() || '';
-    params.functionParams = args;
-    return { source, params };
+    return { source, args, params };
 }
 
 export const env = {};

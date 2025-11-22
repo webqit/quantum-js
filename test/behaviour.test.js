@@ -115,13 +115,13 @@ await promise( 400 );
 describe('Live "function" syntax using "live"', function () {
 
     it('Should detect a "live function" declaration.', function () {
-        const { body: [functionAST] } = Parser.parse(`live function name() {}`, parserParams);
+        const { body: [functionAST] } = Parser.parse(`function name() {"use live";}`, parserParams);
         expect(functionAST.type).to.equal('FunctionDeclaration');
         expect(functionAST.isLiveFunction).to.be.true;
     });
 
     it('Should detect an "async live function" declaration.', function () {
-        const { body: [functionAST] } = Parser.parse(`async live function name() {}`, parserParams);
+        const { body: [functionAST] } = Parser.parse(`async function name() {"use live";}`, parserParams);
         expect(functionAST.type).to.equal('FunctionDeclaration');
         expect(functionAST.async).to.be.true;
         expect(functionAST.isLiveFunction).to.be.true;
@@ -129,47 +129,47 @@ describe('Live "function" syntax using "live"', function () {
 
     it('Should detect a "x = live function" expression - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = live function name() {}`, parserParams);
+        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = function name() {"use live";}`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = live function() {}`, parserParams);
+        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = function() {"use live";}`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.isLiveFunction).to.be.true;
     });
 
     it('Should detect an "x = async live function" expression - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = async live function name() {}`, parserParams);
+        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = async function name() {"use live";}`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.async).to.be.true;
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = async live function() {}`, parserParams);
+        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = async function() {"use live";}`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.async).to.be.true;
         expect(functionAST2.isLiveFunction).to.be.true;
     });
 
-    it('Should detect a "x = live () => {}" arrow expression.', function () {
+    it('Should detect a "live arrow function" expression.', function () {
         // Named
-        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = live () => {}`, parserParams);
+        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = () => {"use live";}`, parserParams);
         expect(functionAST1.type).to.equal('ArrowFunctionExpression');
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = live arg => {}`, parserParams);
+        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = arg => {"use live";}`, parserParams);
         expect(functionAST2.type).to.equal('ArrowFunctionExpression');
         expect(functionAST2.isLiveFunction).to.be.true;
     });
 
-    it('Should detect a "x = async live () => {}" arrow expression.', function () {
+    it('Should detect an "async live arrow function" expression.', function () {
         // Named
-        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = async live () => {}`, parserParams);
+        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = async () => {"use live";}`, parserParams);
         expect(functionAST1.type).to.equal('ArrowFunctionExpression');
         expect(functionAST1.async).to.be.true;
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = async live arg => {}`, parserParams);
+        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = async arg => {"use live";}`, parserParams);
         expect(functionAST2.type).to.equal('ArrowFunctionExpression');
         expect(functionAST2.async).to.be.true;
         expect(functionAST2.isLiveFunction).to.be.true;
@@ -180,13 +180,13 @@ describe('Live "function" syntax using "live"', function () {
 describe('Live "object method" syntax using "live"', function () {
 
     it('Should detect a "live" method.', function () {
-        const { body: [{ expression: { right: { properties: [{ value: functionAST }] } } }] } = Parser.parse(`o = { live name() {} }`, parserParams);
+        const { body: [{ expression: { right: { properties: [{ value: functionAST }] } } }] } = Parser.parse(`o = { name() {"use live"; } }`, parserParams);
         expect(functionAST.type).to.equal('FunctionExpression');
         expect(functionAST.isLiveFunction).to.be.true;
     });
 
     it('Should detect a "async live" method.', function () {
-        const { body: [{ expression: { right: { properties: [{ value: functionAST }] } } }] } = Parser.parse(`o = { async live name() {} }`, parserParams);
+        const { body: [{ expression: { right: { properties: [{ value: functionAST }] } } }] } = Parser.parse(`o = { async name() {"use live"; } }`, parserParams);
         expect(functionAST.type).to.equal('FunctionExpression');
         expect(functionAST.async).to.be.true;
         expect(functionAST.isLiveFunction).to.be.true;
@@ -194,23 +194,23 @@ describe('Live "object method" syntax using "live"', function () {
 
     it('Should detect a "prop: live function" property - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: { properties: [{ value: functionAST1 }] } } }] } = Parser.parse(`o = { prop: live function name() {} }`, parserParams);
+        const { body: [{ expression: { right: { properties: [{ value: functionAST1 }] } } }] } = Parser.parse(`o = { prop: function name() {"use live";} }`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: { properties: [{ value: functionAST2 }] } } }] } = Parser.parse(`o = { prop: live function() {} }`, parserParams);
+        const { body: [{ expression: { right: { properties: [{ value: functionAST2 }] } } }] } = Parser.parse(`o = { prop: function() {"use live";} }`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.isLiveFunction).to.be.true;
     });
 
     it('Should detect an "prop: async live function" property - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: { properties: [{ value: functionAST1 }] } } }] } = Parser.parse(`o = { prop: async live function name() {} }`, parserParams);
+        const { body: [{ expression: { right: { properties: [{ value: functionAST1 }] } } }] } = Parser.parse(`o = { prop: async function name() {"use live"; } }`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.async).to.be.true;
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: { properties: [{ value: functionAST2 }] } } }] } = Parser.parse(`o = { prop: async live function() {} }`, parserParams);
+        const { body: [{ expression: { right: { properties: [{ value: functionAST2 }] } } }] } = Parser.parse(`o = { prop: async function() {"use live"; } }`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.async).to.be.true;
         expect(functionAST2.isLiveFunction).to.be.true;
@@ -221,13 +221,13 @@ describe('Live "object method" syntax using "live"', function () {
 describe('Live "class method" syntax using "live"', function () {
 
     it('Should detect a "live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { live name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { name() {"use live"; } }`, parserParams);
         expect(functionAST.type).to.equal('FunctionExpression');
         expect(functionAST.isLiveFunction).to.be.true;
     });
 
     it('Should detect a "async live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { async live name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { async name() {"use live"; } }`, parserParams);
         expect(functionAST.type).to.equal('FunctionExpression');
         expect(functionAST.async).to.be.true;
         expect(functionAST.isLiveFunction).to.be.true;
@@ -235,23 +235,23 @@ describe('Live "class method" syntax using "live"', function () {
 
     it('Should detect a "prop = live function" class member - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { prop = live function name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { prop = function name() {"use live"; } }`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { prop = live function() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { prop = function() {"use live"; } }`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.isLiveFunction).to.be.true;
     });
 
     it('Should detect an "prop = async live function" class member - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { prop = async live function name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { prop = async function name() {"use live"; } }`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.async).to.be.true;
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { prop = async live function() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { prop = async function() {"use live"; } }`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.async).to.be.true;
         expect(functionAST2.isLiveFunction).to.be.true;
@@ -262,13 +262,13 @@ describe('Live "class method" syntax using "live"', function () {
 describe('Live "static class method" syntax using "live"', function () {
 
     it('Should detect a "static live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { static live name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { static name() {"use live"; } }`, parserParams);
         expect(functionAST.type).to.equal('FunctionExpression');
         expect(functionAST.isLiveFunction).to.be.true;
     });
 
     it('Should detect a "static async live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { static async live name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { static async name() {"use live"; } }`, parserParams);
         expect(functionAST.type).to.equal('FunctionExpression');
         expect(functionAST.async).to.be.true;
         expect(functionAST.isLiveFunction).to.be.true;
@@ -276,23 +276,23 @@ describe('Live "static class method" syntax using "live"', function () {
 
     it('Should detect a "static prop = live function" class member - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { static prop = live function name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { static prop = function name() {"use live"; } }`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { static prop = live function() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { static prop = function() {"use live"; } }`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.isLiveFunction).to.be.true;
     });
 
     it('Should detect an "static prop = async live function" class member - named and unnamed.', function () {
         // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { static prop = async live function name() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { static prop = async function name() {"use live"; } }`, parserParams);
         expect(functionAST1.type).to.equal('FunctionExpression');
         expect(functionAST1.async).to.be.true;
         expect(functionAST1.isLiveFunction).to.be.true;
         // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { static prop = async live function() {} }`, parserParams);
+        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { static prop = async function() {"use live"; } }`, parserParams);
         expect(functionAST2.type).to.equal('FunctionExpression');
         expect(functionAST2.async).to.be.true;
         expect(functionAST2.isLiveFunction).to.be.true;
@@ -303,171 +303,6 @@ describe('Live "static class method" syntax using "live"', function () {
 
 
 
-
-
-describe('Live "function" syntax using "**"', function () {
-
-    it('Should detect a "live function **" declaration.', function () {
-        const { body: [functionAST] } = Parser.parse(`function ** name() {}`, parserParams);
-        expect(functionAST.type).to.equal('FunctionDeclaration');
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect an "async function **" declaration.', function () {
-        const { body: [functionAST] } = Parser.parse(`async function ** name() {}`, parserParams);
-        expect(functionAST.type).to.equal('FunctionDeclaration');
-        expect(functionAST.async).to.be.true;
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "x = function **" expression - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = function ** name() {}`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = function ** () {}`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect an "x = async function" expression - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: functionAST1 } }] } = Parser.parse(`x = async function ** name() {}`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.async).to.be.true;
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: functionAST2 } }] } = Parser.parse(`x = async function ** () {}`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.async).to.be.true;
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-});
-
-describe('Live "object method" syntax using "**"', function () {
-
-    it('Should detect a "live" method.', function () {
-        const { body: [{ expression: { right: { properties: [{ value: functionAST }] } } }] } = Parser.parse(`o = { ** name() {} }`, parserParams);
-        expect(functionAST.type).to.equal('FunctionExpression');
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "async live" method.', function () {
-        const { body: [{ expression: { right: { properties: [{ value: functionAST }] } } }] } = Parser.parse(`o = { async ** name() {} }`, parserParams);
-        expect(functionAST.type).to.equal('FunctionExpression');
-        expect(functionAST.async).to.be.true;
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "prop: function **" property - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: { properties: [{ value: functionAST1 }] } } }] } = Parser.parse(`o = { prop: function ** name() {} }`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: { properties: [{ value: functionAST2 }] } } }] } = Parser.parse(`o = { prop: function ** () {} }`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect an "prop: async function **" property - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: { properties: [{ value: functionAST1 }] } } }] } = Parser.parse(`o = { prop: async function ** name() {} }`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.async).to.be.true;
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: { properties: [{ value: functionAST2 }] } } }] } = Parser.parse(`o = { prop: async function ** () {} }`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.async).to.be.true;
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-});
-
-describe('Live "class method" syntax using "**"', function () {
-
-    it('Should detect a "live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { ** name() {} }`, parserParams);
-        expect(functionAST.type).to.equal('FunctionExpression');
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "async live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { async ** name() {} }`, parserParams);
-        expect(functionAST.type).to.equal('FunctionExpression');
-        expect(functionAST.async).to.be.true;
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "prop = function **" class member - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { prop = function ** name() {} }`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { prop = function ** () {} }`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect an "prop = async function" class member - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { prop = async function ** name() {} }`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.async).to.be.true;
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { prop = async function ** () {} }`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.async).to.be.true;
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-});
-
-describe('Live "static class method" syntax using "**"', function () {
-
-    it('Should detect a "static live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { static ** name() {} }`, parserParams);
-        expect(functionAST.type).to.equal('FunctionExpression');
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "static async live" class method.', function () {
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST }] } } } }] } = Parser.parse(`o = class { static async ** name() {} }`, parserParams);
-        expect(functionAST.type).to.equal('FunctionExpression');
-        expect(functionAST.async).to.be.true;
-        expect(functionAST.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect a "static prop = function **" class member - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { static prop = function ** name() {} }`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { static prop = function ** () {} }`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-    it('Should detect an "static prop = async function" class member - named and unnamed.', function () {
-        // Named
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST1 }] } } } }] } = Parser.parse(`o = class { static prop = async function ** name() {} }`, parserParams);
-        expect(functionAST1.type).to.equal('FunctionExpression');
-        expect(functionAST1.async).to.be.true;
-        expect(functionAST1.isLiveFunction).to.be.true;
-        // Annonymous
-        const { body: [{ expression: { right: { body: { body: [{ value: functionAST2 }] } } } }] } = Parser.parse(`o = class { static prop = async function ** () {} }`, parserParams);
-        expect(functionAST2.type).to.equal('FunctionExpression');
-        expect(functionAST2.async).to.be.true;
-        expect(functionAST2.isLiveFunction).to.be.true;
-    });
-
-});
 
 
 
@@ -549,7 +384,8 @@ describe('Internal autoruns and nesting', function () {
 
         // LiveFunction
         const exec = LiveFunction(`
-            function ** nested() {
+            function nested() {
+                "use live";
                 log.unshift( state ); // Inner; depends on state
             }
             nested( state ); // Outer; depends on state
@@ -581,8 +417,11 @@ describe('Classes', function () {
             let a = class {};
             class b extends a {
                 prop = 10;
-                static async ** method() {}
-                **['method']( param ) {
+                static async method() {
+                    "use live";
+                }
+                ['method']( param ) {
+                    "use live";
                     //console.log( '-------------', b.method.toString() );
                     log.push( 'Inner statement; ' + globalVar + '; ' + this.prop + '; ' + param );
                 }
@@ -1014,7 +853,6 @@ describe('Module imports/exports', function () {
 
             log.push( 'Imports/Exports done!' );
         `, { env });
-
         console.log('----------------', script.toString(true));
         // Initial execution
         const state = await script.execute();
