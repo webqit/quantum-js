@@ -48,7 +48,7 @@ console.log(doubleCount);
 setInterval(() => (count = 10), 1000);
 ```
 
-Wanna play?:
+To try:
 
 1. Add the following script to your page:
 
@@ -108,6 +108,10 @@ While that is the `<script>"use live"</script>` part of the HTML page above, the
 
 > [!NOTE]
 > This project pursues a futuristic, more efficient way to write reactive applocations. And it occupies a new category in the reactivity spectrum.
+
+> [!NOTE]
+> You’re viewing **@webqit/use-live** — the newest iteration.  
+> For the prev 4.6.x branch, see [webqit/use-live@0.3.*](https://github.com/webqit/use-live/tree/4.6.3).
 
 <!--
 ## Idea
