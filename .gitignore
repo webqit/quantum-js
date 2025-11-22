@@ -1,4 +1,4 @@
 .*
+!/.github
 !/.gitignore
 node_modules
-src2
