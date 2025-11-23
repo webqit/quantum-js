@@ -180,7 +180,8 @@ export default class Autorun extends EventTarget {
                 symbolState.reader = Observer.map( returnValue, assignedValue, { except: spec.restOf, spread: spec.type === 'array' } );
                 this.once( symbolState.reader ); // Lifecycle cleanup
             }
-            Observer.set( lexicalScope.state, name, assignedValue );
+             const isStatic = this.spec.static || this.type === 'function' && this.$params?.executionMode === 'RegularFunction';
+            ( isStatic ? Reflect : Observer ).set( lexicalScope.state, name, assignedValue );
             return [ 'postinc', 'postdec' ].includes( spec.kind ) ? valueBefore : assignedValue;
         } );
     }
@@ -227,10 +228,11 @@ export default class Autorun extends EventTarget {
         const isRuntime = this === this.runtime;
         const isAborted = this.state === 'aborted';
         const isStatic = this.spec.static;
+        const isWrite = this.spec.isWrite;
         const nowRunning = this;
         return ( function proxy( signal, params = {}, depth ) {
             // Do bindings first
-            if ( liveMode && !isStatic && !isConst && !isRuntime && !isAborted ) {
+            if ( liveMode && !isStatic && !isWrite && !hint?.isLeft && !isConst && !isRuntime && !isAborted ) {
                 signal.subscribe( nowRunning );
             }
             // Return bare value here?
@@ -242,6 +244,8 @@ export default class Autorun extends EventTarget {
                 }
                 return returnValue;
             }
+            if ( !liveMode || isStatic ) return signal.state;
+            
             // Return dynamic value
             let propertyAlreadyBound;
             return Observer.proxy( signal.state, params, traps => ( {

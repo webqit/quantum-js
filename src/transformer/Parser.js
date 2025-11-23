@@ -1,5 +1,5 @@
 
-import { Parser, tokTypes } from 'acorn';
+import { Parser } from 'acorn';
 import { matchPrologDirective, nextKeyword } from '../util.js';
 
 export default Parser.extend(function (Parser) {
@@ -25,7 +25,7 @@ export default Parser.extend(function (Parser) {
             const ast = super.parse(...args);
 
             ast.isLiveProgram = this.isLiveProgram
-                || matchPrologDirective(this.input.trimStart(), true);
+                || matchPrologDirective(nextKeyword(this.input, 0, 0), true);
             ast.hasLiveFunctions = !!this.___meta.hasLiveFunctions;
             ast.originalSource = this.input;
 

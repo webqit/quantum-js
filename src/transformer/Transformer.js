@@ -129,6 +129,7 @@ export default class Transformer {
         if (typeof node !== 'object' || !node) return node;
         const historyData = {
             static: this.currentEntry?.static,
+            isLeft: this.currentEntry?.isLeft,
             mode: this.currentEntry?.mode,
             ...state,
             parentNode: this.currentEntry?.node,
@@ -477,6 +478,9 @@ export default class Transformer {
         }
         // We're now dealing with an identifier or path that can change
         this.history.forEach(state => state.refs?.add(node));
+        if (this.currentEntry.isLeft && this.currentEntry.mode !== 'callee') {
+            hintArg.push(this.$obj({ isLeft: Node.literal(true) }));
+        }
         return this.$call('ref', Node.literal(node), ...this.$trail(), ...hintArg);
     }
 
@@ -530,7 +534,7 @@ export default class Transformer {
         // Regular assignmentExpr
         const assignmentExpr = (left, right) => {
             right = this.transformNode(right);
-            left = this.transformNode(left);
+            left = this.transformNode(left, { isLeft: true });
             return Node.assignmentExpr(left, right, node.operator);
         };
 
@@ -857,7 +861,14 @@ export default class Transformer {
             if (expression.type === 'VariableDeclaration' || expression.type.endsWith('Statement')) {
                 return stmts.concat(expression);
             }
-            return stmts.concat(this.$autorun('stmt', { static: Node.identifier(this.currentEntry.static) }, $serial, expression));
+            const spec = {};
+            if ( this.currentEntry.static ) {
+                spec.static = Node.literal(true);
+            }
+            if ( ['UpdateExpression', 'UnaryExpression'].includes(expression.type) ) {
+                spec.isWrite = Node.literal(true);
+            }
+            return stmts.concat(this.$autorun('stmt', spec, $serial, expression));
         }, []);
     }
 

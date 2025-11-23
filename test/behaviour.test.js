@@ -433,6 +433,7 @@ describe('Classes', function () {
             bInstance.method( 10 );
         
             setTimeout( function() {
+                "use live";
                 globalVar = 'New globalVar';
             }, 0);
         `, { env });
@@ -494,7 +495,7 @@ describe('Examples', function () {
 
         // Initial execution
         const url = new URL2('http://example.com');
-        //console.log( '----------------', url.render.toString( true ) );
+        console.log( '----------------', url.render.toString( true ) );
         expect(url.href).to.equal('http://example.com/');
 
         // Change property and therefore the href
@@ -882,6 +883,7 @@ describe('Module imports/exports', function () {
             export default counter1;
             export let counter2 = 0;
             setInterval( () => {
+                "use live";
                 counter1 ++;
                 counter2 += 2;
             }, 500 );

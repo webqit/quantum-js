@@ -45,7 +45,10 @@ console.log(doubleCount);
 
 ```js
 // Setup periodic updates
-setInterval(() => (count = 10), 1000);
+setInterval(() => {
+  "use live";
+  count = 10;
+}, 1000);
 ```
 
 To try:
@@ -68,39 +71,42 @@ To try:
   console.log(doubleCount);
 
   // Setup periodic updates
-  setInterval(() => (count = 10), 1000);
+  setInterval(() => {
+    "use live";
+    count = 10;
+  }, 1000);
 </script>
 ```
 
-3. Watch your console. Have fun.
+3. Watch your console.
 
-To see how far it can go, update your step 2 to split the logic into two separate scripts:
+To go one step further, update your step 2 to split the logic into two separate scripts:
 
-2. One ordinary script and one _live_ script:
+2.:
 
 ```html
 <script>
-  // An ordinary script; no probelm
+  "use live";
   // Declare values
   let count = 5;
   let doubleCount = count * 2;
   // Setup periodic updates
-  setInterval(() => (count = 10), 1000);
+  setInterval(() => {
+    "use live";
+    count = 10;
+  }, 1000);
 </script>
 ```
 
 ```html
 <script>
-  // A live script; for live mode
   "use live";
   // Log this value live
   console.log(doubleCount);
 </script>
 ```
 
-Watch your console. Notice that this is still reactive.
-
-That reactivity is really happening within the live script! It's a regular script in every way except that any peice of code thrown in is able to statically reflect changes to state in granular details!
+Watch your console. Reactivity should still work.
 
 To define, **live programs are JavaScript programs that stay sensitive to changes in program state in fine-grained details - and with no moving parts**.
 
@@ -592,7 +598,7 @@ const liveMode = program.execute();
 For Live HTML scripts - `<script>"use live"</script>`, the `liveMode` object is available as a direct property of the script element:
 
 ```js
-console.log(script.live);
+console.log(script.liveMode);
 ```
 
 ### Return Value

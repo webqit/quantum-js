@@ -35,7 +35,6 @@ export function compile(sourceType, astTools, source, functionParams = [], param
     const isScript = /script/.test(sourceType);
     const isFunction = /function/.test(sourceType);
     const isAsync = /async/.test(sourceType) || /module/.test(sourceType);
-    const isAsyncScript = isModule || isAsync && !isFunction;
     const isSource = /source/.test(sourceType);
     const isFile = /file/.test(sourceType);
 
@@ -132,17 +131,25 @@ export function compile(sourceType, astTools, source, functionParams = [], param
 
         // 1. ---- Bootstrap $$cx
         let $$cx;
-        if (isFile) {
+        if (isFile && importDir) {
             bootstrapSource.push(`const { Scope, Runtime } = await import('${importDir}/index.js');`);
             bootstrapSource.push(`const ${$q2} = { Scope, Runtime, params: { ...(${JSON.stringify(runtimeParams)}), executionMode: '${transformResult.isLiveProgram && 'LiveProgram' || 'RegularProgram'}', originalSource: \`${transformResult.originalSource.replace(/`/g, '\\`')}\`, }, };`);
         } else {
-            $$cx = {
+            const $$$cx = {
                 Scope,
                 Runtime,
                 params: { ...runtimeParams, originalSource: transformResult.originalSource, executionMode: transformResult.isLiveProgram && 'LiveProgram' || 'RegularProgram' },
                 thisContext: thisContext,
                 env: env
             };
+            if (isFile) {
+                if (!globalThis.webqit) globalThis.webqit = {};
+                if (!globalThis.webqit.UseLive) globalThis.webqit.UseLive = {};
+                if (!globalThis.webqit.UseLive.Script) globalThis.webqit.UseLive.Script = $$$cx;
+                bootstrapSource.push(`const ${$q2} = globalThis.webqit.UseLive.Script;`);
+            } else {
+                $$cx = $$$cx;
+            }
         }
 
         // 2. ---- main function
@@ -188,6 +195,7 @@ export function compile(sourceType, astTools, source, functionParams = [], param
             }
             return finalBootstrapSource(bootstrapSource);
         }
+
         bootstrapSource.push(isFunction ? `return ${$q2}.runtime.execute();` : `return ${$q2}.runtime;`);
         const result = finalBootstrapSource(bootstrapSource, true);
         // 6. ---- Compile
@@ -196,9 +204,10 @@ export function compile(sourceType, astTools, source, functionParams = [], param
     });
 }
 
-// --- helpers ---
+let importDir;
+try { importDir = eval('import.meta.url'); } catch(e) {}
 
-const importDir = fileURLToDirname(import.meta.url);
+// --- helpers ---
 
 function fileURLToDirname(url) {
     const path = fileURLToPath(url);
