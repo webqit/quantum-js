@@ -12,7 +12,7 @@ What's that?
 
 ## Overview
 
-Where you normally would require certain reactive primitives to express reactive logic...
+Where you normally would require reactive primitives to express reactive logic...
 
 ```js
 // Import reactive primitives
@@ -32,7 +32,7 @@ createEffect(() => {
 setInterval(() => setCount(10), 1000);
 ```
 
-The `"use live"` directive gives you same reactive behavior on top of your ordinary imperative code:
+The `"use live"` directive gives you same reactive behavior on top of ordinary imperative JavaScript:
 
 ```js
 "use live";
@@ -58,7 +58,7 @@ To try:
 <script src="https://unpkg.com/@webqit/oohtml/dist/main.js"></script>
 ```
 
-2. Write your logic with a `use live` directive:
+2. Write your logic with a `"use live"` directive:
 
 ```html
 <script>
@@ -80,8 +80,6 @@ To try:
 
 To go one step further, update your step 2 to split the logic into two separate scripts:
 
-2.:
-
 ```html
 <script>
   "use live";
@@ -103,9 +101,9 @@ To go one step further, update your step 2 to split the logic into two separate 
 </script>
 ```
 
-Watch your console. Reactivity should still work.
+Watch your console. Reactivity still works.
 
-To define, **live programs are JavaScript programs that stay sensitive to changes in program state in fine-grained details - and with no moving parts**.
+To define, **live programs are JavaScript programs that stay sensitive to changes in program state in fine-grained details - and with no moving parts**. 
 
 While that is the `<script>"use live"</script>` part of the HTML page above, there are many different forms of live programs. Examples are [just ahead](#examples).
 
@@ -114,7 +112,7 @@ While that is the `<script>"use live"</script>` part of the HTML page above, the
 
 > [!NOTE]
 > You’re viewing **@webqit/use-live** — the newest iteration.  
-> For the prev 4.6.x branch, see [webqit/use-live@0.3.*](https://github.com/webqit/use-live/tree/4.6.3).
+> For the prev 4.6.x branch, see [webqit/quantum-js@0.3.*](https://github.com/webqit/use-live/tree/4.6.3).
 
 <!--
 ## Idea
