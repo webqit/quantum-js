@@ -1,4 +1,4 @@
-# UseLive — Live Mode for JavaScript
+# UseLive — _Live Mode for JavaScript_
 
 [![npm version][npm-version-src]][npm-version-href]<!--[![npm downloads][npm-downloads-src]][npm-downloads-href]-->
 [![bundle][bundle-src]][bundle-href]
