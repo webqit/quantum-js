@@ -5,7 +5,7 @@ import AutoAsyncIterator from './AutoAsyncIterator.js';
 import AutoIterator from './AutoIterator.js';
 import Autorun from './Autorun.js';
 import Scope from './Scope.js';
-import LiveMode from './LiveMode.js';
+import LiveProgramHandle from './LiveProgramHandle.js';
 
 export default class Runtime extends Autorun {
 
@@ -88,8 +88,8 @@ export default class Runtime extends Autorun {
         return super.execute( returnValue => {
             const liveMode = [ 'LiveProgram', 'LiveFunction' ].includes( this.$params.executionMode );
             const isScript = this.$params.sourceType === 'module' || this.$params.sourceType === 'script';
-            const actualReturnValue = liveMode || isScript
-                ? new LiveMode( this )
+            const actualReturnValue = liveMode || this.$params.executionMode === 'RegularProgram' && isScript
+                ? new LiveProgramHandle( this )
                 : this.flowControl.get( 'return' )?.arg;//returnValue;
             return callback ? callback( actualReturnValue, this ) : actualReturnValue;
         } );
@@ -98,7 +98,7 @@ export default class Runtime extends Autorun {
     spawn( executionMode, thisContext, closure, lexicalContext = null ) {
         const context = this.nowRunning || lexicalContext || this;
         const params = { ...this.$params, $serial: this.$serial + 1, executionMode, lexicalContext };
-        const scope = new Scope( context.scope, 'function', { [ 'this' ]: thisContext } );
+        const scope = new Scope( context.scope, 'function', thisContext ? { [ 'this' ]: thisContext } : {}/* ArrowFunctions do not have their own this */ );
         const subRuntime = new this.constructor( context, 'function', params, scope, closure );
         return subRuntime.execute();
     }

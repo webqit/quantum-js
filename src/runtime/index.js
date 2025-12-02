@@ -39,6 +39,9 @@ export function compile(sourceType, astTools, source, functionParams = [], param
     const isFile = /file/.test(sourceType);
 
     const sourceIsProgram = typeof source === 'object' && source?.type === 'Program';
+    if (!sourceIsProgram) {
+        source = source + '';
+    }
     const originalProgram = source;
 
     if (isModule) {

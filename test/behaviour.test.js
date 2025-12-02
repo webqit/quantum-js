@@ -433,7 +433,6 @@ describe('Classes', function () {
             bInstance.method( 10 );
         
             setTimeout( function() {
-                "use live";
                 globalVar = 'New globalVar';
             }, 0);
         `, { env });
@@ -883,7 +882,6 @@ describe('Module imports/exports', function () {
             export default counter1;
             export let counter2 = 0;
             setInterval( () => {
-                "use live";
                 counter1 ++;
                 counter2 += 2;
             }, 500 );

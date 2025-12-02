@@ -181,7 +181,7 @@ export default class Autorun extends EventTarget {
                 this.once( symbolState.reader ); // Lifecycle cleanup
             }
              const isStatic = this.spec.static || this.type === 'function' && this.$params?.executionMode === 'RegularFunction';
-            ( isStatic ? Reflect : Observer ).set( lexicalScope.state, name, assignedValue );
+            ( /*##isStatic ? Reflect :*/ Observer ).set( lexicalScope.state, name, assignedValue );
             return [ 'postinc', 'postdec' ].includes( spec.kind ) ? valueBefore : assignedValue;
         } );
     }
@@ -244,7 +244,7 @@ export default class Autorun extends EventTarget {
                 }
                 return returnValue;
             }
-            if ( !liveMode || isStatic ) return signal.state;
+            //##if ( !liveMode || isStatic ) return signal.state;
             
             // Return dynamic value
             let propertyAlreadyBound;

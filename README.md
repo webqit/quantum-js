@@ -46,8 +46,7 @@ console.log(doubleCount);
 ```js
 // Setup periodic updates
 setInterval(() => {
-  "use live";
-  count = 10;
+  count += 10;
 }, 1000);
 ```
 
@@ -72,8 +71,7 @@ To try:
 
   // Setup periodic updates
   setInterval(() => {
-    "use live";
-    count = 10;
+    count += 10;
   }, 1000);
 </script>
 ```
@@ -92,8 +90,7 @@ To go one step further, update your step 2 to split the logic into two separate 
   let doubleCount = count * 2;
   // Setup periodic updates
   setInterval(() => {
-    "use live";
-    count = 10;
+    count += 10;
   }, 1000);
 </script>
 ```
@@ -177,7 +174,7 @@ const {
   AsyncLiveFunction,
   LiveScript,
   LiveModule,
-  LiveMode,
+  LiveProgramHandle,
   Observer,
 } = window.webqit;
 ```
@@ -202,7 +199,7 @@ import {
   LiveScript,
   AsyncLiveScript,
   LiveModule,
-  LiveMode,
+  LiveProgramHandle,
   Observer,
 } from "@webqit/use-live";
 ```
@@ -225,7 +222,7 @@ Load from a CDN<br>
 
 ```js
 // Destructure from the webqit namespace
-const { AsyncLiveFunction, AsyncLiveScript, LiveModule, LiveMode, Observer } =
+const { AsyncLiveFunction, AsyncLiveScript, LiveModule, LiveProgramHandle, Observer } =
   window.webqit;
 ```
 
@@ -261,7 +258,7 @@ import {
   AsyncLiveFunction,
   AsyncLiveScript,
   LiveModule,
-  LiveMode,
+  LiveProgramHandle,
   Observer,
 } from "@webqit/use-live/lite";
 ```
@@ -272,7 +269,7 @@ import {
 
 ### Live Functions
 
-You declare live functions by adding the `"use live"` directive as first statement in the function body. And you can also use the `LiveFunction` and `AsyncLiveFunction` APIs. (The first option requires a compile step, the second doesn't.)
+You declare live functions by declaring the `"use live"` directive as first statement in the function body. And you can also use the `LiveFunction` and `AsyncLiveFunction` APIs. (The first option requires a compile step, the second doesn't.)
 
 #### The `"use live"` Directive (Option 1)
 
@@ -581,29 +578,29 @@ program.execute();
 
 ## Consuming Live Programs
 
-Each call to a Live function or script returns back a `LiveMode` object that lets you access values exposed by the program.
+Each call to a Live function or script returns back a `LiveProgramHandle` object that lets you access values exposed by the program.
 
 For Live functions:
 
 ```js
-const liveMode = bar();
+const handle = bar();
 ```
 
 For Live scripts:
 
 ```js
-const liveMode = program.execute();
+const handle = program.execute();
 ```
 
-For Live HTML scripts - `<script>"use live"</script>`, the `liveMode` object is available as a direct property of the script element:
+For Live HTML scripts - `<script>"use live"</script>`, the `LiveProgramHandle` object is available as a direct property of the script element:
 
 ```js
-console.log(script.liveMode);
+console.log(script.liveProgramHandle);
 ```
 
 ### Return Value
 
-For functions, the `LiveMode` object exposes a `value` property that carries the program's actual return value:
+For functions, the `LiveProgramHandle` object exposes a `value` property that carries the program's actual return value:
 
 ```js
 function sum(a, b) {
@@ -613,11 +610,11 @@ function sum(a, b) {
 ```
 
 ```js
-const liveMode = sum(5, 4);
-console.log(liveMode.value); // 9
+const handle = sum(5, 4);
+console.log(handle.value); // 9
 ```
 
-But given the concept of "live", `liveMode.value` is a "live" property that always reflects the program's return value at any point in time:
+But being a "live" program, `handle.value` is a "live" property that always reflects the program's return value at any point in time:
 
 ```js
 function counter() {
@@ -629,29 +626,29 @@ function counter() {
 ```
 
 ```js
-const liveMode = counter();
-console.log(liveMode.value); // 0
+const handle = counter();
+console.log(handle.value); // 0
 ```
 
 The general-purpose, object-observability API: [Observer API](https://github.com/webqit/observer) may be used to observe changes to the `value` property:
 
 ```js
-Observer.observe(liveMode, "value", (mutation) => {
-  //console.log(liveMode.value); Or:
+Observer.observe(handle, "value", (mutation) => {
+  //console.log(handle.value); Or:
   console.log(mutation.value); // 1, 2, 3, 4, etc.
 });
 ```
 
 ### Module Exports
 
-For module programs, the `LiveMode` object exposes an `exports` property that produces the module's exports:
+For module programs, the `LiveProgramHandle` object exposes an `exports` property that produces the module's exports:
 
 ```js
-const liveMode = await program.execute();
-console.log(liveMode.exports); // { count }
+const handle = await program.execute();
+console.log(handle.exports); // { count }
 ```
 
-But given the concept of "live", each property in the `liveMode.exports` object is a "live" property that always reflects an export's internal value at any point in time:
+But being a "live" program, each property in the `handle.exports` object is a "live" property that always reflects an export's internal value at any point in time:
 
 ```js
 const program = new LiveModule(`
@@ -683,10 +680,10 @@ Observer.observe(state.exports, (mutations) => {
 
 ## Aborting Live Programs
 
-Live programs may maintain many live relationships and should be aborted when their work is done! The `LiveMode` object they return exposes an `abort()` method that lets us do that:
+Live programs may maintain many live relationships and should be aborted when their work is done! The `LiveProgramHandle` object they return exposes an `abort()` method that lets us do that:
 
 ```js
-liveMode.abort();
+handle.abort();
 ```
 
 For Live HTML Scripts - `<script>"use live"</script>`, this cleanup is automatic as script element leaves the DOM!

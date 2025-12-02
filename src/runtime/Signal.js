@@ -65,8 +65,8 @@ export default class Signal extends EventTarget {
                 add(autoruns, mutation, signal) {
                     for (const autorun of autoruns) {
                         if (autorun.runtime.thread.includes(autorun)) {
-                            signal.subscribers.delete(autorun);;
-                            continue;
+                            //##signal.subscribers.delete(autorun);;
+                            //##continue;
                         }
                         if (autorun.spec.beforeSchedule?.(mutation) === false) continue;
                         if (!this.map.has(autorun.runtime)) { this.map.set(autorun.runtime, new Set); }

@@ -291,7 +291,7 @@ export default class Transformer {
 
         const executionMode = Node.literal(node.isLiveFunction ? 'LiveFunction' : (node.isHandler ? 'HandlerFunction' : (node.isFinalizer ? 'FinalizerFunction' : 'RegularFunction')));
         const functionKind = Node.literal(node.type === 'FunctionDeclaration' ? 'Declaration' : 'Expression');
-        const $body = Node.blockStmt([Node.returnStmt(this.$call('runtime.spawn', executionMode, Node.thisExpr(), closure, $qIdentifier/*Lexical context*/))]);
+        const $body = Node.blockStmt([Node.returnStmt(this.$call('runtime.spawn', executionMode, node.type === 'ArrowFunctionExpression' ? Node.identifier('null') : Node.thisExpr(), closure, $qIdentifier/*Lexical context*/))]);
 
         const metarisation = reference => this.$call('function', executionMode, functionKind, $serial, reference/* reference to the declaration */);
         let resultNode = transform.call(Node, id, params, $body, node.async, node.expresion, node.generator);

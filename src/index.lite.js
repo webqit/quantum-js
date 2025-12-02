@@ -1,10 +1,10 @@
 import Observer from '@webqit/observer';
-import LiveMode from './runtime/LiveMode.js';
+import LiveProgramHandle from './runtime/LiveProgramHandle.js';
 import { _$functionArgs } from './util.js';
 import AbstractLiveScript from './AbstractLiveScript.js';
 import { compile as $$compile } from './runtime/index.js';
 
-export { Observer, LiveMode }
+export { Observer, LiveProgramHandle }
 export { nextKeyword, matchPrologDirective } from './util.js';
 
 export let LiveFunction;
